@@ -72,8 +72,6 @@ plot(log10.(ion./10e3), eachindex(ion./10e3),
     ylims = (0, 200)
 )
 
-meow
-
 #=
 for i in 1:size(counts)[3]
     heatmap(log10.(energy), altitude, log10.(counts[:, :, i]),
