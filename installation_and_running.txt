@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# FOR LINUX/BASH (CU RESEARCH COMPUTING)
+# This is a text file so you can't accidentally run
+# it. If you want to run it, change .txt to .sh
+
+USER=jucl6426
+
+# Create filestructure for Geant
+cd /projects/$USER
+mkdir geant4
+cd geant4
+mkdir build
+mkdir install
+
+# Download Geant4 source
+git clone https://github.com/Geant4/geant4.git
+
+# Rename folder
+mv geant4 source
+
+
+
+###############################################
+#
+# START FROM HERE IF BUILDING G4 FROM SOURCE
+#
+###############################################
+rm -r /projects/$USER/geant4/build/*
+rm -r /projects/$USER/geant4/install/*
+
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX="/projects/$USER/geant4/install" -DGEANT4_INSTALL_DATA=OFF -DGEANT4_USE_SYSTEM_EXPAT=OFF -DGEANT4_BUILD_MULTITHREADED=ON "/projects/$USER/geant4/source"
+make -j40
+make install
+
+# Install datasets
+mkdir /projects/$USER/geant4/install/share/Geant4/data
+cd /projects/$USER/geant4/install/share/Geant4/data
+
+wget https://cern.ch/geant4-data/datasets/G4NDL.4.7.1.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4EMLOW.8.6.1.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4PhotonEvaporation.6.1.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4RadioactiveDecay.6.1.2.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4PII.1.3.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4RealSurface.2.2.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4SAIDDATA.2.0.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4ABLA.3.3.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4INCL.1.2.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4CHANNELING.1.0.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4ENSDFSTATE.3.0.tar.gz
+wget https://cern.ch/geant4-data/datasets/G4PARTICLEXS.4.1.tar.gz
+
+find . -name '*.tar.gz' -exec tar -xzvf {} \; # Unpack .tar.gz archives
+find . -name '*.tar.gz' -exec rm {} \;      # OPTIONAL: Remove .tar.gz archives
+
+###############################################
+#
+# START FROM HERE IF BUILDING SEPIIDA FROM SOURCE
+# ALWAYS DO THIS BEFORE QUEUEING JOB!
+#
+###############################################
+
+# Download source code if source does not exist:
+cd /projects/$USER/SEPIIDA
+
+# If source already exists, pull latest version:
+if [ -d "/projects/$USER/SEPIIDA/source" ]; then
+    cd source
+    git reset --hard origin/main
+    git pull
+else
+    git clone https://github.com/julia-claxton/SEPIIDA-source.git
+    mv SEPIIDA-source source
+fi
+
+# Create/reset build directory
+cd /projects/$USER/SEPIIDA
+if [ -d "/projects/$USER/SEPIIDA/build" ]; then
+  rm -r /projects/$USER/SEPIIDA/build
+else
+  mkdir /projects/$USER/SEPIIDA/build
+fi
+
+# Build executable
+cd build
+cmake -DCMAKE_INSTALL_PREFIX="/projects/$USER/geant4/install" -DGeant4_DIR="/projects/$USER/geant4/install/lib64" "/projects/$USER/SEPIIDA/source"
+make
+
+# Make batch scripts executable
+chmod +x /projects/jucl6426/SEPIIDA/source/supercomputing_batch.sh
+chmod +x /projects/jucl6426/SEPIIDA/build/supercomputing_batch.sh
+
+
+
+
+
+###############################################
+#
+# START FROM HERE IF QUEUING SIMULATION JOB
+#
+###############################################
+
+/projects/$USER/build_SEPIIDA.sh
+    # Build SEPIIDA
+
+cd /projects/$USER/SEPIIDA/build
+module load slurm/blanca
+sbatch supercomputing_batch.sh # Add job to queue
+watchq # Watch job

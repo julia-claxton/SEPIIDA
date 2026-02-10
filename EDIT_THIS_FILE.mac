@@ -1,0 +1,30 @@
+# ==================================================
+# USER-EDITABLE PARAMETERS
+# Edit the values in this file to tweak the
+# simulation to your desired parameters.
+#
+# The format for setting variables is:
+# /control/alias variable_name variable_value
+#
+# Beam parameters (e.g. energy, pitch angle, etc), are
+# controlled via command line arguments to SEPIIDA in
+# the following format:
+# ./SEPIIDA number_of_particles particle_type beam_energy_keV beam_pitch_angle_deg
+# With <particle_type> chosen from e-, proton, gamma,
+# or another Geant4 particle name.
+#
+# ==================================================
+
+# Directory that you built/will build SEPIIDA in. Houses the executable, results folder,
+# and buildfiles. Do not include a slash at the end or else it won't interpret correctly.
+# There is no platform-independent way to incorporate this into the code so we have to 
+# type it in manually.
+    #/control/alias SEPIIDA_BUILD_DIR /projects/jucl6426/SEPIIDA/build
+    /control/alias SEPIIDA_BUILD_DIR /Users/luna/Research/geant4/SEPIIDA/build
+
+# Starting altitude of particles in the simulation. Units: [km]
+    /control/alias INJECTION_ALTITUDE_KM 450
+    /control/alias RECORDING_ALTITUDE_KM 451
+
+# Magnetic latitude of the injection point. Units: [deg]
+    /control/alias MLAT_DEGREES 45

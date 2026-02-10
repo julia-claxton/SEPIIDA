@@ -1,0 +1,33 @@
+*/*.swp
+.cproject
+.project
+*.macro
+**/data
+*.o
+*.settings
+*.cc.o
+/build/*
+/results
+
+# Raw data files
+*.cdf
+
+# OS crap
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.icloud
+/.vscode
+* 2.*
+
+
+# LaTeX auxililiary files
+*.aux
+*.fdb_latexmk
+*.fls
+*.gz
+*.log
