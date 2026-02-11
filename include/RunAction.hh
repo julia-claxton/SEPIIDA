@@ -82,6 +82,7 @@ class RunAction : public G4UserRunAction
     std::vector<std::vector<G4double>> addEnergySpectraVectors(std::vector<std::vector<G4double>> v1, std::vector<std::vector<G4double>> v2);
     std::vector<G4double> add1DAltitudeVectors(std::vector<G4double> v1, std::vector<G4double> v2);
     std::vector<G4double> linspace(G4double start, G4double stop, int n);
+    void printProgressBar(double fraction, int barLength);
     void printTimestamp();
 
   public:
@@ -99,7 +100,7 @@ class RunAction : public G4UserRunAction
     // Sample planes are also bin edges for energy deposition histogram
     static constexpr G4double fMinSampleAltitude_km = 0.0;
     static constexpr G4double fMaxSampleAltitude_km = 1000.0;
-    static constexpr G4int fNumberOfSamplePlanes = 1001; // 1 plane per km
+    static constexpr G4int fNumberOfSamplePlanes = 5;//1001; // 1 plane per km
 
     static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
     static constexpr G4double fEnergyMaxkeV = 100e6; // 100 GeV

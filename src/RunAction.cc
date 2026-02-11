@@ -183,12 +183,11 @@ void RunAction::EndOfRunAction(const G4Run*){
     return;
   }
   // If we are the main thread, merge datafiles from each thread. Main thread ends after workers are done, so this is the end of the simulation
-  G4cout << "Merging thread results... ";
   // TODO metadata headers
+  G4cout << G4endl;
   mergeEnergySpectra();
   mergeEnergyDeposition();
   mergeBackscatter();
-  G4cout << "Done" << G4endl;
 }
 
 void RunAction::threadWriteSpectra(int threadID){
@@ -310,6 +309,12 @@ void RunAction::mergeEnergySpectra(){
   // Result already allocated in beginning of run action (mainSpectrum)
   // TODO make the others use already-allocated vars as well
 
+  G4cout << "Merging energy-pitch angle spectra..." << G4endl;
+
+  // Progress bar variables
+  int mergedCount = 0;
+  int barLength = 30;
+
   // Loop over threads and add up histograms
   int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
   for(int thread = 0; thread < nThreads; thread++){
@@ -322,16 +327,18 @@ void RunAction::mergeEnergySpectra(){
       ;
 
       // Get data from this thread and add it to the result
-      G4cout << "\nmeow" << G4endl;
-      printTimestamp(); G4cout << G4endl;
       addThreadSpectraToMainHistogram(threadFilepath, particleIndex);
-      printTimestamp(); G4cout << G4endl;
+
+      // Progress bar
+      mergedCount++;
+      double fraction = mergedCount / static_cast<double>(nThreads*particlesToRecord.size());
+      printProgressBar(fraction, barLength);
 
       // Remove this thread's results file
       std::remove(threadFilepath.c_str());
-
     }
   }
+  G4cout << G4endl;
 
   for(int particleIndex = 0; particleIndex < particlesToRecord.size(); particleIndex++){
     // Write summed result to string
@@ -383,6 +390,12 @@ void RunAction::writeAxisLabelHeader(std::ofstream& file){
 }
 
 void RunAction::mergeEnergyDeposition(){
+  G4cout << "Merging energy deposition..." << G4endl;
+
+  // Progress bar variables
+  int mergedCount = 0;
+  int barLength = 30;
+
   // Loop over threads and add up histograms
   int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
   for(int thread = 0; thread < nThreads; thread++){
@@ -410,10 +423,16 @@ void RunAction::mergeEnergyDeposition(){
     energyDeposition = add1DAltitudeVectors(energyDeposition, eDepThreadData);
     ionCounts = add1DAltitudeVectors(ionCounts, ionCountThreadData);
 
+    // Progress bar
+    mergedCount++;
+    double fraction = mergedCount / static_cast<double>(nThreads);
+    printProgressBar(fraction, barLength);
+
     // Delete this thread-specific file
     std::remove(threadEnergyDepFilepath.c_str());
     std::remove(threadIonCountFilepath.c_str());
   }
+  G4cout << G4endl;
 
   // Write summed result to file
   std::string mainFilename =
@@ -440,6 +459,12 @@ void RunAction::mergeEnergyDeposition(){
 }
 
 void RunAction::mergeBackscatter(){
+  G4cout << "Merging backscatter..." << G4endl;
+
+  // Progress bar variables
+  int mergedCount = 0;
+  int barLength = 30;
+
   // Allocate result
   std::vector<std::vector<std::string>> result;
   result.resize(10, std::vector<std::string>(0, ""));
@@ -458,9 +483,15 @@ void RunAction::mergeBackscatter(){
     // Get data from this thread and append it to the result
     result = read2DcsvBackscatter(threadFilepath, result);
 
+    // Progress bar
+    mergedCount++;
+    double fraction = mergedCount/static_cast<double>(nThreads);
+    printProgressBar(fraction, barLength);
+
     // Delete this thread-specific file
     std::remove(threadFilepath.c_str());
   }
+  G4cout << G4endl;
 
   // Write summed result to file
   // First, format backscatter collection altitude first for brevity in filename
@@ -643,4 +674,20 @@ std::vector<G4double> RunAction::linspace(G4double start, G4double stop, int n){
     result.push_back(start + (i * stepSize));
   }
   return result;
+}
+
+void RunAction::printProgressBar(double fraction, int barLength){
+  int filled = std::floor(barLength * fraction);
+  G4cout
+    << "["
+    << std::string(filled, '=')
+    << std::string(barLength - filled, ' ')
+    << "] "
+    << 100.0 * std::round(fraction * 1000.0) / 1000 << "%"
+    << "\r"
+    << std::flush
+  ;
+  if(fraction == 1.0){
+    G4cout << G4endl;
+  }
 }

@@ -49,8 +49,8 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
     end
 end
 
-#=
-path = "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_450km/electron_input_1000keV_1000particles_spectra_e-.csv"
+
+path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km")[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -60,21 +60,18 @@ altitude = parse_csv(lines[1])
 energy   = parse_csv(lines[2])
 pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
-=#
 
-
-path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_450km/")[1]
+path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
 ion = data[:,3]
 
-plot(log10.(ion./10e3), eachindex(ion./10e3),
+plot(log10.(edep./1e5), eachindex(edep./1e5),
     ylims = (0, 200)
 )
 
-#=
 for i in 1:size(counts)[3]
-    heatmap(log10.(energy), altitude, log10.(counts[:, :, i]),
+    heatmap(log10.(energy[begin:end-1]), altitude, log10.(counts[:, :, i]),
         title = "$(pa[i])º - $(pa[i+1])º",
         xlabel = "Log10 Energy, keV",
         ylabel = "Altitude, km",
@@ -87,14 +84,13 @@ for i in 1:size(counts)[3]
 end
 
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
-heatmap(log10.(energy), altitude, log10.(omnidirectional),
+heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     title = "Omnidirectional",
     xlabel = "Log10 Energy, keV",
     ylabel = "Altitude, km",
     bg=:black,
     colorbar_title = "Log10 counts",
-    clims = (-2, 3),
+    clims = (-2, 5),
     ylims = (0, 500)
 )
 display(plot!())
-=#

@@ -180,9 +180,7 @@ int main(int argc,char** argv)
   auto t_end = std::chrono::high_resolution_clock::now();
 
   // Report run statistics
-  std::cout << std::endl;
   double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end-t_start).count();
-  
   t = std::time(nullptr);
   tm = *std::localtime(&t);
 

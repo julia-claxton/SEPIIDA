@@ -36,7 +36,7 @@ function main()
     #SBATCH --nodes 1
     #SBATCH --ntasks-per-node 40
     #SBATCH --time $(time_limit)
-    #SBATCH --output /projects/jucl6426/SEPIIDA/results/log_$(job_name).out
+    #SBATCH --output /projects/jucl6426/SEPIIDA/results/log_$(input_particle_longname)_input_$(energy_string)keV_$(number_of_particles)particles.out
     #SBATCH --qos=$(qos)
     #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22,bhpc-c5-u7-23
     #SBATCH --requeue
