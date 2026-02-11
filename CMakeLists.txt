@@ -47,7 +47,7 @@ target_link_libraries(SEPIIDA ${Geant4_LIBRARIES})
 set(SEPIIDA_FILES
   run_beam.mac
   EDIT_THIS_FILE.mac
-  MSISE00_atmosphere.csv
+  atmosphere_profile.csv
 )
 
 foreach(_script ${SEPIIDA_FILES})

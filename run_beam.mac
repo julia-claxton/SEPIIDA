@@ -18,7 +18,7 @@
 /run/setCut 1 mm
 
 # Set filename for atmosphere composition table
-    /dataCollection/setAtmosFileName MSISE00_atmosphere.csv 
+    /dataCollection/setAtmosFileName atmosphere_profile.csv 
 
 # Turn off verbosity
     /control/verbose 0

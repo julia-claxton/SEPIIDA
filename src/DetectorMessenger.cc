@@ -16,7 +16,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* detCon)
   fcmd1 = new G4UIcmdWithAString("/dataCollection/setAtmosFileName",this);
   
   fcmd1->SetParameterName("Enter atmosphere file name.",true);
-  fcmd1->SetDefaultValue("MSISE00_atmosphere.csv");
+  fcmd1->SetDefaultValue("atmosphere_profile.csv");
   fcmd1->AvailableForStates(G4State_PreInit);
 }
 

@@ -12,7 +12,7 @@
 #
 # To call:
 #
-#   python generate_MSISE00_atmosphere.py arg1
+#   python generate_atmosphere_profile.py arg1
 # 
 # if arg1 is anything, script will plot data in addition to writing file
 # if arg1 is nothing, script will only write file
@@ -59,13 +59,17 @@ mNitrogen2= mNitrogen * 2.;
 
 # Construct altitude array
 altitudeArr = np.linspace(lowerAlt, 
-                          upperAlt, 
-                      int((upperAlt+altitudeStepSize)/altitudeStepSize));
+    upperAlt, 
+    int((upperAlt+altitudeStepSize)/altitudeStepSize)
+);
+
 # Call MSIS model
-atmos = msise00.run(time=time, 
-                    altkm=altitudeArr, 
-                    glat=g_lat_lon[0], 
-                    glon=g_lat_lon[1])
+atmos = msise00.run(
+    time = time, 
+    altkm = altitudeArr, 
+    glat = g_lat_lon[0], 
+    glon = g_lat_lon[1]
+)
 
 # If program gets any arguments it'll plot the profiles
 if len(sys.argv) > 1: 
@@ -73,7 +77,7 @@ if len(sys.argv) > 1:
     fig = plt.figure();
     ax1 = fig.add_subplot(131)
     for var in atmos.species:
-        if var is not 'Total':
+        if var != 'Total':
             atmos[var].plot(y='alt_km', label=var, ax=ax1)
     plt.xscale('log'); plt.legend(fontsize=8);
     plt.xlabel('Species number density [m$^{-3}$]')
@@ -103,25 +107,28 @@ if len(sys.argv) > 1:
 
 # Write order that I defined in src/DetectorConstruction.cc
 write_order = ['alt_km','O','N2','O2','Total','Tn','He','Ar','H','N']
+header = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)","O2 (kg/m3)","Total (kg/m3)","Tn (K)","He (kg/m3)","Ar (kg/m3)","H (kg/m3)","N (kg/m3)"]
 mass_mult   = [1, mOxygen, mNitrogen2, mOxygen2, 1, 1, mHelium, mArgon, mHydrogen, mNitrogen];
 
 # Write to atmosphere file
-with open('MSISE00_atmosphere.csv', 'w') as f:
+with open('atmosphere_profile.csv', 'w') as f:
+    for i in range(len(write_order)):
+        f.write(header[i])
+        f.write(',') if i != len(header)-1 else f.write('\n')
     
     for alt in altitudeArr:
-        
         # Query all variables at an altitude slice
-        line = atmos.sel(time=time,
-                     alt_km=alt,
-                     lat=g_lat_lon[0],
-                     lon=g_lat_lon[1])
-        
+        # Outputs are in number per cubic meter
+        line = atmos.sel(
+            time = time,
+            alt_km = alt,
+            lat = g_lat_lon[0],
+            lon = g_lat_lon[1]
+        )
+
         for index, item in enumerate(write_order):
-        
             if item != write_order[-1]:
-                f.write(str(line[item].data * mass_mult[index]) + ',')
-            else: # write last entry of line with newline instead of comma
-                f.write(str(line[item].data * mass_mult[index]) + '\n')
-    
+                f.write(str(line[item].data * mass_mult[index]))
+            f.write(',') if item != write_order[-1] else f.write('\n')
     # file closes when scope is left
 

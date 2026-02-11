@@ -51,7 +51,7 @@
 
 DetectorConstruction::DetectorConstruction():
   G4VUserDetectorConstruction(),
-  fAtmosphereFilename("MSISE00_atmosphere.csv"),
+  fAtmosphereFilename("atmosphere_profile.csv"),
   fDetectorMessenger(),
   fTableSize(0),
   fLogicWorld(0)
@@ -68,6 +68,9 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+
+  G4cout << "TODO add H2" << G4endl;
+
   G4GeometryManager::GetInstance()->SetWorldMaximumExtent(1000*km);
 
   // Material: Vacuum
@@ -209,8 +212,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double         pressure;
   G4double         R_gas_constant_air = 287.;  // J/kg-K air
   G4double         totalAtmosMass;
-  // approximate minimum number density [cm^-3] that Geant will tolerate
-  G4double         zeroThreshold = 1e-21; 
+  G4double         zeroThreshold = 1e-21; // approximate minimum number density [cm^-3] that Geant will tolerate
   G4int            nComponents;
 
   for(int i=0; i<fTableSize; i++)
@@ -344,60 +346,39 @@ void DetectorConstruction::ConstructSDandField()
 
 void DetectorConstruction::GetMSIStable(G4double tableEntry[][10], G4String filename, unsigned int tableSize)
 {
-  G4int counter_word = 0;
-  std::ifstream filePtr;
-  std::string line;
-
-  // Open file
-  filePtr.open(filename, std::ios::in);
-
-  // Check that file is open/accesible, throw error if not
-  if(!filePtr.is_open())
-  { 
-    G4String errorMessage = "Could not open file ";
-    errorMessage += filename;
-    errorMessage += " !\n";
-    throw std::runtime_error(errorMessage);
-  }
-
   // Fill data array with data
-  for(unsigned int lineIndex=0; lineIndex<tableSize; lineIndex++)
-  {
-    // Get line
-    filePtr >> line;
+  std::ifstream file;
+  file.open(filename, std::ifstream::in);
 
-    // Instantiate stringstream from line
-    std::stringstream s_ptr(line); 
-    
-    counter_word = 0;
-    while(s_ptr.good())
-    {
-      // Parse line into words delimited by commas
-      G4String word;
-      getline(s_ptr, word, ',');
-      
-      // Convert to double and assign table entry
-      tableEntry[lineIndex][counter_word] = std::stod(word);
+  // Parse lines
+  int dim1Index = -1; // Negative to offset header lines
+  int dim2Index = 0;
 
-      counter_word++;
+  std::string line;
+  std::string token;
+  while( std::getline(file, line) ){
+    if(dim1Index == -1){dim1Index++; continue;} // Skip first line (header)
+
+    std::istringstream word(line); // Read line
+    while ( std::getline(word, token, ',') ){
+      tableEntry[dim1Index][dim2Index] = std::stod(token);
+      dim2Index++;
     }
+    dim1Index++;
+    dim2Index = 0;
   }
-
-  // Close file
-  filePtr.close();
+  file.close();
 }
 
 G4int DetectorConstruction::GetMSIStableSize(G4String filename)
 {
-  // Open file
+
   std::ifstream filePtr(filename, std::ios::in);
   G4String line;
   G4int counter = 0;
 
   while(getline(filePtr, line)){counter++;}
-
-  // Close file
   filePtr.close();
 
-  return counter;
+  return counter-1; // Subtract 1 to account for header
 }
