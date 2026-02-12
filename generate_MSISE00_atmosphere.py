@@ -100,19 +100,17 @@ if len(sys.argv) > 1:
     plt.title('Density Profile')
     plt.grid(); 
    
-    plt.suptitle('MSISe-00 Results: %s , %.1f$^\circ$N %.1f$^\circ$W' % (time,
-                                       g_lat_lon[0],
-                                       g_lat_lon[1]))
+    plt.suptitle('MSISe-00 Results: %s , %.1f$^\circ$N %.1f$^\circ$W' % (time, g_lat_lon[0], g_lat_lon[1]))
     plt.show();     
 
-# Write order that I defined in src/DetectorConstruction.cc
+# Write order defined in src/DetectorConstruction.cc
 write_order = ['alt_km','O','N2','O2','Total','Tn','He','Ar','H','N']
-header = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)","O2 (kg/m3)","Total (kg/m3)","Tn (K)","He (kg/m3)","Ar (kg/m3)","H (kg/m3)","N (kg/m3)"]
+header = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)","O2 (kg/m3)","Total (kg/m3)","Neutral Temp. (K)","He (kg/m3)","Ar (kg/m3)","H (kg/m3)","N (kg/m3)","H2 (kg/m3)"]
 mass_mult   = [1, mOxygen, mNitrogen2, mOxygen2, 1, 1, mHelium, mArgon, mHydrogen, mNitrogen];
 
 # Write to atmosphere file
 with open('atmosphere_profile.csv', 'w') as f:
-    for i in range(len(write_order)):
+    for i in range(len(header)):
         f.write(header[i])
         f.write(',') if i != len(header)-1 else f.write('\n')
     
@@ -127,8 +125,7 @@ with open('atmosphere_profile.csv', 'w') as f:
         )
 
         for index, item in enumerate(write_order):
-            if item != write_order[-1]:
-                f.write(str(line[item].data * mass_mult[index]))
-            f.write(',') if item != write_order[-1] else f.write('\n')
+            f.write(str(line[item].data * mass_mult[index]))
+            f.write(',') if item != write_order[-1] else f.write(',0.0\n') # The 0 is for the H2 column, which this MSIS library doesn't output
     # file closes when scope is left
 

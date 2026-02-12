@@ -42,7 +42,6 @@ class G4Transportation;
 class G4CoupledTransportation;
 class G4Run;
 class SteppingAction;
-class myHistogram;
 class RunActionMessenger;
 
 class RunAction : public G4UserRunAction

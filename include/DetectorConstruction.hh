@@ -56,7 +56,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void SetAtmosFilename(G4String name){fAtmosphereFilename = name;};
 
     G4int GetMSIStableSize(G4String);
-    void GetMSIStable(G4double(*)[10], G4String, unsigned int);
+    void GetMSIStable(G4double(*)[11], G4String, unsigned int);
 
   public:
     G4String           fAtmosphereFilename;

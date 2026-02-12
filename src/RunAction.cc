@@ -55,8 +55,7 @@
 RunAction::RunAction():
   G4UserRunAction(),
   fRunActionMessenger(),
-  fBaseResultPath()
-  
+  fBaseResultPath() 
 {
   // Set killing energies
   fWarningEnergy = 0.01 * keV; // Particles below this energy are killed after 1 step. Value arbitrary 
@@ -119,16 +118,8 @@ void RunAction::BeginOfRunAction(const G4Run*)
   // Otherwise, print startup message
   else
   {
-    // Pad with spaces to have consistent print location
-    int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
-    int paddingLength = std::to_string(nThreads).length() - std::to_string(threadID).length();
-
-    // Get current time to print
-    std::time_t t = std::time(nullptr);
-    std::tm tm = *std::localtime(&t);
-
-    // Print startup message
-    G4cout << std::string(paddingLength, ' ') << "(" << std::put_time(&tm, "%F %T") <<") STARTING: Thread " << threadID << G4endl;
+    printTimestamp();
+    G4cout <<"STARTING: Thread " << threadID << G4endl;
   }
 
   // Change parameters for looping particles
@@ -294,7 +285,7 @@ void RunAction::printTimestamp(){
   // Pad with spaces to have consistent print location
   int threadID = G4Threading::G4GetThreadId();
   int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
-  int paddingLength = std::to_string(nThreads).length() - std::to_string(threadID).length();
+  int paddingLength = std::to_string(nThreads-1).length() - std::to_string(threadID).length();
   
   // Get current time to print
   std::time_t t = std::time(nullptr);

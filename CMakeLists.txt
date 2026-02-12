@@ -24,20 +24,19 @@ endif()
 include(${Geant4_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/fast-cpp-csv-parser/*.h)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(SEPIIDA atmosphericEPP_main.cc ${sources} ${headers})
 target_link_libraries(SEPIIDA ${Geant4_LIBRARIES})
+target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.dylib)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -48,6 +47,7 @@ set(SEPIIDA_FILES
   run_beam.mac
   EDIT_THIS_FILE.mac
   atmosphere_profile.csv
+  libjupitermag.dylib
 )
 
 foreach(_script ${SEPIIDA_FILES})
@@ -74,5 +74,3 @@ add_custom_target(B1 DEPENDS main)
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS SEPIIDA DESTINATION bin)
-
-

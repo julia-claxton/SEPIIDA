@@ -5,6 +5,10 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
+
+
+
+
 class EarthDipoleFieldMessenger;
 
 class EarthDipoleField : public G4MagneticField
@@ -19,6 +23,7 @@ public:
   // Messenger methods
   void SetMLAT(G4double MLAT_deg){ fMLAT_degrees = MLAT_deg; };
 
+
 private:
   EarthDipoleFieldMessenger* fDipoleFieldMessenger;
   G4double fDipoleMoment;
@@ -26,7 +31,6 @@ private:
   G4double fRe;
   G4double fu0;
   G4double fpi;
-  G4double fEarthRadius; 
 };
 
 #endif

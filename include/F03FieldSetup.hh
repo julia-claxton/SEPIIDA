@@ -48,10 +48,7 @@ class F03FieldMessenger;
 ///  A class for setting up the Magnetic Field
 ///
 ///  It also creates the necessary classes to control accuracy of propagation.
-///  In this example
-///    - There is a global field for most of the setup;
-///    - A local field overides it for some volume(s) and it assumed to be
-///      uniform.
+
 
 class F03FieldSetup
 {
@@ -67,7 +64,6 @@ public:
 
   void SetFieldValue(G4ThreeVector fieldVector);
   void SetFieldValue(G4double      fieldValue);
-  //G4ThreeVector GetConstantFieldValue();
 
   void UpdateField();
   

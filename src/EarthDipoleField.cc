@@ -4,6 +4,12 @@
 #include "EarthDipoleFieldMessenger.hh"
 #include <numeric>
 #include <functional>
+#include <iostream>
+#include <unistd.h>
+
+#include "/Users/luna/Downloads/test/libjupitermag/include/jupitermag.h"
+
+
 
 /* The following class calculates the Earth's magnetic field strength 
  * and direction according to a tilted dipole model. This class inherits
@@ -12,11 +18,6 @@
  * propagation purposes.
  *
  */
-
-#include <chrono>
-using namespace std::chrono;
-#include <iostream>
-#include <unistd.h>
 
 EarthDipoleField::EarthDipoleField()
 : G4MagneticField(),
@@ -28,12 +29,22 @@ EarthDipoleField::EarthDipoleField()
   fpi(3.14159265358979)
 {
   fDipoleFieldMessenger = new EarthDipoleFieldMessenger(this);
+
+
+
+  InternalModel jupiterMagModel;
+
+  jupiterMagModel = InternalModel();
+  jupiterMagModel.SetModel("jrm33");
+
+
+
+
+
 }
 
 
-EarthDipoleField::~EarthDipoleField()
-{}
-
+EarthDipoleField::~EarthDipoleField(){}
 
 void EarthDipoleField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
 {
@@ -61,6 +72,23 @@ void EarthDipoleField::GetFieldValue(const G4double Point[4],G4double *Bfield) c
     B[i] = (fu0/(4*fpi)) * ( ((3*dotProd*r[i])/pow(rMag, 5)) - (magMoment[i]/pow(rMag, 3)) );
     B[i] = B[i] * tesla;
   }
+
+
+
+
+
+  /*
+  double x = 10.0, y = 0.0, z = 0.0;
+  double Bx, By, Bz;
+  jupiterMagModel.Field(x,y,z,&Bx,&By,&Bz);
+  G4cout << Bx << ", " << By << ", " << Bz << G4endl;
+  */
+
+
+
+
+
+
 
   // Assign values
   // x = East direction
