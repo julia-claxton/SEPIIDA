@@ -5,9 +5,8 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
-
-
-
+#include <jupitermag.h> // Jupiter magnetic field model. Source: https://github.com/mattkjames7/libjupitermag
+  // Note: To compile on Mac M1, I needed to inline FluxCan and FluxDip, and comment out definition of M_PI in the header for this library
 
 class EarthDipoleFieldMessenger;
 
@@ -22,6 +21,9 @@ public:
 
   // Messenger methods
   void SetMLAT(G4double MLAT_deg){ fMLAT_degrees = MLAT_deg; };
+
+  mutable InternalModel jupiterMagModel = InternalModel();
+
 
 
 private:

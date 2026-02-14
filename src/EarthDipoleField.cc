@@ -7,7 +7,8 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "/Users/luna/Downloads/test/libjupitermag/include/jupitermag.h"
+
+
 
 
 
@@ -31,12 +32,12 @@ EarthDipoleField::EarthDipoleField()
   fDipoleFieldMessenger = new EarthDipoleFieldMessenger(this);
 
 
-
-  InternalModel jupiterMagModel;
-
-  jupiterMagModel = InternalModel();
-  jupiterMagModel.SetModel("jrm33");
-
+  G4cout << "meow1" << G4endl;
+  G4cout << "meow2" << G4endl;
+  G4cout << "meow3" << G4endl;
+  //jupiterMagModel.SetModel("jrm33");
+  G4cout << LIBJUPITERMAG_VERSION_MAJOR << G4endl;
+  G4cout << "meow3" << G4endl;
 
 
 
@@ -48,6 +49,8 @@ EarthDipoleField::~EarthDipoleField(){}
 
 void EarthDipoleField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
 {
+  G4cout << "getFieldValue()" << G4endl;
+
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   // Bfield is a pointer to a 6x1 array of E- and B-field components
   // Calculate field components using centered dipole model
@@ -74,7 +77,7 @@ void EarthDipoleField::GetFieldValue(const G4double Point[4],G4double *Bfield) c
   }
 
 
-
+  G4cout << "getFieldValue()" << G4endl;
 
 
   /*
