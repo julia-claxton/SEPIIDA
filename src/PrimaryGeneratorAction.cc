@@ -116,6 +116,16 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   r->yDir = (std::cos(tilt_angle_rad) * vy0) - (std::sin(tilt_angle_rad) * vz0);
   r->zDir = (std::sin(tilt_angle_rad) * vy0) + (std::cos(tilt_angle_rad) * vz0);
 
+
+
+  G4cout << "\n\nTODO: PRIMARY GENERATION ASSUMES PLANAR Y-Z B-FIELD. NOT TRUE AT JUPITER. FIXME!!!!!!\n" << G4endl;
+  // TODO uncomment the throw down below
+
+
+  G4cout << "\n\nALSO TODO: ROTATE B FIELD OUTPUTS. FIXME!!!!!!\n" << G4endl;
+
+
+
   // Verify that pitch angle generation is correct
   double normMomentum = std::sqrt(pow(r->xDir, 2) + pow(r->yDir, 2) + pow(r->zDir, 2));
   double dotProd = (r->xDir * B[0]) + (r->yDir * B[1]) + (r->zDir * B[2]);
@@ -123,7 +133,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   if( generatedPitchAngle_deg > 90){
     G4cout << "** ERROR: Primary generated with incorrect pitch angle. You should never see this. Please email julia.claxton@colorado.edu with this error and the conditions that produced it." << G4endl;
-    throw;
+    //throw;
   }
   
   // Communicate parameters to particle gun

@@ -203,7 +203,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     }
     if(msisAtmosTable[i][3] > zeroThreshold){
       O2 = new G4Material(
-        "Dioxgyen-Layer"+std::to_string(i),
+        "O2-Layer"+std::to_string(i),
         msisAtmosTable[i][3]*kg/m3,
         1,
         kStateGas,

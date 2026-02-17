@@ -16,15 +16,13 @@ public:
   EarthDipoleField();
   virtual ~EarthDipoleField() override;
 
-  // From base class
   virtual void GetFieldValue(const G4double Point[4], G4double *Bfield) const override;
+  void getEarthDipoleField(const G4double Point[4],G4double *Bfield) const;
+  void getJupiterField(const G4double Point[4],G4double *Bfield) const;
+
 
   // Messenger methods
   void SetMLAT(G4double MLAT_deg){ fMLAT_degrees = MLAT_deg; };
-
-  mutable InternalModel jupiterMagModel = InternalModel();
-
-
 
 private:
   EarthDipoleFieldMessenger* fDipoleFieldMessenger;

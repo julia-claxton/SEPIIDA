@@ -66,9 +66,17 @@ data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
 ion = data[:,3]
 
-plot(log10.(edep./1e5), eachindex(edep./1e5),
-    ylims = (0, 200)
+
+plot(log10.(ion./1e5), eachindex(ion./1e5),
+ylims = (0, 200)
 )
+
+plot(log10.(edep./1e5), eachindex(edep./1e5),
+ylims = (0, 200)
+)
+
+error()
+
 
 for i in 1:size(counts)[3]
     heatmap(log10.(energy[begin:end-1]), altitude, log10.(counts[:, :, i]),

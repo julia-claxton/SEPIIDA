@@ -45,7 +45,6 @@
 #include "G4CoupledTransportation.hh"
 #include "G4Electron.hh"
 
-#include "myHistogram.hh"
 #include "RunActionMessenger.hh"
 
 #include <fstream>
