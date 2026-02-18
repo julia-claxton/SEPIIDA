@@ -14,7 +14,7 @@ using Plots, Plots.PlotMeasures
 """ 
 Extremely crude model of the top 1000 km of Jupiter's atmosphere. This is for placeholder
 purposes until we can get access to a more detailed model. This just uses an exponential
-P, T profile, ideal gas law, and a constant mixing ratio of 90/10 H2/He.
+pressure profile, isothermal assumption, ideal gas law, and a constant mixing ratio of 90/10 H2/He.
 """
 
 molar_mass_h2 = 2.016e-3   # kg mol⁻¹
@@ -25,18 +25,21 @@ R_he = R / molar_mass_he   # J K⁻¹ kg⁻¹
 
 igl_density(P, R, T) = R * T / P # Ideal gas law
 
+# P rho = R T
+# 
+
+
 H = 27 # Scale height [km]
 P0 = 1e5 # Surface pressure, Pa
 T0 = 165 # Surface temperature, K
+z = 0:1:999 # Altitudes to sample
 
-z = 0:1:999
-P = P0 .* exp.(-z./H)
-T = T0 .* exp.(-z./H)
+ρ0_h2 = 0.9 .* igl_density.(P0, R_h2, T0)
+ρ0_he = 0.1 .* igl_density.(P0, R_he, T0)
 
-ρ = igl_density.(P, R_h2, T)
+ρ_h2 = ρ0_h2 .* exp.(-z./H)
+ρ_he = ρ0_he .* exp.(-z./H)
 
-ρ_h2 = 0.9ρ
-ρ_he = 0.1ρ
 
 file = open("$(@__DIR__)/atmosphere_profile.csv", write = true)
 columns = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)", "O2 (kg/m3)", "Total (kg/m3)", "Neutral Temp. (K)", "He (kg/m3)", "Ar (kg/m3)", "H (kg/m3)", "N (kg/m3)", "H2 (kg/m3)"]

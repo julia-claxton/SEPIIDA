@@ -130,6 +130,32 @@ int main(int argc,char** argv)
 
   // Set the simulation parameters
   UImanager->ApplyCommand("/control/execute EDIT_THIS_FILE.mac");
+
+
+
+
+  
+  /*
+  TODO CLI switches
+  [x] species
+  [x] number 
+  [x] energy
+  [ ] pitch angle
+  [ ] planet
+  [ ] mlat
+  [ ] inject alt
+  [ ] backscatter record alt. default = 1 km over injection
+  */
+
+
+
+
+
+
+
+
+
+
   
   // Set input particle number
   G4String nParticles = argv[1];

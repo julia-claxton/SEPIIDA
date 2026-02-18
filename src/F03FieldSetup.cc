@@ -39,7 +39,7 @@
 
 #include "G4MagneticField.hh"
 #include "G4UniformMagField.hh"
-#include "EarthDipoleField.hh"
+#include "CustomMagneticField.hh"
 #include "G4FieldManager.hh"
 #include "G4TransportationManager.hh"
 #include "G4Transportation.hh"
@@ -75,7 +75,7 @@ F03FieldSetup::F03FieldSetup()
    fStepper(0),
    fFieldMessenger(0)
 {
-  fMagneticField = new EarthDipoleField(); 
+  fMagneticField = new CustomMagneticField(); 
   fFieldMessenger = new F03FieldMessenger(this);
   fEquation = new G4Mag_UsualEqRhs(fMagneticField);
 
@@ -185,7 +185,7 @@ void F03FieldSetup::SetFieldValue(G4ThreeVector fieldVector)
 
   if(fieldVector != G4ThreeVector(0.,0.,0.))
   {
-    fMagneticField = new EarthDipoleField();
+    fMagneticField = new CustomMagneticField();
   }
   else
   {

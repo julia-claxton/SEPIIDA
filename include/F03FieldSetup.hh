@@ -36,7 +36,7 @@
 
 #include "G4MagneticField.hh"
 #include "G4UniformMagField.hh"
-#include "EarthDipoleField.hh"
+#include "CustomMagneticField.hh"
 
 class G4ProcessManager;
 class G4FieldManager;
@@ -75,7 +75,7 @@ protected:
   G4FieldManager*         fFieldManager;
   G4ChordFinder*          fChordFinder;
   G4Mag_UsualEqRhs*       fEquation;
-  EarthDipoleField*       fMagneticField;
+  CustomMagneticField*       fMagneticField;
 
   G4MagIntegratorStepper* fStepper;
   G4int                   fStepperType;

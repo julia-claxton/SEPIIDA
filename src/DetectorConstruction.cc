@@ -68,6 +68,10 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+  // Option to switch on/off checking of volumes overlaps
+  G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
+  G4double layerGap = 1.0 * um; // Gap between air layers
+
   G4GeometryManager::GetInstance()->SetWorldMaximumExtent(1000*km);
 
   // Material: Vacuum
@@ -89,9 +93,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     kStateGas, 2.73*kelvin,
     3.0E-12*pascal
   );
-
-  // Option to switch on/off checking of volumes overlaps
-  G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
 
   // World
   G4double world_sizeXY = 1000.0*km;
@@ -123,27 +124,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps     // overlaps checking
   );
 
-  /*
-  msisAtmosTable columns:
   
-  [0]  alt [km] 
-  [1]  O   * 
-  [2]  N2  *
-  [3]  O2  *
-  [4]  Total mass density [kg/m^3] 
-  [5]  Temp [K] 
-  [6]  He  *
-  [7]  Ar  *
-  [8]  H   *
-  [9]  N   *
-  [10] H2  *
-
-  all species' mass density in [kg/m^3]
-  */
-
-  fTableSize = GetMSIStableSize(fAtmosphereFilename);
-
   // Cast to const for table instantiation
+  fTableSize = GetMSIStableSize(fAtmosphereFilename);
   unsigned const int tableSize = fTableSize;
   G4double msisAtmosTable[tableSize][11];
  
@@ -162,12 +145,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double layerLocation;
   
   G4Tubs* atmosphereLayer = new G4Tubs(
-    "AtmosphereLayer",                 // its name
-    0.0,                                // inner radius
-    world_sizeXY-1.*mm,                // outer radius
-    (0.5*layerThickness) - (0.5*um),   // z half length
-		0.0,                                // starting phi
-		360.0*deg                           // segment angle
+    "AtmosphereLayer",                   // its name
+    0.0,                                 // inner radius
+    world_sizeXY-1.*mm,                  // outer radius
+    (0.5*layerThickness) - (layerGap/2), // z half length
+		0.0,                                 // starting phi
+		360.0*deg                            // segment angle
   );
 
   G4Material*      layerMaterial;
@@ -178,8 +161,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double         zeroThreshold = 1e-21; // approximate minimum number density [cm^-3] that Geant will tolerate
   G4int            nComponents;
 
-  for(int i = 0; i < fTableSize; i++)
-  {
+  for(int i = 0; i < fTableSize; i++){
     // Ideal gas law for atmospheric pressure
     // P [Pa] = R [J/kg-K air] * rho [kg/m^3] * T [K]
     pressure = R_gas_constant_air * msisAtmosTable[i][4] * msisAtmosTable[i][5];
@@ -271,11 +253,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if(msisAtmosTable[i][10] > zeroThreshold) // H2
       layerMaterial->AddMaterial(H2, msisAtmosTable[i][10]/totalLayerMassDensity);
-
-    logicLayer = new G4LogicalVolume(atmosphereLayer, layerMaterial, "AtmosphereLayer"+std::to_string(i));
-    layerLocation = (i-fTableSize/2)*layerThickness + layerThickness/2.;
     
     // Create layer
+    logicLayer = new G4LogicalVolume(atmosphereLayer, layerMaterial, "AtmosphereLayer"+std::to_string(i));
+    layerLocation = (i-fTableSize/2)*layerThickness + layerThickness/2.0;
     new G4PVPlacement(
       0,                                     // rotation
 		  G4ThreeVector(0., 0., layerLocation),  // location

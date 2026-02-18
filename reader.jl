@@ -50,7 +50,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km")[1]
+path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_500km")[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -61,6 +61,7 @@ energy   = parse_csv(lines[2])
 pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
 
+#=
 path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
@@ -90,6 +91,7 @@ for i in 1:size(counts)[3]
     )
     display(plot!())
 end
+=#
 
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
 heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
@@ -98,7 +100,7 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylabel = "Altitude, km",
     bg=:black,
     colorbar_title = "Log10 counts",
-    clims = (-2, 5),
-    ylims = (0, 500)
+    clims = (-2, 3),
+    ylims = (0, 1000)
 )
 display(plot!())

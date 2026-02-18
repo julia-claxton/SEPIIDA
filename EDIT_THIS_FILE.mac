@@ -22,9 +22,9 @@
     #/control/alias SEPIIDA_BUILD_DIR /projects/jucl6426/SEPIIDA/build
     /control/alias SEPIIDA_BUILD_DIR /Users/luna/Research/geant4/SEPIIDA/build
 
-# Starting altitude of particles in the simulation. Units: [km]
+# Starting altitude of particles in the simulation. Units: km
     /control/alias INJECTION_ALTITUDE_KM 450
     /control/alias RECORDING_ALTITUDE_KM 451
 
-# Magnetic latitude of the injection point. Units: [deg]
+# Magnetic latitude of the injection point. Units: deg
     /control/alias MLAT_DEGREES 45

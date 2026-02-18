@@ -62,7 +62,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     // Messenger methods
     void SetBeamEnergy(G4double energy){ fBeamEnergy = energy;};
-    void SetBeamPitchAngle(G4double pitchAngle){fBeamPitchAngle = pitchAngle; };
+    void SetBeamPitchAngle(G4double pitchAngle){fBeamPitchAngle_deg = pitchAngle; };
     void SetParticleInitialAlt(G4double startingAltitude){fInitialParticleAlt = startingAltitude; };
     void SetInputParticleType(G4String particle){fSourceType = particle; };
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; } // method to access particle gun
@@ -71,7 +71,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun*  fParticleGun;
     PrimaryGeneratorMessenger* fPrimaryMessenger;
     G4double fBeamEnergy;
-    G4double fBeamPitchAngle;
+    G4double fBeamPitchAngle_deg;
     G4double fInitialParticleAlt;
     G4double fPI;
     G4double fRad2Deg;

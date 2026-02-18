@@ -110,7 +110,12 @@ void RunAction::BeginOfRunAction(const G4Run*)
     std::filesystem::path buildDirectory = baseResultsPath.parent_path().parent_path();
     if(std::filesystem::is_directory(buildDirectory) == false)
     {
-      G4cerr << G4endl << "*** ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end." << G4endl << G4endl;
+      G4cout << "\n" <<
+        "\033[0;31m" <<
+        __FILE__ << ": " << __FUNCTION__ << "\n" <<
+        "ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end."
+        "\033[0m" <<
+      G4endl;
       throw;
     }
   }
@@ -256,7 +261,12 @@ void RunAction::threadWriteBackscatter(int threadID){
   int n = fBackscatteredParticleNames.size();
   if((fBackscatteredEnergieskeV.size() != n) || ((fBackscatteredTrackWeights.size() != n)) || (fBackscatterDirections.size() != n) ||(fBackscatterPositions.size() != n) || (fBackscatteredPitchAnglesDeg.size() != n))
   {
-    G4cout << "**ERROR: Incomplete backscatter data! You shouldn't see this." << G4endl;
+    G4cout << "\n" <<
+      "\033[0;31m" <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Incomplete backscatter data! You should never see this." <<
+      "\033[0m" <<
+    G4endl;
     throw;
   }
 

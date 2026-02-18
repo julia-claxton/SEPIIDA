@@ -28,29 +28,35 @@
 //
 //
 
-#ifndef EarthDipoleFieldMessenger_h
-#define EarthDipoleFieldMessenger_h 1
+#include "CustomMagneticField.hh"
+#include "CustomMagneticFieldMessenger.hh"
 
-#include "globals.hh"
-#include "G4UImessenger.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIdirectory.hh"
 
-class EarthDipoleField;
-class G4UIdirectory;
-class G4UIcmdWithADouble;
-class G4UIcmdWithAnInteger;
-class G4UIcmdWithAString;
 
-class EarthDipoleFieldMessenger: public G4UImessenger
+CustomMagneticFieldMessenger::CustomMagneticFieldMessenger(CustomMagneticField* field)
+ : G4UImessenger(),
+  fDipoleField(field)
 {
-  public:
-    EarthDipoleFieldMessenger(EarthDipoleField* );
-    virtual ~EarthDipoleFieldMessenger();
-    virtual void SetNewValue(G4UIcommand*, G4String);
- 
-  private:
-    EarthDipoleField*   fDipoleField;
-    G4UIdirectory*      fBeamDir;
-    G4UIcmdWithADouble* fMlatCmd;
-};
+  fBeamDir = new G4UIdirectory("/fieldParameters/");
 
-#endif
+  fMlatCmd = new G4UIcmdWithADouble("/fieldParameters/setMLAT",this);
+  fMlatCmd->SetParameterName("Injection magnetic latitude [deg]",true);
+  fMlatCmd->SetDefaultValue(90.0);
+  fMlatCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+}
+
+CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()
+{
+  delete fBeamDir;
+  delete fMlatCmd;
+}
+
+void CustomMagneticFieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
+{
+  if( command == fMlatCmd ){ fDipoleField->SetMLAT(std::stod(newValue)); }
+}
+

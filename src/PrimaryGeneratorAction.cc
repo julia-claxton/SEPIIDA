@@ -53,7 +53,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun(0),
   fPrimaryMessenger(0),
   fBeamEnergy(100.),
-  fBeamPitchAngle(40.),
+  fBeamPitchAngle_deg(0.0),
   fInitialParticleAlt(450.0),
   fPI(3.14159265359),
   fRad2Deg(180.0 / 3.14159265359),
@@ -81,60 +81,89 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Set particle energy
   r->energy = fBeamEnergy * keV;
- 
-  // Set starting location
-  r->xPos = 0; 
-  r->yPos = 0;
-  r->zPos = (fInitialParticleAlt - 500.0)*km; // Subtraction due to coordinate axis location in middle of world volume
 
-  /* Keeping this block because it's useful. TODO Consider adding an isotropic switch for the user.
-  // Isotropic downgoing incidence - choose point on downgoing unit hemisphere for momentum
-  std::vector<G4double> momentum = randDowngoingDirection();
-  G4double vx0 = momentum.at(0);
-  G4double vy0 = momentum.at(1);
-  G4double vz0 = momentum.at(2);
-  */
+  // Initial position vector
+  G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
 
-  G4double vx0 = 0;
-  G4double vy0 = 0;
-  G4double vz0 = -1; // Field-aligned
+  // Get initial velocity vector. We do this by getting the B field vector, finding an
+  // orthogonal vector to it, then rotating by the desired pitch angle about the orthogonal
+  // rotation vector.
+  fBeamPitchAngle_deg = 180.0;
+  G4cout << "TODO PA SWITCH" << G4endl;
 
-  // Get B vector to rotate velocity to be isotropic downgoing in pitch angle rather than in worldspace
-  G4double spacetimePoint[4] = {r->xPos, r->xPos, r->zPos, 0};
+  // Get B field vector
+  G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};
+
   G4double emComponents[6];
-
   G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
-  
-  // Get necessary tilt angle
-  G4double tilt_angle_rad = std::acos(std::abs(B[2]/normB));
 
-  // Rotate coordinates into world frame
-  r->xDir = vx0;
-  r->yDir = (std::cos(tilt_angle_rad) * vy0) - (std::sin(tilt_angle_rad) * vz0);
-  r->zDir = (std::sin(tilt_angle_rad) * vy0) + (std::cos(tilt_angle_rad) * vz0);
+  // Rotate B vector by the desired input pitch angle to get input velocity vector.
+  // We first need to find a vector that is orthogonal to B that we can rotate about.
+  // We will do this by crossing B with the X-axis.
 
+  // It sucks that we have to do this for every particle rather than pre-calculating the velocity
+  // direction, but GetFieldValue() isn't alive when this script starts, so whatever. Oh well.
 
+  // In the extremely rare case B is perfectly aligned with the x-axis, we'll throw an error. This should never happen
+  // in this simulation as it is now, so I'll deal with it in the moment if this happens. Somehow.
+  G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
+  G4ThreeVector x(1.0, 0.0, 0.0);
 
-  G4cout << "\n\nTODO: PRIMARY GENERATION ASSUMES PLANAR Y-Z B-FIELD. NOT TRUE AT JUPITER. FIXME!!!!!!\n" << G4endl;
-  // TODO uncomment the throw down below
-
-
-  G4cout << "\n\nALSO TODO: ROTATE B FIELD OUTPUTS. FIXME!!!!!!\n" << G4endl;
-
-
-
-  // Verify that pitch angle generation is correct
-  double normMomentum = std::sqrt(pow(r->xDir, 2) + pow(r->yDir, 2) + pow(r->zDir, 2));
-  double dotProd = (r->xDir * B[0]) + (r->yDir * B[1]) + (r->zDir * B[2]);
-  double generatedPitchAngle_deg = std::acos(dotProd / (normMomentum * normB)) * 180/3.14159265358979;
-
-  if( generatedPitchAngle_deg > 90){
-    G4cout << "** ERROR: Primary generated with incorrect pitch angle. You should never see this. Please email julia.claxton@colorado.edu with this error and the conditions that produced it." << G4endl;
-    //throw;
+  if(std::abs(1 - unitB.dot(x)) < 1e-10){
+    // If this error happens, switch to a different vector than x. y or z would be fine.
+    G4cout << "\n" <<
+      "\033[0;31m" <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: B is parallel to X-axis at primary generation point. Cannot generate orthogonal vector." 
+      "\033[0m" <<
+    G4endl;
   }
+
+  // Get rotation axis
+  G4ThreeVector rotationAxis = unitB.cross(x);
+  rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
+
+  // Euler's finite rotation formula
+  G4double fBeamPitchAngle_rad = fBeamPitchAngle_deg * fPI / 180.0;
+  G4ThreeVector v0 = 
+    (unitB * std::cos(fBeamPitchAngle_rad))
+    + (rotationAxis.cross(unitB) * std::sin(fBeamPitchAngle_rad))
+    + (rotationAxis * rotationAxis.dot(unitB) * (1 - std::cos(fBeamPitchAngle_rad)))
+  ;
+  v0 = v0 / v0.mag();
+
+  // Safety check: Verify that pitch angle generation is correct
+  G4double generatedPitchAngle_deg;
+  G4double for_acos = unitB.dot(v0) / (unitB.mag() * v0.mag());
+  if(std::abs(for_acos - 1.0) < 1e-10){generatedPitchAngle_deg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
+  else if(std::abs(for_acos) < 1e-10){generatedPitchAngle_deg = 90;}
+  else {generatedPitchAngle_deg = std::acos(for_acos) * 180/fPI;}
+
+  if(std::abs(generatedPitchAngle_deg - fBeamPitchAngle_deg) > 1e-5){
+    G4cout << "\n" <<
+      "\033[0;31m" <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Primary generated with incorrect pitch angle.\n" <<
+      "You should never see this. Please email julia.claxton@colorado.edu with this error and the conditions that produced it.\n" <<
+      "\tDesired pitch angle: " << fBeamPitchAngle_deg << "º\n" <<
+      "\tGenerated pitch angle: " << generatedPitchAngle_deg << "º\n" <<
+      "\tv0 = (" << v0[0] << ", " << v0[1] << ", " << v0[2] << ")\n" << 
+      "\tB = (" << unitB[0] << ", " << unitB[1] << ", " << unitB[2] << ")" << 
+      "\033[0m" <<
+    G4endl;
+    throw;
+  }
+ 
+  // Assign position & velocity
+  r->xPos = x0[0];
+  r->yPos = x0[1];
+  r->zPos = x0[2];
+  r->xDir = v0[0];
+  r->yDir = v0[1];
+  r->zDir = v0[2];
   
   // Communicate parameters to particle gun
   fParticleGun->SetParticlePosition(G4ThreeVector(r->xPos, r->yPos, r->zPos)); 
