@@ -88,8 +88,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Get initial velocity vector. We do this by getting the B field vector, finding an
   // orthogonal vector to it, then rotating by the desired pitch angle about the orthogonal
   // rotation vector.
-  fBeamPitchAngle_deg = 180.0;
-  G4cout << "TODO PA SWITCH" << G4endl;
 
   // Get B field vector
   G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};

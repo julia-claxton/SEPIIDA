@@ -53,7 +53,7 @@
     /control/shell if [ ! -d {RESULTS_DIR} ]; then mkdir {RESULTS_DIR}; fi 
         # Make results directory if it does not exist. Otherwise do nothing.
 
-    /control/alias BEAM_PARAMETERS {BEAM_PARTICLE_LONGNAME}_input_{BEAM_ENERGY_KEV}keV_{NUMBER_OF_PARTICLES}particles
+    /control/alias BEAM_PARAMETERS {BEAM_PARTICLE_LONGNAME}_input_{BEAM_ENERGY_KEV}keV_{BEAM_PITCH_ANGLE_DEG}deg_{NUMBER_OF_PARTICLES}particles
     /dataCollection/setBaseResultPath {RESULTS_DIR}/{BEAM_PARAMETERS}
 
 # Set beam parameters
@@ -61,7 +61,7 @@
     /dataCollection/setCollectionAltitude {RECORDING_ALTITUDE_KM}
     /beamParameters/setBeamParticle {BEAM_PARTICLE}
     /beamParameters/setBeamEnergy {BEAM_ENERGY_KEV}
-    #/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}
+    /beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}
     /fieldParameters/setMLAT {MLAT_DEGREES}
 
 # Execute run

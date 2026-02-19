@@ -78,9 +78,9 @@ int main(int argc,char** argv)
 {
   // We need 4 arguments provided: a number of particles, particle type, energy, and pitch angle to run.
   // Error out if we don't get those
-  if(argc != 4)
+  if(argc != 5)
   {
-    std::cout << "Incorrect number of command line arguments provided. " << argc-1 << " given, 3 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy>" << std::endl;
+    std::cout << "Incorrect number of command line arguments provided. " << argc-1 << " given, 4 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle>" << std::endl;
     throw;
   }
   
@@ -177,6 +177,10 @@ int main(int argc,char** argv)
   // Set beam energy
   G4String energy = argv[3];
   UImanager->ApplyCommand("/control/alias BEAM_ENERGY_KEV " + energy);
+
+  // Set beam pitch angle
+  G4String pitchAngle = argv[4];
+  UImanager->ApplyCommand("/control/alias BEAM_PITCH_ANGLE_DEG " + pitchAngle);
 
   // Print status block
   std::cout << "=====================================================================" << std::endl;

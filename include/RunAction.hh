@@ -99,7 +99,7 @@ class RunAction : public G4UserRunAction
     // Sample planes are also bin edges for energy deposition histogram
     static constexpr G4double fMinSampleAltitude_km = 0.0;
     static constexpr G4double fMaxSampleAltitude_km = 1000.0;
-    static constexpr G4int fNumberOfSamplePlanes = 1001; // 1 plane per km
+    static constexpr G4int fNumberOfSamplePlanes = 101; //1001; // 1 plane per km
 
     static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
     static constexpr G4double fEnergyMaxkeV = 100e6; // 100 GeV

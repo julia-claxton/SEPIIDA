@@ -50,7 +50,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_500km")[1]
+path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_450km")[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -92,7 +92,7 @@ for i in 1:size(counts)[3]
     display(plot!())
 end
 =#
-
+#=
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
 heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     title = "Omnidirectional",
@@ -104,3 +104,7 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylims = (0, 1000)
 )
 display(plot!())
+=#
+
+a = dropdims(sum(counts, dims = 1), dims = 1)
+heatmap(pa, log10.(energy), log10.(a), bg = :black)
