@@ -214,6 +214,8 @@ void SteppingAction::logEnergyDeposition(const G4Step* step, RunAction* fRunActi
 
   // Track energy deposition, dividing the energy deposition between the crossed bins
   G4double weightedEnergyDeposition_keV = (step->GetTotalEnergyDeposit() * trackWeight) / keV;
+  G4double weightedNonIonizingEnergyDeposition_keV = (step->GetNonIonizingEnergyDeposit() * trackWeight) / keV;
+  G4double weightedIonizingEnergyDeposition_keV = weightedEnergyDeposition_keV - weightedNonIonizingEnergyDeposition_keV;
 
   G4double startIdx = std::min(preStepAltitudeIndex, postStepAltitudeIndex);
   G4double stopIdx = std::max(preStepAltitudeIndex, postStepAltitudeIndex);
@@ -221,13 +223,15 @@ void SteppingAction::logEnergyDeposition(const G4Step* step, RunAction* fRunActi
 
   // Catch steps with no movement to avoid NaNs
   if(startIdx == stopIdx){
-    fRunAction->energyDeposition.at(std::floor(startIdx)) += weightedEnergyDeposition_keV;
+    fRunAction->totalEnergyDeposition.at(std::floor(startIdx)) += weightedEnergyDeposition_keV;
+    fRunAction->ionizingEnergyDeposition.at(std::floor(startIdx)) += weightedIonizingEnergyDeposition_keV;
     return;
   }
 
   for(int idx = std::floor(startIdx); idx <= std::floor(stopIdx); idx++){
     G4double fractionOfStepInThisIndex = overlap(startIdx, stopIdx, idx, idx+1) / traversedDistanceIdx;
-    fRunAction->energyDeposition.at(idx) += weightedEnergyDeposition_keV * fractionOfStepInThisIndex;
+    fRunAction->totalEnergyDeposition[idx] += weightedEnergyDeposition_keV * fractionOfStepInThisIndex;
+    fRunAction->ionizingEnergyDeposition[idx] += weightedIonizingEnergyDeposition_keV * fractionOfStepInThisIndex;
   }
 }
 

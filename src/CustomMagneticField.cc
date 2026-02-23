@@ -33,7 +33,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
 {
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   // Bfield is a pointer to a 6x1 array of E- and B-field components
-  std::string mode = "EARTH"; // TODO make user-configurable from cli or ui manager/macro
+  std::string mode = "JUPITER"; // TODO make user-configurable from cli or ui manager/macro
     // Options:
     // "EARTH" : Centered dipole at Earth
     // "JUPITER" : JRM33 model at Jupiter

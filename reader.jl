@@ -61,20 +61,39 @@ energy   = parse_csv(lines[2])
 pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
 
-#=
+
 path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
 ion = data[:,3]
 
 
-plot(log10.(ion./1e5), eachindex(ion./1e5),
+plot(log10.(ion./1e3), eachindex(ion./1e3),
 ylims = (0, 200)
 )
 
-plot(log10.(edep./1e5), eachindex(edep./1e5),
+plot(log10.(edep./1e3), eachindex(edep./1e3),
 ylims = (0, 200)
 )
+
+a = edep ./ ion
+
+
+path = glob("*backscatter*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
+data = readdlm(path, ',', skipstart = 1)
+particle_name = data[:,1]
+mask = particle_name .== "gamma"
+e = data[mask,3]
+pa = data[mask,4]
+weight = data[mask,2]
+
+
+histogram(log10.(e), yscale = :log10)
+display(plot!())
+
+histogram(pa, xlims = (0, 180), xticks = (0:30:90))
+display(plot!())
+
 
 error()
 
@@ -91,7 +110,7 @@ for i in 1:size(counts)[3]
     )
     display(plot!())
 end
-=#
+
 #=
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
 heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
@@ -105,6 +124,3 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
 )
 display(plot!())
 =#
-
-a = dropdims(sum(counts, dims = 1), dims = 1)
-heatmap(pa, log10.(energy), log10.(a), bg = :black)

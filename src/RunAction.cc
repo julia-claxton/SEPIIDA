@@ -78,7 +78,8 @@ RunAction::RunAction():
 
   // Initialize result histograms
   mainSpectrum.resize(particlesToRecord.size(), std::vector<std::vector<std::vector<G4double>>>(fNumberOfSamplePlanes, std::vector<std::vector<G4double>>(fNumberOfEnergyBins, std::vector<G4double>(fNumberOfPitchAngleBins, 0))));
-  energyDeposition.resize(fNumberOfSamplePlanes-1, 0);
+  totalEnergyDeposition.resize(fNumberOfSamplePlanes-1, 0);
+  ionizingEnergyDeposition.resize(fNumberOfSamplePlanes-1, 0);
   ionCounts.resize(fNumberOfSamplePlanes-1, 0);
 
   std::vector<std::string> fBackscatteredParticleNames;
@@ -225,7 +226,7 @@ void RunAction::threadWriteEnergyDeposition(int threadID){
 
   // Write results
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
-    dataFile << energyDeposition[altitudeIndex] << "\n";
+    dataFile << ionizingEnergyDeposition[altitudeIndex] << "\n";
   }
   dataFile.close();
 }
@@ -420,7 +421,7 @@ void RunAction::mergeEnergyDeposition(){
     eDepThreadData = read1Dcsv(threadEnergyDepFilepath, eDepThreadData);
     ionCountThreadData = read1Dcsv(threadIonCountFilepath, ionCountThreadData);
 
-    energyDeposition = add1DAltitudeVectors(energyDeposition, eDepThreadData);
+    ionizingEnergyDeposition = add1DAltitudeVectors(ionizingEnergyDeposition, eDepThreadData);
     ionCounts = add1DAltitudeVectors(ionCounts, ionCountThreadData);
 
     // Progress bar
@@ -450,7 +451,7 @@ void RunAction::mergeEnergyDeposition(){
     dataFile 
       << energyDepositionBinEdges[altitudeIndex] << "km-" 
       << energyDepositionBinEdges[altitudeIndex+1] << "km,"
-      << energyDeposition[altitudeIndex] << ","
+      << ionizingEnergyDeposition[altitudeIndex] << ","
       << ionCounts[altitudeIndex]
       << "\n"
     ;
