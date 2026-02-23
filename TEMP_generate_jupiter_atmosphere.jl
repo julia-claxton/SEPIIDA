@@ -1,6 +1,7 @@
 using Statistics, LinearAlgebra          # Core math
 using BenchmarkTools, Profile, TickTock  # Debugging
 using NPZ, DelimitedFiles                # File interactions
+using BasicInterpolators
 using Glob
 using Plots, Plots.PlotMeasures
     default(
@@ -25,17 +26,29 @@ R_he = R / molar_mass_he   # J K⁻¹ kg⁻¹
 
 igl_density(P, R, T) = R * T / P # Ideal gas law
 
-# P rho = R T
-# 
+# Get T-P profile
+data = readdlm("$(@__DIR__)/TEMP_jupiter_TP_profile_Knížek_2025.csv", ',', skipstart = 0)
+
+profile_T = data[:,1]
+profile_P = data[:,2] .* 100000 # Convert bar to Pa
+
+sortvec = sortperm(profile_P)
+profile_T = profile_T[sortvec]
+profile_P = profile_P[sortvec]
+
+temperature = LinearInterpolator(profile_P, profile_T, NoBoundaries())
 
 
+# Get pressure profile
 H = 27 # Scale height [km]
 P0 = 1e5 # Surface pressure, Pa
-T0 = 165 # Surface temperature, K
 z = 0:1:999 # Altitudes to sample
 
-ρ0_h2 = 0.9 .* igl_density.(P0, R_h2, T0)
-ρ0_he = 0.1 .* igl_density.(P0, R_he, T0)
+P = P0 .* exp.(-z./H)
+T = temperature.(P)
+
+ρ0_h2 = 0.9 .* igl_density.(P, R_h2, T)
+ρ0_he = 0.1 .* igl_density.(P, R_he, T)
 
 ρ_h2 = ρ0_h2 .* exp.(-z./H)
 ρ_he = ρ0_he .* exp.(-z./H)
