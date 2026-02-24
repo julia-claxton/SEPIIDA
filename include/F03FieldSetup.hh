@@ -75,7 +75,7 @@ protected:
   G4FieldManager*         fFieldManager;
   G4ChordFinder*          fChordFinder;
   G4Mag_UsualEqRhs*       fEquation;
-  CustomMagneticField*       fMagneticField;
+  CustomMagneticField*    fMagneticField;
 
   G4MagIntegratorStepper* fStepper;
   G4int                   fStepperType;

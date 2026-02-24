@@ -16,14 +16,15 @@
 
 CustomMagneticField::CustomMagneticField()
 : G4MagneticField(),
-  fDipoleFieldMessenger(0),
+  fMagneticFieldMessenger(0),
   fDipoleMoment(6.4e22), // Earth magnetic moment, A * m^2. Value source: https://sciencedemonstrations.fas.harvard.edu/presentations/earths-magnetic-field
-  fMLAT_degrees(65.77),  // Units: deg
+  fLAT_degrees(65.77),  // Units: deg
+  fFieldModel("none"), 
   fRe(6371e3),           // Units: m
   fu0(1.257e-6),         // Units: N * A^-2
   fpi(3.14159265358979)
 {
-  fDipoleFieldMessenger = new CustomMagneticFieldMessenger(this);
+  fMagneticFieldMessenger = new CustomMagneticFieldMessenger(this);
 }
 
 
@@ -33,22 +34,17 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
 {
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   // Bfield is a pointer to a 6x1 array of E- and B-field components
-  std::string mode = "JUPITER"; // TODO make user-configurable from cli or ui manager/macro
-    // Options:
-    // "EARTH" : Centered dipole at Earth
-    // "JUPITER" : JRM33 model at Jupiter
-
-  if(mode == "EARTH"){
+  if(fFieldModel == "earth_tilted_dipole"){
     earthFieldDipole(Point, Bfield); // For centered dipole at Earth
   }
-  else if(mode == "JUPITER"){
-    getJupiterField(Point, Bfield);
+  else if(fFieldModel == "jrm33"){
+    getJrm33Field(Point, Bfield);
   }
   else {
     G4cout << "\n" <<
       "\033[0;31m" <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
-      "ERROR: Magnetic field mode \"" << mode << "\" not recognized" <<
+      "ERROR: Magnetic field mode \"" << fFieldModel << "\" not recognized" <<
       "\033[0m" <<
     G4endl;
     throw;
@@ -57,8 +53,8 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
 
 void CustomMagneticField::earthFieldDipole(const G4double Point[4], G4double *Bfield) const {
   // Calculate field components using centered dipole model
-  G4double MLAT_radians = fMLAT_degrees * fpi / 180.0;
-  G4double magMoment[3] = {0, -1 * fDipoleMoment * std::cos(MLAT_radians), -1 * fDipoleMoment * std::sin(MLAT_radians)}; // Magnetic moment of Earth in world coordinates
+  G4double LAT_radians = fLAT_degrees * fpi / 180.0;
+  G4double magMoment[3] = {0, -1 * fDipoleMoment * std::cos(LAT_radians), -1 * fDipoleMoment * std::sin(LAT_radians)}; // Magnetic moment of Earth in world coordinates
   G4double r_earthCenter_to_origin[3] = {0, 0, fRe + 500e3}; // Units: m. Add 500 due to origin of simulation being 500 km above sea level.
   G4double r_origin_to_particle[3] = {Point[0]/m, Point[1]/m, Point[2]/m}; // Position vector between world origin and particle in world coordinates. Units: m
   G4double r[3] = {
@@ -94,9 +90,9 @@ void CustomMagneticField::earthFieldDipole(const G4double Point[4], G4double *Bf
   Bfield[5] = 0; // Ez
 }
 
-void CustomMagneticField::getJupiterField(const G4double Point[4],G4double *Bfield) const {
+void CustomMagneticField::getJrm33Field(const G4double Point[4],G4double *Bfield) const {
   G4double Rj = 71492000.0;	// Jupiter equatorial radius. Units: m
-  G4double MLAT_radians = fMLAT_degrees * fpi / 180.0;
+  G4double LAT_radians = fLAT_degrees * fpi / 180.0;
 
   // Wilson (2022), Space Sci. Rev. "The coordinate system in use is the right handed System III (1965), which deﬁned Jupiter’s rotation rate as 870.536º per day"
   // https://lasp.colorado.edu/mop/files/2015/02/CoOrd_systems12.pdf
@@ -106,9 +102,9 @@ void CustomMagneticField::getJupiterField(const G4double Point[4],G4double *Bfie
   // Units: m
   // Frame: SIII
   G4double r_planetCenter_to_origin[3] = {
-    (Rj + 500.0) * std::cos(MLAT_radians),
+    (Rj + 500.0) * std::cos(LAT_radians),
     0,
-    (Rj + 500.0) * std::sin(MLAT_radians),
+    (Rj + 500.0) * std::sin(LAT_radians),
   }; 
 
   // Position vector between world origin and particle in world coordinates.
@@ -158,11 +154,11 @@ void CustomMagneticField::getJupiterField(const G4double Point[4],G4double *Bfie
 
 std::vector<G4double> CustomMagneticField::SIII_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const {
   // We arbitrarily define the world origin as being in the X-Z plane of SIII for ease of calculation.
-  // So at 0º MLAT, Z of the G4 world is parallel to X of SIII, and X of G4 world is anti-parallel to Z of SIII.
-  // And at 90º MLAT, the coordinate systems are aligned on all three axes.
-  // So to rotate between SIII to G4 world, we need a positive rotation (defined right-handedly) of SIII about its Y-axis by 90º - MLAT.
-  // And rotating the frame by θ means rotating vectors by -θ, so we rotate the B-field output by -(90º - MLAT) about the Y-axis
-  G4double rotation_angle_deg = -(90 - fMLAT_degrees); // Units: deg
+  // So at 0º LAT, Z of the G4 world is parallel to X of SIII, and X of G4 world is anti-parallel to Z of SIII.
+  // And at 90º LAT, the coordinate systems are aligned on all three axes.
+  // So to rotate between SIII to G4 world, we need a positive rotation (defined right-handedly) of SIII about its Y-axis by 90º - LAT.
+  // And rotating the frame by θ means rotating vectors by -θ, so we rotate the B-field output by -(90º - LAT) about the Y-axis
+  G4double rotation_angle_deg = -(90 - fLAT_degrees); // Units: deg
   G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
 
   G4double x_g4world = (x_siii * std::cos(rotation_angle_rad)) + (z_siii * std::sin(rotation_angle_rad));
@@ -175,7 +171,7 @@ std::vector<G4double> CustomMagneticField::SIII_to_G4world(G4double x_siii, G4do
 std::vector<G4double> CustomMagneticField::G4world_to_SIII(G4double x_g4world, G4double y_g4world, G4double z_g4world) const {
   // This is the reverse process of SIII -> G4world, so we simply need to rotate vectors by the same amount defined there,
   // just in the opposite direction.
-  G4double rotation_angle_deg = 90 - fMLAT_degrees; // Units: deg
+  G4double rotation_angle_deg = 90 - fLAT_degrees; // Units: deg
   G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
 
   G4double x_siii = (x_g4world * std::cos(rotation_angle_rad)) + (z_g4world * std::sin(rotation_angle_rad));

@@ -48,9 +48,10 @@ class CustomMagneticFieldMessenger: public G4UImessenger
     virtual void SetNewValue(G4UIcommand*, G4String);
  
   private:
-    CustomMagneticField*   fDipoleField;
-    G4UIdirectory*      fBeamDir;
-    G4UIcmdWithADouble* fMlatCmd;
+    CustomMagneticField* fMagneticField;
+    G4UIdirectory*       fFieldDir;
+    G4UIcmdWithADouble*  fLatCmd;
+    G4UIcmdWithAString*  fModelCmd;
 };
 
 #endif

@@ -102,29 +102,29 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-  // If we are the main thread
   int threadID = G4Threading::G4GetThreadId();
-  if(threadID == -1)
-  {
-    // First, make sure that the build directory set by the user is correct
-    std::filesystem::path baseResultsPath = fBaseResultPath.c_str();
-    std::filesystem::path buildDirectory = baseResultsPath.parent_path().parent_path();
-    if(std::filesystem::is_directory(buildDirectory) == false)
-    {
-      G4cout << "\n" <<
-        "\033[0;31m" <<
-        __FILE__ << ": " << __FUNCTION__ << "\n" <<
-        "ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end."
-        "\033[0m" <<
-      G4endl;
-      throw;
-    }
-  }
-  // Otherwise, print startup message
-  else
-  {
+
+  // If we are a worker thread (not the main thread)
+  if(threadID != -1){
     printTimestamp();
     G4cout <<"STARTING: Thread " << threadID << G4endl;
+    ChangeLooperParameters( G4Electron::Definition() );
+    return;
+  }
+
+  // If we are here, then we are the main thread
+  // First, make sure that the build directory set by the user is correct
+  std::filesystem::path baseResultsPath = fBaseResultPath.c_str();
+  std::filesystem::path buildDirectory = baseResultsPath.parent_path().parent_path();
+  if(std::filesystem::is_directory(buildDirectory) == false)
+  {
+    G4cout << "\n" <<
+      "\033[0;31m" <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end."
+      "\033[0m" <<
+    G4endl;
+    throw;
   }
 
   // Change parameters for looping particles
@@ -226,7 +226,7 @@ void RunAction::threadWriteEnergyDeposition(int threadID){
 
   // Write results
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
-    dataFile << ionizingEnergyDeposition[altitudeIndex] << "\n";
+    dataFile << totalEnergyDeposition[altitudeIndex] << "\n";
   }
   dataFile.close();
 }
@@ -373,7 +373,7 @@ void RunAction::mergeEnergySpectra(){
 void RunAction::writeAxisLabelHeader(std::ofstream& file){
   file << "Recording Altitudes (km):" << "\n";
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes; altitudeIndex++){
-    file << sampleAltitudes_km[altitudeIndex] << ";";
+    file << sampleAltitudes_km[altitudeIndex] + fAltitudeOffset << ";";
   }
   file << "\n";
 
@@ -421,7 +421,7 @@ void RunAction::mergeEnergyDeposition(){
     eDepThreadData = read1Dcsv(threadEnergyDepFilepath, eDepThreadData);
     ionCountThreadData = read1Dcsv(threadIonCountFilepath, ionCountThreadData);
 
-    ionizingEnergyDeposition = add1DAltitudeVectors(ionizingEnergyDeposition, eDepThreadData);
+    totalEnergyDeposition = add1DAltitudeVectors(totalEnergyDeposition, eDepThreadData);
     ionCounts = add1DAltitudeVectors(ionCounts, ionCountThreadData);
 
     // Progress bar
@@ -449,9 +449,9 @@ void RunAction::mergeEnergyDeposition(){
   // Write rows
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
     dataFile 
-      << energyDepositionBinEdges[altitudeIndex] << "km-" 
-      << energyDepositionBinEdges[altitudeIndex+1] << "km,"
-      << ionizingEnergyDeposition[altitudeIndex] << ","
+      << energyDepositionBinEdges[altitudeIndex] + fAltitudeOffset << "km-" 
+      << energyDepositionBinEdges[altitudeIndex+1] + fAltitudeOffset << "km,"
+      << totalEnergyDeposition[altitudeIndex] << ","
       << ionCounts[altitudeIndex]
       << "\n"
     ;
@@ -538,7 +538,7 @@ void RunAction::mergeBackscatter(){
 void RunAction::writeRunMetadata(G4String filepath)
 {
   // run date
-  // mlat /& dip angle?
+  // lat /& dip angle?
   // injection altitude
   // msis run info
   // bs only, collection altitude

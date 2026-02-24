@@ -39,24 +39,29 @@
 
 CustomMagneticFieldMessenger::CustomMagneticFieldMessenger(CustomMagneticField* field)
  : G4UImessenger(),
-  fDipoleField(field)
+  fMagneticField(field)
 {
-  fBeamDir = new G4UIdirectory("/fieldParameters/");
+  fFieldDir = new G4UIdirectory("/fieldParameters/");
 
-  fMlatCmd = new G4UIcmdWithADouble("/fieldParameters/setMLAT",this);
-  fMlatCmd->SetParameterName("Injection magnetic latitude [deg]",true);
-  fMlatCmd->SetDefaultValue(90.0);
-  fMlatCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fLatCmd = new G4UIcmdWithADouble("/fieldParameters/setLAT", this);
+  fLatCmd->SetParameterName("Injection latitude [deg]",true);
+  fLatCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+  fModelCmd = new G4UIcmdWithAString("/fieldParameters/setFieldModel", this);
+  fModelCmd->SetParameterName("Magnetic field model",true);
+  fModelCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()
 {
-  delete fBeamDir;
-  delete fMlatCmd;
+  delete fFieldDir;
+  delete fLatCmd;
+  delete fModelCmd;
 }
 
 void CustomMagneticFieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 {
-  if( command == fMlatCmd ){ fDipoleField->SetMLAT(std::stod(newValue)); }
+  if( command == fLatCmd ){ fMagneticField->SetLAT(std::stod(newValue)); }
+  if( command == fModelCmd ){ fMagneticField->SetFieldModel(newValue); }
 }
 

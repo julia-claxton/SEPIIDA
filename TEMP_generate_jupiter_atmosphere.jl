@@ -50,7 +50,7 @@ T = temperature.(P)
 ρ_h2 = 0.9 .* igl_density.(P, R_h2, T)
 ρ_he = 0.1 .* igl_density.(P, R_he, T)
 
-file = open("$(@__DIR__)/atmosphere_profile.csv", write = true)
+file = open("$(@__DIR__)/crude_jupiter_atmosphere_profile.csv", write = true)
 columns = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)", "O2 (kg/m3)", "Total (kg/m3)", "Neutral Temp. (K)", "He (kg/m3)", "Ar (kg/m3)", "H (kg/m3)", "N (kg/m3)", "H2 (kg/m3)"]
 
 # Write header

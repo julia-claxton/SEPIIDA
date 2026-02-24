@@ -43,12 +43,14 @@ target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.dylib)
 # build the executable. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
+file(GLOB_RECURSE atmosphereProfiles RELATIVE "${PROJECT_SOURCE_DIR}/" "*_profile.csv")
 set(SEPIIDA_FILES
   run_beam.mac
   EDIT_THIS_FILE.mac
-  atmosphere_profile.csv
+  ${atmosphereProfiles}
   libjupitermag.dylib
 )
+
 
 foreach(_script ${SEPIIDA_FILES})
   configure_file(

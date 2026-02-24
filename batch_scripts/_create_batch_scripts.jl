@@ -51,7 +51,7 @@ function main()
     ./SEPIIDA $(number_of_particles) $(particle) $(energy_string)
 
     # Copy results to safe folder
-    cp /projects/jucl6426/SEPIIDA/build/results/mlat_45deg_input_450km/$(input_particle_longname)_input_$(energy_string)keV_$(number_of_particles)particles_* /projects/jucl6426/SEPIIDA/results
+    cp /projects/jucl6426/SEPIIDA/build/results/lat_45deg_input_450km/$(input_particle_longname)_input_$(energy_string)keV_$(number_of_particles)particles_* /projects/jucl6426/SEPIIDA/results
     """
     )
     close(file)

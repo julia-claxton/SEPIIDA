@@ -20,6 +20,7 @@ private:
   G4UIdirectory*             fPrimDir;
   G4UIcmdWithAString*        fcmd1;
   G4UIcmdWithAString*        fcmd2;
+  G4UIcmdWithAString*        fcmd3;
 };
 
 #endif

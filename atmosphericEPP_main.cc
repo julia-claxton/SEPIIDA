@@ -67,20 +67,25 @@ chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 
 #include <chrono>
 #include <filesystem>
+#include <map>
 
-// For Printing statistic from Transporation process(es)
 #include "G4Electron.hh"
 #include "G4Transportation.hh"
 #include "G4CoupledTransportation.hh"
 
+// These function declarations feel like bad practice... Oh well.
+extern void printHelpScreen();
+extern void println(G4String line);
 
 int main(int argc,char** argv)
 {
-  // We need 4 arguments provided: a number of particles, particle type, energy, and pitch angle to run.
-  // Error out if we don't get those
-  if(argc != 5)
-  {
-    std::cout << "Incorrect number of command line arguments provided. " << argc-1 << " given, 4 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle>" << std::endl;
+  // We need at least 4 arguments provided: a number of particles, particle type, energy, and pitch angle to run.
+  // Error out if we don't get those.
+  if(argc < 5){
+    G4cout << 
+      "Incorrect number of command line arguments provided. " << argc-1 << " given, at least 4 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle> <optional arguments>\n" << 
+      "Call with -help 1 for help." <<
+    G4endl;
     throw;
   }
   
@@ -109,8 +114,6 @@ int main(int argc,char** argv)
   // Physics list
   G4PhysListFactory factory;
   G4VModularPhysicsList* physicsList = factory.GetReferencePhysList("QBBC"); // QBBC uses EM v1. Do we need more updated EM model? TODO
-  
-  //G4VModularPhysicsList* physicsList = new FTFP_BERT;
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   physicsList->SetVerboseLevel(0);
   runManager->SetUserInitialization(new DetectorConstruction());
@@ -127,36 +130,25 @@ int main(int argc,char** argv)
 
   // Get the pointer to the user interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-
-  // Set the simulation parameters
   UImanager->ApplyCommand("/control/execute EDIT_THIS_FILE.mac");
 
+  // Verbosity off
+  UImanager->ApplyCommand("/control/verbose 0");
+  UImanager->ApplyCommand("/run/verbose 0");
+  UImanager->ApplyCommand("/event/verbose 0");
+  UImanager->ApplyCommand("/tracking/verbose 0");
+  UImanager->ApplyCommand("/run/particle/verbose 0");
+  UImanager->ApplyCommand("/geometry/navigator/verbose 0");
+  UImanager->ApplyCommand("/process/had/verbose 0");
 
+  // Let's go, lesbians!
+  UImanager->ApplyCommand("/run/initialize");
 
-
+  // ==========================================
+  // Parse command line arguments
+  // ==========================================
   
-  /*
-  TODO CLI switches
-  [x] species
-  [x] number 
-  [x] energy
-  [ ] pitch angle
-  [ ] planet
-  [ ] mlat
-  [ ] inject alt
-  [ ] backscatter record alt. default = 1 km over injection
-  */
-
-
-
-
-
-
-
-
-
-
-  
+  // Required args:
   // Set input particle number
   G4String nParticles = argv[1];
   UImanager->ApplyCommand("/control/alias NUMBER_OF_PARTICLES " + nParticles);
@@ -164,6 +156,7 @@ int main(int argc,char** argv)
   // Set particle definition variable, uses Geant4's particle names: https://fismed.ciemat.es/GAMOS/GAMOS_doc/GAMOS.5.1.0/x11519.html
   G4String particle = argv[2];
   UImanager->ApplyCommand("/control/alias BEAM_PARTICLE " + particle); 
+  UImanager->ApplyCommand("/beamParameters/setBeamParticle {BEAM_PARTICLE}");
   
   // Set particle longname - what the result file will call the input particle. This is just for clarity to 
   // the end user on what each result file represents, as I think "photon" and "electron" are clearer than
@@ -177,30 +170,117 @@ int main(int argc,char** argv)
   // Set beam energy
   G4String energy = argv[3];
   UImanager->ApplyCommand("/control/alias BEAM_ENERGY_KEV " + energy);
-
+  UImanager->ApplyCommand("/beamParameters/setBeamEnergy {BEAM_ENERGY_KEV}");
+  
   // Set beam pitch angle
   G4String pitchAngle = argv[4];
   UImanager->ApplyCommand("/control/alias BEAM_PITCH_ANGLE_DEG " + pitchAngle);
+  UImanager->ApplyCommand("/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}");
+
+  // Set default values for optional arguments
+  std::map<G4String, G4String> optionalFlags = {
+    {"-magnetic_model",  "earth_tilted_dipole"},   // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
+    {"-lat",                  "67.0"},                  // Magnetic latitude [deg]
+    {"-atmosphere_filename", "atmosphere_profile.csv"}, // Filename for atmospheric profile
+    {"-brem_splitting",      "100"},                    // Number of times to split bremsstrahlung photons
+    {"-altitude_offset",     "0.0"},                    // Amount by which to offset altitude axis labels [km] TODO not implemented
+    {"-injection_altitude",  "450.0"},                  // Altitude to inject particles at [km]
+    {"-help", "0"}
+  };
+  // Add backscatter argument after map is made so we can reference the injection altitude for its default value
+  optionalFlags.insert(
+    {"-backscatter_altitude", std::to_string(std::stod(optionalFlags["-injection_altitude"]) + 1.0)} // Altitude to track backscattered particles at [km]
+  );
+
+  // Get length of longest flag for printing purposes later on
+  G4int flagsMaxLength = 0;
+  for (auto const& el : optionalFlags){
+    if(el.first.length() > flagsMaxLength){flagsMaxLength = el.first.length();}
+  }
+
+  // Assign optional arguments
+  std::vector<G4String> flagsUserChanged;
+  for(int argIdx = 5; argIdx < argc; argIdx += 2){
+    G4String flagName = argv[argIdx];
+    G4String flagValue = argv[argIdx+1];
+
+    // Error for repeated flags
+    if(std::find(flagsUserChanged.begin(), flagsUserChanged.end(), flagName) != flagsUserChanged.end()){
+      G4cout <<
+        "\033[0;31m" <<
+        "ERROR: Flag \"" << flagName << "\" repeated." <<
+        "\033[0m" <<
+      G4endl;
+      throw;
+    }
+
+    // Error if an unrecognized flag is provided
+    if(optionalFlags.find(flagName) == optionalFlags.end()){
+      G4cout <<
+        "\033[0;31m" <<
+        "ERROR: Flag \"" << flagName << "\" not found. Check spelling or run with `-help 1` for a list of available flags." <<
+        "\033[0m" <<
+      G4endl;
+      throw;
+    }
+
+    // Do things
+    flagsUserChanged.push_back(flagName);
+    optionalFlags[flagName] = flagValue;
+  }
+
+  // Pass optional arguments to simulation
+  // B field mode
+  UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
+
+  // Latitude
+  UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
+  UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
+
+  // Atmosphere filename
+  UImanager->ApplyCommand("/dataCollection/setAtmosFileName " + optionalFlags["-atmosphere_filename"]);
+
+  // Brem splitting
+  UImanager->ApplyCommand("/process/em/setSecBiasing eBrem world " + optionalFlags["-brem_splitting"] + " 100 MeV"); // Syntax: /process/em/setSecBiasing processName Region factor energyUpperLimit energyUnit
+
+  // Altitude offset
+  UImanager->ApplyCommand("/dataCollection/setAltitudeOffset " + optionalFlags["-altitude_offset"]);
+
+  // Injection altitude
+  UImanager->ApplyCommand("/beamParameters/setParticleStartingAltitude " + optionalFlags["-injection_altitude"]);
+  UImanager->ApplyCommand("/control/alias INJECTION_ALTITUDE_KM " + optionalFlags["-injection_altitude"]);
+
+  // Backscatter altitude
+  UImanager->ApplyCommand("/dataCollection/setCollectionAltitude " + optionalFlags["-backscatter_altitude"]);
+  
+  // Help
+  if(optionalFlags["-help"] == "1"){printHelpScreen();}
 
   // Print status block
-  std::cout << "=====================================================================" << std::endl;
+  G4cout << "=====================================================================" << G4endl;
   std::time_t t = std::time(nullptr);
   std::tm tm = *std::localtime(&t);
-  std::cout << "Starting Simulation: " << std::put_time(&tm, "%F %T") << std::endl;
-  std::cout << std::endl;
+  G4cout << "Starting Simulation: " << std::put_time(&tm, "%F %T") << G4endl;
+  G4cout << G4endl;
 
-  std::cout << "Multithreading Active" << std::endl;
-  std::cout << "    " << G4Threading::G4GetNumberOfCores() << " cores available" << std::endl;
-  std::cout << "    " << runManager->GetNumberOfThreads() << " threads active" << std::endl;
-  std::cout << std::endl;
+  G4cout << "Multithreading Active" << G4endl;
+  G4cout << "    " << G4Threading::G4GetNumberOfCores() << " cores available" << G4endl;
+  G4cout << "    " << runManager->GetNumberOfThreads() << " threads active" << G4endl;
+  G4cout << G4endl;
 
-  std::cout << "Beam Parameters" << std::endl;
-  std::cout << 
-    "    Input:       " << nParticles  << " " << longname << "s " << std::endl <<
-    "    Energy:      " << energy      << " keV" << std::endl <<
-  std::endl;
-  std::cout << "=====================================================================" << std::endl;
-  std::cout << std::endl;
+  G4cout << "Beam Parameters" << G4endl;
+  G4cout << 
+    "    Input:       " << nParticles  << " " << longname << "s " << G4endl <<
+    "    Energy:      " << energy      << " keV" << G4endl <<
+    "    Pitch Angle: " << pitchAngle  << " deg" << G4endl <<
+  G4endl;
+
+  G4cout << "Simulation Configuration:" << G4endl;
+  for (auto const& el : optionalFlags){
+    G4cout << "    " << el.first << std::string(flagsMaxLength - el.first.length() + 1, ' ') << "| " << el.second << G4endl;
+  }
+  G4cout << "=====================================================================" << G4endl;
+  G4cout << G4endl;
 
   // Execute run
   UImanager->ApplyCommand("/control/execute run_beam.mac");
@@ -214,10 +294,64 @@ int main(int argc,char** argv)
   t = std::time(nullptr);
   tm = *std::localtime(&t);
 
-  std::cout << "=====================================================================" << std::endl;
-  std::cout << "Simulation completed in " << elapsed_time_ms/1000.0 << " seconds (" << nParticles << " " << longname << "s @ " << energy << " keV)" << std::endl;
-  std::cout << "Simulation Finish: " << std::put_time(&tm, "%F %T") << std::endl;
-  std::cout << "=====================================================================" << std::endl << std::endl;
+  G4cout << "=====================================================================" << G4endl;
+  G4cout << "Simulation completed in " << elapsed_time_ms/1000.0 << " seconds (" << nParticles << " " << longname << "s @ " << energy << " keV, " << pitchAngle << "º)" << G4endl;
+  G4cout << "Simulation Finish: " << std::put_time(&tm, "%F %T") << G4endl;
+  G4cout << "=====================================================================" << G4endl << G4endl;
 
   return 0;
+}
+
+void printHelpScreen(){
+  println("");
+  println("-----------------------------------------------------------------------------------------------------");
+  println("Help Page:");
+  println("  Simulation of Energetic Particle Incidence, Ionization, and Dynamics in an Atmosphere (SEPIIDA)");
+  println("  By Julia Claxton (she/they), based on work by Grant Berland");
+  println("  Questions: julia.claxton@colorado.edu");
+  println("");
+  println("To run executable:");
+  println("path/to/SEPIIDA <number of particles> <input particle species> <input particle energy (keV)> <input particle pitch angle (deg)>");
+  println("");
+  println("Optional flags:");
+  println("  -magnetic_model");
+  println("      Magnetic field configuration");
+  println("      Default: earth_tilted_dipole");
+  println("      Options: earth_tilted_dipole, jrm33");
+  println("");
+  println("  -lat");
+  println("      Latitude [deg]");
+  println("      Default: 67.0");
+  println("");
+  println("  -atmosphere_filename");
+  println("      Atmosphere profile filename");
+  println("      Default: atmosphere_profile.csv");
+  println("");
+  println("  -brem_splitting");
+  println("      Bremsstrahlung photon splitting");
+  println("      Default: 100");
+  println("");
+  println("  -altitude_offset");
+  println("      Amount to offset world altitude labels by [km]");
+  println("      Default: 0.0");
+  println("");
+  println("  -injection_altitude");
+  println("      Particle injection altitude [km]");
+  println("      Default: 450.0");
+  println("");
+  println("  backscatter_altitude");
+  println("      Backscatter recording altitude [km]");
+  println("      Default: injection_altitude + 1.0");
+  println("");
+  println("  -help");
+  println("      Print help screen if value is 1");
+  println("      Default: 0");
+  println("");
+  println("Press enter to continue...");
+  println("-----------------------------------------------------------------------------------------------------");
+  getchar();
+}
+
+void println(G4String line){
+  G4cout << line << G4endl;
 }

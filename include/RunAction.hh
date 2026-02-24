@@ -55,8 +55,9 @@ class RunAction : public G4UserRunAction
     std::pair<G4Transportation*, G4CoupledTransportation*> findTransportation(const G4ParticleDefinition * particleDef, bool reportError= true); // Helper method to find the Transportation process for a particle type 
     
     // Messengers
+    void SetBaseResultPath(G4String name){fBaseResultPath = name;};
     void SetCollectionAltitude(G4double collectionAltitude){fCollectionAltitude = collectionAltitude;};
-    void SetBaseResultPath(G4String name){fBaseResultPath=name;};
+    void SetAltitudeOffset(G4double altitudeOffset){fAltitudeOffset = altitudeOffset;};
 
     // Data writers
     void writeAxisLabelHeader(std::ofstream& file);
@@ -94,12 +95,13 @@ class RunAction : public G4UserRunAction
 
   public:
     G4double fCollectionAltitude;
+    G4double fAltitudeOffset;
 
     // Histogram limits
     // Sample planes are also bin edges for energy deposition histogram
     static constexpr G4double fMinSampleAltitude_km = 0.0;
     static constexpr G4double fMaxSampleAltitude_km = 1000.0;
-    static constexpr G4int fNumberOfSamplePlanes = 1001; //1001; // 1 plane per km
+    static constexpr G4int fNumberOfSamplePlanes = 1001; // 1 plane per km
 
     static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
     static constexpr G4double fEnergyMaxkeV = 100e6; // 100 GeV

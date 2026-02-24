@@ -109,7 +109,7 @@ header = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)","O2 (kg/m3)","Total (kg/m3)
 mass_mult   = [1, mOxygen, mNitrogen2, mOxygen2, 1, 1, mHelium, mArgon, mHydrogen, mNitrogen];
 
 # Write to atmosphere file
-with open('atmosphere_profile.csv', 'w') as f:
+with open('msis_earth_atmosphere_profile.csv', 'w') as f:
     for i in range(len(header)):
         f.write(header[i])
         f.write(',') if i != len(header)-1 else f.write('\n')

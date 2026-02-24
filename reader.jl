@@ -50,7 +50,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/mlat_45deg_input_450km")[1]
+path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/lat_67.0deg_input_800km")[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -61,8 +61,8 @@ energy   = parse_csv(lines[2])
 pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
 
-
-path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
+#=
+path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/lat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
 ion = data[:,3]
@@ -79,7 +79,7 @@ ylims = (0, 200)
 a = edep ./ ion
 
 
-path = glob("*backscatter*", "/Users/luna/Research/geant4/SEPIIDA/results/mlat_45deg_input_450km/")[1]
+path = glob("*backscatter*", "/Users/luna/Research/geant4/SEPIIDA/results/lat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 particle_name = data[:,1]
 mask = particle_name .== "gamma"
@@ -93,11 +93,9 @@ display(plot!())
 
 histogram(pa, xlims = (0, 180), xticks = (0:30:90))
 display(plot!())
+=#
 
-
-error()
-
-
+#=
 for i in 1:size(counts)[3]
     heatmap(log10.(energy[begin:end-1]), altitude, log10.(counts[:, :, i]),
         title = "$(pa[i])º - $(pa[i+1])º",
@@ -110,8 +108,9 @@ for i in 1:size(counts)[3]
     )
     display(plot!())
 end
+=#
 
-#=
+
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
 heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     title = "Omnidirectional",
@@ -123,4 +122,3 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylims = (0, 1000)
 )
 display(plot!())
-=#

@@ -19,5 +19,5 @@ cd /projects/jucl6426/SEPIIDA/build/
 ./SEPIIDA 100000 e- 1000.0
 
 # Copy results to safe folder
-cp /projects/jucl6426/SEPIIDA/build/results/mlat_45deg_input_450km/electron_input_1000.0keV_100000particles_*_spectra.csv /projects/jucl6426/SEPIIDA/results
+cp /projects/jucl6426/SEPIIDA/build/results/lat_45deg_input_450km/electron_input_1000.0keV_100000particles_*_spectra.csv /projects/jucl6426/SEPIIDA/results
 
