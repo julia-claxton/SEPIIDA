@@ -32,10 +32,7 @@ cmake -DCMAKE_INSTALL_PREFIX="/path/to/geant4-install" -DGeant4_DIR="/path/to/ge
 make # Build executable
 chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 
-# To run the simulation
-./SEPIIDA <PARTICLE NAME> <BEAM ENERGY IN KEV> <BEAM PITCH ANGLE IN DEG>
-# or
-./RUN_ALL.sh
+# To see syntax & flags, ./SEPIIDA -help
 */
 
 /// \file atmosphericEPP_main.cc
@@ -79,12 +76,18 @@ extern void println(G4String line);
 
 int main(int argc,char** argv)
 {
+  // Check for help flag
+  if((argc == 2) && (std::strcmp(argv[1], "-help") == 0)){
+    printHelpScreen();
+    return 0;
+  }
+  
   // We need at least 4 arguments provided: a number of particles, particle type, energy, and pitch angle to run.
   // Error out if we don't get those.
   if(argc < 5){
     G4cout << 
       "Incorrect number of command line arguments provided. " << argc-1 << " given, at least 4 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle> <optional arguments>\n" << 
-      "Call with -help 1 for help." <<
+      "Call `/path/to/SEPIIDA -help` for help." <<
     G4endl;
     throw;
   }
@@ -185,7 +188,6 @@ int main(int argc,char** argv)
     {"-brem_splitting",      "100"},                    // Number of times to split bremsstrahlung photons
     {"-altitude_offset",     "0.0"},                    // Amount by which to offset altitude axis labels [km] TODO not implemented
     {"-injection_altitude",  "450.0"},                  // Altitude to inject particles at [km]
-    {"-help", "0"}
   };
   // Add backscatter argument after map is made so we can reference the injection altitude for its default value
   optionalFlags.insert(
@@ -218,7 +220,7 @@ int main(int argc,char** argv)
     if(optionalFlags.find(flagName) == optionalFlags.end()){
       G4cout <<
         "\033[0;31m" <<
-        "ERROR: Flag \"" << flagName << "\" not found. Check spelling or run with `-help 1` for a list of available flags." <<
+        "ERROR: Flag \"" << flagName << "\" not found. Check spelling or run `path/to/SEPIIDA -help` for a list of available flags." <<
         "\033[0m" <<
       G4endl;
       throw;
@@ -252,9 +254,7 @@ int main(int argc,char** argv)
 
   // Backscatter altitude
   UImanager->ApplyCommand("/dataCollection/setCollectionAltitude " + optionalFlags["-backscatter_altitude"]);
-  
-  // Help
-  if(optionalFlags["-help"] == "1"){printHelpScreen();}
+
 
   // Print status block
   G4cout << "=====================================================================" << G4endl;
@@ -339,7 +339,7 @@ void printHelpScreen(){
   println("      Particle injection altitude [km]");
   println("      Default: 450.0");
   println("");
-  println("  backscatter_altitude");
+  println("  -backscatter_altitude");
   println("      Backscatter recording altitude [km]");
   println("      Default: injection_altitude + 1.0");
   println("");

@@ -50,7 +50,8 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-path = glob("*spectra_e-*", "/Users/luna/Research/geant4/SEPIIDA/build/results/lat_67.0deg_input_800km")[1]
+dir = glob("*", "/Users/luna/Research/geant4/SEPIIDA/build/results/")[1]
+path = glob("*spectra_e-*", dir)[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
