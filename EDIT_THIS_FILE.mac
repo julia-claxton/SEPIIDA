@@ -15,5 +15,5 @@
 # and buildfiles. Do not include a slash at the end or else it won't interpret correctly.
 # There is no platform-independent way to incorporate this into the code so we have to 
 # type it in manually.
-    /control/alias SEPIIDA_BUILD_DIR /projects/jucl6426/SEPIIDA/build
-    #/control/alias SEPIIDA_BUILD_DIR /Users/luna/Research/geant4/SEPIIDA/build
+    #/control/alias SEPIIDA_BUILD_DIR /projects/jucl6426/SEPIIDA/build
+    /control/alias SEPIIDA_BUILD_DIR /Users/luna/Research/geant4/SEPIIDA/build
