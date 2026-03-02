@@ -9,6 +9,9 @@
 /build/*
 /results
 
+# Notebook stuff
+notebook*
+
 # Raw data files
 *.cdf
 

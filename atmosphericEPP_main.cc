@@ -91,6 +91,8 @@ int main(int argc,char** argv)
     G4endl;
     throw;
   }
+
+  // TODO consider making base units eV instead of keV
   
   // Start simulation timer
   auto t_start = std::chrono::high_resolution_clock::now();

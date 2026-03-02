@@ -120,6 +120,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
   }
 
+  // TODO this ^^ is actually very easy to fix by switching to y unit vector if the condition is true
+
   // Get rotation axis
   G4ThreeVector rotationAxis = unitB.cross(x);
   rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector

@@ -226,7 +226,7 @@ void RunAction::threadWriteEnergyDeposition(int threadID){
 
   // Write results
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
-    dataFile << totalEnergyDeposition[altitudeIndex] << "\n";
+    dataFile << totalEnergyDeposition[altitudeIndex] << "," << ionizingEnergyDeposition[altitudeIndex] << "\n";
   }
   dataFile.close();
 }
@@ -421,6 +421,8 @@ void RunAction::mergeEnergyDeposition(){
     eDepThreadData = read1Dcsv(threadEnergyDepFilepath, eDepThreadData);
     ionCountThreadData = read1Dcsv(threadIonCountFilepath, ionCountThreadData);
 
+    // TODO split ionizing and total into their own 1d vectors?
+
     totalEnergyDeposition = add1DAltitudeVectors(totalEnergyDeposition, eDepThreadData);
     ionCounts = add1DAltitudeVectors(ionCounts, ionCountThreadData);
 
@@ -482,7 +484,7 @@ void RunAction::mergeBackscatter(){
     ;
 
     // Get data from this thread and append it to the result
-    result = read2DcsvBackscatter(threadFilepath, result);
+    result = read2DcsvToString(threadFilepath, result);
 
     // Progress bar
     mergedCount++;
@@ -600,7 +602,7 @@ void RunAction::addThreadSpectraToMainHistogram(std::string path, int particleIn
   }
 }
 
-std::vector<std::vector<std::string>> RunAction::read2DcsvBackscatter(std::string path, std::vector<std::vector<std::string>> result){
+std::vector<std::vector<std::string>> RunAction::read2DcsvToString(std::string path, std::vector<std::vector<std::string>> result){
   // Open file
   std::ifstream file;
   file.open(path, std::ifstream::in);

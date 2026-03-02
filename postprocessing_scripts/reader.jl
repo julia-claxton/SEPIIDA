@@ -10,6 +10,8 @@ using Plots, Plots.PlotMeasures
         label = false
     )
 
+const TOP_LEVEL = dirname(@__DIR__)
+
 function parse_csv(contents; delimiter = ";")
     # Detect number of dimensions in csv
     n_dimensions = 1
@@ -50,7 +52,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-dir = glob("*", "/Users/luna/Research/geant4/SEPIIDA/build/results/")[1]
+dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
 path = glob("*spectra_e-*", dir)[1]
 file = open(path, "r")
 contents = read(file, String)
@@ -63,7 +65,7 @@ pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
 
 #=
-path = glob("*energydeposition*", "/Users/luna/Research/geant4/SEPIIDA/results/lat_45deg_input_450km/")[1]
+path = glob("*energydeposition*", "$(dirname(TOP_LEVEL))/build/results/lat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 edep = data[:,2]
 ion = data[:,3]
@@ -80,7 +82,7 @@ ylims = (0, 200)
 a = edep ./ ion
 
 
-path = glob("*backscatter*", "/Users/luna/Research/geant4/SEPIIDA/results/lat_45deg_input_450km/")[1]
+path = glob("*backscatter*", "$(dirname(TOP_LEVEL))/build/results/lat_45deg_input_450km/")[1]
 data = readdlm(path, ',', skipstart = 1)
 particle_name = data[:,1]
 mask = particle_name .== "gamma"

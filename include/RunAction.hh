@@ -75,7 +75,7 @@ class RunAction : public G4UserRunAction
 
     // Data readers
     void addThreadSpectraToMainHistogram(std::string path, int particleIndex);
-    std::vector<std::vector<std::string>> read2DcsvBackscatter(std::string path, std::vector<std::vector<std::string>> result);
+    std::vector<std::vector<std::string>> read2DcsvToString(std::string path, std::vector<std::vector<std::string>> result);
     std::vector<G4double> read1Dcsv(std::string path, std::vector<G4double> result);
     
     // Misc
@@ -103,8 +103,8 @@ class RunAction : public G4UserRunAction
     static constexpr G4double fMaxSampleAltitude_km = 1000.0;
     static constexpr G4int fNumberOfSamplePlanes = 1001; // 1 plane per km
 
-    static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
-    static constexpr G4double fEnergyMaxkeV = 100e6; // 100 GeV
+    static constexpr G4double fEnergyMinkeV = 1e-5; //1e-3; // 1 eV
+    static constexpr G4double fEnergyMaxkeV = 1e3; //100e6; // 100 GeV
     static constexpr G4int fNumberOfEnergyBins = 180; // 20 bins per decade
 
     static constexpr G4double fPitchAngleMin = 0.0;
