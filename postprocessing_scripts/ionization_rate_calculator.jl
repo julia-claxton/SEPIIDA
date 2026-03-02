@@ -78,9 +78,12 @@ mean_altitude = (z_min .+ z_max) ./ 2
 
 ionization = (energy_deposition .* 1e3) ./ W
 
+@warn "USE NUMBER FRACTION NOT MASS"
+
+
 plot(W, mean_altitude,
     xlabel = "W (eV pair⁻¹)",
-    xlims = (37, 47),
+    xlims = (0, 37),
 
     ylabel = "Altitude (km)",
     ylims = (0, 1000)

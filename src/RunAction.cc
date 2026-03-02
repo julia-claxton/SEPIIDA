@@ -50,6 +50,7 @@
 #include <fstream>
 #include <regex>
 #include <filesystem>
+#include <any>
 
 RunAction::RunAction():
   G4UserRunAction(),
@@ -78,6 +79,7 @@ RunAction::RunAction():
 
   // Initialize result histograms
   mainSpectrum.resize(particlesToRecord.size(), std::vector<std::vector<std::vector<G4double>>>(fNumberOfSamplePlanes, std::vector<std::vector<G4double>>(fNumberOfEnergyBins, std::vector<G4double>(fNumberOfPitchAngleBins, 0))));
+  
   totalEnergyDeposition.resize(fNumberOfSamplePlanes-1, 0);
   ionizingEnergyDeposition.resize(fNumberOfSamplePlanes-1, 0);
   ionCounts.resize(fNumberOfSamplePlanes-1, 0);
@@ -171,8 +173,7 @@ void RunAction::EndOfRunAction(const G4Run*){
     printTimestamp();
     G4cout << "\033[0;36m WRITING: Thread " << threadID << "\033[0m" << G4endl;
     threadWriteSpectra(threadID);
-    threadWriteEnergyDeposition(threadID);
-    threadWriteIonProduction(threadID);
+    threadWriteEnergyDepositionAndIonCount(threadID);
     threadWriteBackscatter(threadID);
     printTimestamp();
     G4cout << "\033[0;32mFINISHED: Thread " << threadID << "\033[0m" << G4endl;
@@ -182,7 +183,7 @@ void RunAction::EndOfRunAction(const G4Run*){
   // TODO metadata headers
   G4cout << G4endl;
   mergeEnergySpectra();
-  mergeEnergyDeposition();
+  mergeEnergyDepositionAndIonCount();
   mergeBackscatter();
 }
 
@@ -215,10 +216,10 @@ void RunAction::threadWriteSpectra(int threadID){
   }
 }
 
-void RunAction::threadWriteEnergyDeposition(int threadID){
+void RunAction::threadWriteEnergyDepositionAndIonCount(int threadID){
   std::string depositionPath = 
     fBaseResultPath 
-    + "_energy_deposition_thread" + std::to_string(threadID)
+    + "_energydeposition_ioncount_thread" + std::to_string(threadID)
     + ".csv"
   ;
   std::ofstream dataFile;
@@ -226,23 +227,7 @@ void RunAction::threadWriteEnergyDeposition(int threadID){
 
   // Write results
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
-    dataFile << totalEnergyDeposition[altitudeIndex] << "," << ionizingEnergyDeposition[altitudeIndex] << "\n";
-  }
-  dataFile.close();
-}
-
-void RunAction::threadWriteIonProduction(int threadID){
-  std::string path = 
-    fBaseResultPath 
-    + "_ion_counts_thread" + std::to_string(threadID)
-    + ".csv"
-  ;
-  std::ofstream dataFile;
-  dataFile.open(path, std::ios_base::out); // Open file in write mode to overwrite any previous results
-
-  // Write results
-  for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
-    dataFile << ionCounts[altitudeIndex] << "\n";
+    dataFile << totalEnergyDeposition[altitudeIndex] << "," << ionizingEnergyDeposition[altitudeIndex] << "," << ionCounts[altitudeIndex] << "\n";
   }
   dataFile.close();
 }
@@ -390,8 +375,8 @@ void RunAction::writeAxisLabelHeader(std::ofstream& file){
   file << "\n";
 }
 
-void RunAction::mergeEnergyDeposition(){
-  G4cout << "Merging energy deposition..." << G4endl;
+void RunAction::mergeEnergyDepositionAndIonCount(){
+  G4cout << "Merging energy deposition and ion count..." << G4endl;
 
   // Progress bar variables
   int mergedCount = 0;
@@ -400,31 +385,33 @@ void RunAction::mergeEnergyDeposition(){
   // Loop over threads and add up histograms
   int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
   for(int thread = 0; thread < nThreads; thread++){
-    std::string threadEnergyDepFilepath =
+    std::string resultsFilepath =
       fBaseResultPath 
-      + "_energy_deposition_thread" + std::to_string(thread)
-      + ".csv"
-    ;
-    std::string threadIonCountFilepath =
-      fBaseResultPath 
-      + "_ion_counts_thread" + std::to_string(thread)
+      + "_energydeposition_ioncount_thread" + std::to_string(thread)
       + ".csv"
     ;
 
     // Get data from this thread and add it to the result
-    std::vector<G4double> eDepThreadData;
-    std::vector<G4double> ionCountThreadData;
+    std::vector<std::vector<G4String>> eDepThreadDataString;
 
-    eDepThreadData.resize(fNumberOfSamplePlanes-1, 0);
-    ionCountThreadData.resize(fNumberOfSamplePlanes-1, 0);
+    // Get size of energy deposition file
+    std::tuple<int, int> eDepVectorSize = get2DcsvSize(resultsFilepath);
+    int dim1Size = std::get<0>(eDepVectorSize);
+    int dim2Size = std::get<1>(eDepVectorSize);
 
-    eDepThreadData = read1Dcsv(threadEnergyDepFilepath, eDepThreadData);
-    ionCountThreadData = read1Dcsv(threadIonCountFilepath, ionCountThreadData);
+    eDepThreadDataString.resize(dim2Size, std::vector<G4String>(0, ""));
+    eDepThreadDataString = append2DcsvToString(resultsFilepath, eDepThreadDataString);
+    std::vector<std::vector<G4double>> eDepThreadData = convert2DVectorStringToDouble(eDepThreadDataString);
+    
+    // Allocate vectors for individual columns
+    std::vector<G4double> threadTotalEnergyDeposition = eDepThreadData.at(0);
+    std::vector<G4double> threadIonizingEnergyDeposition = eDepThreadData.at(1);
+    std::vector<G4double> threadIonCounts = eDepThreadData.at(2);
 
-    // TODO split ionizing and total into their own 1d vectors?
-
-    totalEnergyDeposition = add1DAltitudeVectors(totalEnergyDeposition, eDepThreadData);
-    ionCounts = add1DAltitudeVectors(ionCounts, ionCountThreadData);
+    // Add to main histograms
+    totalEnergyDeposition = add1DAltitudeVectors(totalEnergyDeposition, threadTotalEnergyDeposition);
+    ionizingEnergyDeposition = add1DAltitudeVectors(ionizingEnergyDeposition, threadIonizingEnergyDeposition);
+    ionCounts = add1DAltitudeVectors(ionCounts, threadIonCounts);
 
     // Progress bar
     mergedCount++;
@@ -432,21 +419,20 @@ void RunAction::mergeEnergyDeposition(){
     printProgressBar(fraction, barLength);
 
     // Delete this thread-specific file
-    std::remove(threadEnergyDepFilepath.c_str());
-    std::remove(threadIonCountFilepath.c_str());
+    std::remove(resultsFilepath.c_str());
   }
   G4cout << G4endl;
 
   // Write summed result to file
   std::string mainFilename =
     fBaseResultPath
-    + "_energydeposition_ionization.csv"
+    + "_energydeposition_ioncount.csv"
   ;
   std::ofstream dataFile;
   dataFile.open(mainFilename, std::ios_base::out); // Open file in write mode to overwrite any previous results
 
   // Write header
-  dataFile << "Altitude (km),Energy Deposition (keV),Electron Production (counts)" << "\n";
+  dataFile << "Altitude (km),Total Energy Deposition (keV),Ionizing Energy Deposition (keV),Electron Production (counts)" << "\n";
 
   // Write rows
   for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes-1; altitudeIndex++){
@@ -454,6 +440,7 @@ void RunAction::mergeEnergyDeposition(){
       << energyDepositionBinEdges[altitudeIndex] + fAltitudeOffset << "km-" 
       << energyDepositionBinEdges[altitudeIndex+1] + fAltitudeOffset << "km,"
       << totalEnergyDeposition[altitudeIndex] << ","
+      << ionizingEnergyDeposition[altitudeIndex] << ","
       << ionCounts[altitudeIndex]
       << "\n"
     ;
@@ -469,8 +456,8 @@ void RunAction::mergeBackscatter(){
   int barLength = 30;
 
   // Allocate result
-  std::vector<std::vector<std::string>> result;
-  result.resize(10, std::vector<std::string>(0, ""));
+  std::vector<std::vector<G4String>> result;
+  result.resize(10, std::vector<G4String>(0, ""));
 
   // Loop over threads
   int nThreads = G4Threading::GetNumberOfRunningWorkerThreads();
@@ -484,7 +471,7 @@ void RunAction::mergeBackscatter(){
     ;
 
     // Get data from this thread and append it to the result
-    result = read2DcsvToString(threadFilepath, result);
+    result = append2DcsvToString(threadFilepath, result);
 
     // Progress bar
     mergedCount++;
@@ -602,7 +589,7 @@ void RunAction::addThreadSpectraToMainHistogram(std::string path, int particleIn
   }
 }
 
-std::vector<std::vector<std::string>> RunAction::read2DcsvToString(std::string path, std::vector<std::vector<std::string>> result){
+std::vector<std::vector<G4String>> RunAction::append2DcsvToString(std::string path, std::vector<std::vector<G4String>> result){
   // Open file
   std::ifstream file;
   file.open(path, std::ifstream::in);
@@ -624,6 +611,47 @@ std::vector<std::vector<std::string>> RunAction::read2DcsvToString(std::string p
   }
   file.close();
   return result;
+}
+
+std::vector<std::vector<G4double>> RunAction::convert2DVectorStringToDouble(std::vector<std::vector<G4String>> input){
+  int dim1Size = input[0].size();
+  int dim2Size = input.size();
+
+  std::vector<std::vector<G4double>> result = std::vector<std::vector<G4double>>(dim2Size, std::vector<G4double>(dim1Size, 0));
+  for(int i = 0; i < dim1Size; i++){
+    for(int j = 0; j < dim2Size; j++){
+      result[j][i] = std::stod(input[j][i]);
+    }
+  }
+  return result;
+}
+
+std::tuple<int, int> RunAction::get2DcsvSize(std::string path){
+  // Open file
+  std::ifstream file;
+  file.open(path, std::ifstream::in);
+
+  // Parse lines
+  int dim1Index = 0;
+  int dim2Index = 0;
+
+  // Result variables
+  int dim1Size = 0;
+  int dim2Size = 0;
+
+  std::string line;
+  std::string token;
+  while( std::getline(file, line) ){
+    std::istringstream word(line);
+    while ( std::getline(word, token, ',') ){
+      dim2Index++;
+      if(dim2Index > dim2Size){dim2Size = dim2Index;}
+    }
+    dim1Index++;
+    dim1Size = dim1Index;
+    dim2Index = 0;
+  }
+  return {dim1Size, dim2Size};
 }
 
 std::vector<G4double> RunAction::read1Dcsv(std::string path, std::vector<G4double> result){

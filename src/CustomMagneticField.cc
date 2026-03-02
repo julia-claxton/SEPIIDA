@@ -49,6 +49,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
     G4endl;
     throw;
   }
+  // TODO verify B field and rotation for Jupiter
 }
 
 void CustomMagneticField::earthFieldDipole(const G4double Point[4], G4double *Bfield) const {

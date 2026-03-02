@@ -47,61 +47,11 @@ class RunActionMessenger;
 class RunAction : public G4UserRunAction
 {
   public:
-    RunAction();
-    virtual ~RunAction();
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void   EndOfRunAction(const G4Run*);
-    void ChangeLooperParameters(const G4ParticleDefinition* particleDef ); // Helper method to change the Transportation's 'looper' parameters 
-    std::pair<G4Transportation*, G4CoupledTransportation*> findTransportation(const G4ParticleDefinition * particleDef, bool reportError= true); // Helper method to find the Transportation process for a particle type 
-    
-    // Messengers
-    void SetBaseResultPath(G4String name){fBaseResultPath = name;};
-    void SetCollectionAltitude(G4double collectionAltitude){fCollectionAltitude = collectionAltitude;};
-    void SetAltitudeOffset(G4double altitudeOffset){fAltitudeOffset = altitudeOffset;};
-
-    // Data writers
-    void writeAxisLabelHeader(std::ofstream& file);
-
-    void threadWriteSpectra(int threadID);
-    void threadWriteEnergyDeposition(int threadID);
-    void threadWriteIonProduction(int threadID);
-    void threadWriteBackscatter(int threadID);
-
-    void mergeEnergySpectra();
-    void mergeEnergyDeposition();
-    void mergeBackscatter();
-
-    void writeRunMetadata(G4String filepath);
-
-    // Data readers
-    void addThreadSpectraToMainHistogram(std::string path, int particleIndex);
-    std::vector<std::vector<std::string>> read2DcsvToString(std::string path, std::vector<std::vector<std::string>> result);
-    std::vector<G4double> read1Dcsv(std::string path, std::vector<G4double> result);
-    
-    // Misc
-    std::vector<std::vector<G4double>> addEnergySpectraVectors(std::vector<std::vector<G4double>> v1, std::vector<std::vector<G4double>> v2);
-    std::vector<G4double> add1DAltitudeVectors(std::vector<G4double> v1, std::vector<G4double> v2);
-    std::vector<G4double> linspace(G4double start, G4double stop, int n);
-    void printProgressBar(double fraction, int barLength);
-    void printTimestamp();
-
-  public:
-    void     SetNumberOfTrials( G4int val ){fNumberOfTrials  = val;}
-    void     SetWarningEnergy( double val ){fWarningEnergy   = val;}
-    void     SetImportantEnergy( double val ){fImportantEnergy = val;}   
-    G4int    GetNumberOfTrials(){ return fNumberOfTrials; }
-    G4double GetWarningEnergy(){ return fWarningEnergy; }
-    G4double GetImportantEnergy(){ return fImportantEnergy; } 
-
-  public:
-    G4double fCollectionAltitude;
-    G4double fAltitudeOffset;
-
     // Histogram limits
     // Sample planes are also bin edges for energy deposition histogram
     static constexpr G4double fMinSampleAltitude_km = 0.0;
     static constexpr G4double fMaxSampleAltitude_km = 1000.0;
-    static constexpr G4int fNumberOfSamplePlanes = 1001; // 1 plane per km
+    static constexpr G4int fNumberOfSamplePlanes = 101; //1001; // 1 plane per km
 
     static constexpr G4double fEnergyMinkeV = 1e-5; //1e-3; // 1 eV
     static constexpr G4double fEnergyMaxkeV = 1e3; //100e6; // 100 GeV
@@ -120,14 +70,15 @@ class RunAction : public G4UserRunAction
     // Histograms
     std::vector<std::string> particlesToRecord = {"proton", "e-", "alpha", "gamma", "neutron"};
     std::vector<std::vector<std::vector<std::vector<G4double>>>> mainSpectrum; // Dimensions: particle species, altitude, energy, pitch angle
-    std::vector<double> totalEnergyDeposition; 
-    std::vector<double> ionizingEnergyDeposition; 
-    std::vector<double> ionCounts;
+    
+    std::vector<G4double> totalEnergyDeposition; 
+    std::vector<G4double> ionizingEnergyDeposition; 
+    std::vector<G4double> ionCounts;
 
     std::vector<std::string> fBackscatteredParticleNames;
-    std::vector<double> fBackscatteredTrackWeights;
-    std::vector<double> fBackscatteredEnergieskeV;
-    std::vector<double> fBackscatteredPitchAnglesDeg;
+    std::vector<G4double> fBackscatteredTrackWeights;
+    std::vector<G4double> fBackscatteredEnergieskeV;
+    std::vector<G4double> fBackscatteredPitchAnglesDeg;
     std::vector<std::array<double,3>> fBackscatterDirections;
     std::vector<std::array<double,3>> fBackscatterPositions;
 
@@ -135,6 +86,58 @@ class RunAction : public G4UserRunAction
     G4double energySpectrumHistogramFactor; // Factor we multiply by for each successive energy histogram edge
     G4double altitudeSpacing_km; // Space between sample altitudes in km
     G4double pitchAngleBinSize_deg; // Size of pitch angle bins
+
+    // Misc
+    G4double fCollectionAltitude;
+    G4double fAltitudeOffset;
+
+  public:
+    RunAction();
+    virtual ~RunAction();
+    virtual void BeginOfRunAction(const G4Run*);
+    virtual void   EndOfRunAction(const G4Run*);
+    void ChangeLooperParameters(const G4ParticleDefinition* particleDef ); // Helper method to change the Transportation's 'looper' parameters 
+    std::pair<G4Transportation*, G4CoupledTransportation*> findTransportation(const G4ParticleDefinition * particleDef, bool reportError= true); // Helper method to find the Transportation process for a particle type 
+    
+    // Messengers
+    void SetBaseResultPath(G4String name){fBaseResultPath = name;};
+    void SetCollectionAltitude(G4double collectionAltitude){fCollectionAltitude = collectionAltitude;};
+    void SetAltitudeOffset(G4double altitudeOffset){fAltitudeOffset = altitudeOffset;};
+
+    // Data writers
+    void writeAxisLabelHeader(std::ofstream& file);
+
+    void threadWriteSpectra(int threadID);
+    void threadWriteEnergyDepositionAndIonCount(int threadID);
+    void threadWriteBackscatter(int threadID);
+
+    void mergeEnergySpectra();
+    void mergeEnergyDepositionAndIonCount();
+    void mergeBackscatter();
+
+    void writeRunMetadata(G4String filepath);
+
+    // Data readers
+    void addThreadSpectraToMainHistogram(std::string path, int particleIndex);
+    std::vector<std::vector<G4String>> append2DcsvToString(std::string path, std::vector<std::vector<G4String>> result);
+    std::tuple<int, int> get2DcsvSize(std::string path);
+    std::vector<std::vector<G4double>> convert2DVectorStringToDouble(std::vector<std::vector<G4String>> input);
+    std::vector<G4double> read1Dcsv(std::string path, std::vector<G4double> result);
+    
+    // Misc
+    std::vector<std::vector<G4double>> addEnergySpectraVectors(std::vector<std::vector<G4double>> v1, std::vector<std::vector<G4double>> v2);
+    std::vector<G4double> add1DAltitudeVectors(std::vector<G4double> v1, std::vector<G4double> v2);
+    std::vector<G4double> linspace(G4double start, G4double stop, int n);
+    void printProgressBar(double fraction, int barLength);
+    void printTimestamp();
+
+  public:
+    void     SetNumberOfTrials( G4int val ){fNumberOfTrials  = val;}
+    void     SetWarningEnergy( double val ){fWarningEnergy   = val;}
+    void     SetImportantEnergy( double val ){fImportantEnergy = val;}   
+    G4int    GetNumberOfTrials(){ return fNumberOfTrials; }
+    G4double GetWarningEnergy(){ return fWarningEnergy; }
+    G4double GetImportantEnergy(){ return fImportantEnergy; } 
 
   private:
     RunActionMessenger* fRunActionMessenger;
