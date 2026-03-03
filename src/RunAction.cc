@@ -47,10 +47,11 @@
 
 #include "RunActionMessenger.hh"
 
+#include "ANSIColors.h"
+
 #include <fstream>
 #include <regex>
 #include <filesystem>
-#include <any>
 
 RunAction::RunAction():
   G4UserRunAction(),
@@ -121,10 +122,10 @@ void RunAction::BeginOfRunAction(const G4Run*)
   if(std::filesystem::is_directory(buildDirectory) == false)
   {
     G4cout << "\n" <<
-      "\033[0;31m" <<
+      ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end."
-      "\033[0m" <<
+      ANSI_NOCOLOR <<
     G4endl;
     throw;
   }
@@ -171,12 +172,12 @@ void RunAction::EndOfRunAction(const G4Run*){
   if(threadID != -1)
   {
     printTimestamp();
-    G4cout << "\033[0;36m WRITING: Thread " << threadID << "\033[0m" << G4endl;
+    G4cout << ANSI_CYAN << " WRITING: Thread " << threadID << ANSI_NOCOLOR << G4endl;
     threadWriteSpectra(threadID);
     threadWriteEnergyDepositionAndIonCount(threadID);
     threadWriteBackscatter(threadID);
     printTimestamp();
-    G4cout << "\033[0;32mFINISHED: Thread " << threadID << "\033[0m" << G4endl;
+    G4cout << ANSI_GREEN << "FINISHED: Thread " << threadID << ANSI_NOCOLOR << G4endl;
     return;
   }
   // If we are the main thread, merge datafiles from each thread. Main thread ends after workers are done, so this is the end of the simulation
@@ -248,10 +249,10 @@ void RunAction::threadWriteBackscatter(int threadID){
   if((fBackscatteredEnergieskeV.size() != n) || ((fBackscatteredTrackWeights.size() != n)) || (fBackscatterDirections.size() != n) ||(fBackscatterPositions.size() != n) || (fBackscatteredPitchAnglesDeg.size() != n))
   {
     G4cout << "\n" <<
-      "\033[0;31m" <<
+      ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Incomplete backscatter data! You should never see this." <<
-      "\033[0m" <<
+      ANSI_NOCOLOR <<
     G4endl;
     throw;
   }

@@ -2,6 +2,7 @@ using Statistics, LinearAlgebra          # Core math
 using BenchmarkTools, Profile, TickTock  # Debugging
 using NPZ, DelimitedFiles                # File interactions
 using Glob
+using BasicInterpolators
 using Plots, Plots.PlotMeasures
     default(
         dpi = 300,
@@ -14,7 +15,7 @@ const TOP_LEVEL = dirname(@__DIR__)
 
 
 function get_W_from_atmosphere_profile(atmosphere_path)
-    # Energy per ion pair data by species
+    # Energy per ion pair data by species. Units: eV/pair
     W = Dict{String, Float64}(
         "Ar" => 27,
         "He" => 32.5,
@@ -23,6 +24,19 @@ function get_W_from_atmosphere_profile(atmosphere_path)
         "O2" => 32.2,
         "O"  => 36 #?????? unsure on value
     )
+
+    # Atomic masses. Units: kg
+    m = Dict{String, Float64}(
+        "O"  => 2.6567e-26,
+        "N"  => 2.3259e-26,
+        "He" => 6.646477e-27,
+        "Ar" => 6.6335e-26,
+        "H"  => 1.674e-27,
+    )
+    # Diatomics
+    m["O2"] = 2 * m["O"]
+    m["N2"] = 2 * m["N"]
+    m["H2"] = 2 * m["H"]
 
     data = readdlm(atmosphere_path, ',')
     header = data[1, :]
@@ -35,7 +49,8 @@ function get_W_from_atmosphere_profile(atmosphere_path)
     )
     for species in constituents
         species_column = findfirst(header .== "$species (kg/m3)")
-        density_data[species] = Float64.(composition_data[:, species_column])
+        density_data[species] = Float64.(composition_data[:, species_column]) ./ m[species] # Divide by atomic mass to get number density
+            # Units: number m⁻³
         density_data["total"] .+= density_data[species]
     end
 
@@ -45,7 +60,7 @@ function get_W_from_atmosphere_profile(atmosphere_path)
         W_net .+= W[species] .* density_data[species] ./ density_data["total"]
     end
 
-    return W_net
+    return LinearInterpolator(altitude, W_net)
         # Units: eV pair⁻¹
 end
 
@@ -72,18 +87,15 @@ function get_energy_deposition()
 end
 
 
-W = get_W_from_atmosphere_profile("$(TOP_LEVEL)/atmosphere_profile.csv")
+W = get_W_from_atmosphere_profile("$(TOP_LEVEL)/crude_jupiter_atmosphere_profile.csv")
 z_min, z_max, energy_deposition = get_energy_deposition()
 mean_altitude = (z_min .+ z_max) ./ 2
 
-ionization = (energy_deposition .* 1e3) ./ W
+ionization = (energy_deposition .* 1e3) ./ W.(mean_altitude)
 
-@warn "USE NUMBER FRACTION NOT MASS"
-
-
-plot(W, mean_altitude,
+plot(W.(mean_altitude), mean_altitude,
     xlabel = "W (eV pair⁻¹)",
-    xlims = (0, 37),
+    xlims = (0, 37),                  
 
     ylabel = "Altitude (km)",
     ylims = (0, 1000)

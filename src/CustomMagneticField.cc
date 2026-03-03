@@ -2,6 +2,7 @@
 
 #include "CustomMagneticField.hh"
 #include "CustomMagneticFieldMessenger.hh"
+#include "ANSIColors.h"
 #include <numeric>
 #include <functional>
 #include <iostream>
@@ -42,10 +43,10 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   }
   else {
     G4cout << "\n" <<
-      "\033[0;31m" <<
+      ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Magnetic field mode \"" << fFieldModel << "\" not recognized" <<
-      "\033[0m" <<
+      ANSI_NOCOLOR <<
     G4endl;
     throw;
   }
@@ -103,9 +104,9 @@ void CustomMagneticField::getJrm33Field(const G4double Point[4],G4double *Bfield
   // Units: m
   // Frame: SIII
   G4double r_planetCenter_to_origin[3] = {
-    (Rj + 500.0) * std::cos(LAT_radians),
+    (Rj + 500e3) * std::cos(LAT_radians),
     0,
-    (Rj + 500.0) * std::sin(LAT_radians),
+    (Rj + 500e3) * std::sin(LAT_radians),
   }; 
 
   // Position vector between world origin and particle in world coordinates.

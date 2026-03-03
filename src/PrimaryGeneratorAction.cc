@@ -45,6 +45,7 @@
 #include "G4TransportationManager.hh"
 #include "G4FieldManager.hh"
 #include "G4MagneticField.hh"
+#include "ANSIColors.h"
 #include <math.h>
 
 
@@ -113,10 +114,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   if(std::abs(1 - unitB.dot(x)) < 1e-10){
     // If this error happens, switch to a different vector than x. y or z would be fine.
     G4cout << "\n" <<
-      "\033[0;31m" <<
+      ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: B is parallel to X-axis at primary generation point. Cannot generate orthogonal vector." 
-      "\033[0m" <<
+      ANSI_NOCOLOR <<
     G4endl;
   }
 
@@ -144,7 +145,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   if(std::abs(generatedPitchAngle_deg - fBeamPitchAngle_deg) > 1e-5){
     G4cout << "\n" <<
-      "\033[0;31m" <<
+      ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Primary generated with incorrect pitch angle.\n" <<
       "You should never see this. Please email julia.claxton@colorado.edu with this error and the conditions that produced it.\n" <<
@@ -152,7 +153,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       "\tGenerated pitch angle: " << generatedPitchAngle_deg << "º\n" <<
       "\tv0 = (" << v0[0] << ", " << v0[1] << ", " << v0[2] << ")\n" << 
       "\tB = (" << unitB[0] << ", " << unitB[1] << ", " << unitB[2] << ")" << 
-      "\033[0m" <<
+      ANSI_NOCOLOR <<
     G4endl;
     throw;
   }

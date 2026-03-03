@@ -18,6 +18,8 @@ purposes until we can get access to a more detailed model. This just uses an exp
 pressure profile, isothermal assumption, ideal gas law, and a constant mixing ratio of 90/10 H2/He.
 """
 
+layer_thickness = 1 # km
+
 molar_mass_h2 = 2.016e-3   # kg mol⁻¹
 molar_mass_he = 4.00260e-3 # kg mol⁻¹
 R = 8.31446261815324       # J K⁻¹ mol⁻¹
@@ -42,7 +44,7 @@ temperature = LinearInterpolator(profile_P, profile_T, NoBoundaries())
 # Get pressure profile
 H = 27 # Scale height [km]
 P0 = 1e5 # Surface pressure, Pa
-z = 0:1:999 # Altitudes to sample [km]
+z = 0:layer_thickness:999 # Altitudes to sample [km]
 
 P = P0 .* exp.(-z./H)
 T = temperature.(P)

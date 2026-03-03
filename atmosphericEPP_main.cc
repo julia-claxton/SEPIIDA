@@ -70,6 +70,8 @@ chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 #include "G4Transportation.hh"
 #include "G4CoupledTransportation.hh"
 
+#include "ANSIColors.h"
+
 // These function declarations feel like bad practice... Oh well.
 extern void printHelpScreen();
 extern void println(G4String line);
@@ -211,9 +213,9 @@ int main(int argc,char** argv)
     // Error for repeated flags
     if(std::find(flagsUserChanged.begin(), flagsUserChanged.end(), flagName) != flagsUserChanged.end()){
       G4cout <<
-        "\033[0;31m" <<
+        ANSI_RED <<
         "ERROR: Flag \"" << flagName << "\" repeated." <<
-        "\033[0m" <<
+        ANSI_NOCOLOR <<
       G4endl;
       throw;
     }
@@ -221,9 +223,9 @@ int main(int argc,char** argv)
     // Error if an unrecognized flag is provided
     if(optionalFlags.find(flagName) == optionalFlags.end()){
       G4cout <<
-        "\033[0;31m" <<
+        ANSI_RED <<
         "ERROR: Flag \"" << flagName << "\" not found. Check spelling or run `path/to/SEPIIDA -help` for a list of available flags." <<
-        "\033[0m" <<
+        ANSI_NOCOLOR <<
       G4endl;
       throw;
     }
@@ -245,6 +247,10 @@ int main(int argc,char** argv)
   UImanager->ApplyCommand("/dataCollection/setAtmosFileName " + optionalFlags["-atmosphere_filename"]);
 
   // Brem splitting
+  if(std::stod(optionalFlags["-brem_splitting"]) < 1.0){
+    optionalFlags["-brem_splitting"] = "1";
+    G4cout << ANSI_YELLOW << "\n-brem_splitting set to value below 1, defaulting to 1 (no splitting)...\n" << ANSI_NOCOLOR << G4endl;
+  }
   UImanager->ApplyCommand("/process/em/setSecBiasing eBrem world " + optionalFlags["-brem_splitting"] + " 100 MeV"); // Syntax: /process/em/setSecBiasing processName Region factor energyUpperLimit energyUnit
 
   // Altitude offset

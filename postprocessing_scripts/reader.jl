@@ -11,6 +11,7 @@ using Plots, Plots.PlotMeasures
     )
 
 const TOP_LEVEL = dirname(@__DIR__)
+include("$(@__DIR__)/General_Functions.jl")
 
 function parse_csv(contents; delimiter = ";")
     # Detect number of dimensions in csv
@@ -51,7 +52,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
     end
 end
 
-
+#=
 dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
 path = glob("*spectra_e-*", dir)[1]
 file = open(path, "r")
@@ -64,56 +65,6 @@ energy   = parse_csv(lines[2])
 pa       = parse_csv(lines[3])
 counts   = parse_csv(lines[4])
 
-#=
-path = glob("*energydeposition*", "$(dirname(TOP_LEVEL))/build/results/lat_45deg_input_450km/")[1]
-data = readdlm(path, ',', skipstart = 1)
-edep = data[:,2]
-ion = data[:,3]
-
-
-plot(log10.(ion./1e3), eachindex(ion./1e3),
-ylims = (0, 200)
-)
-
-plot(log10.(edep./1e3), eachindex(edep./1e3),
-ylims = (0, 200)
-)
-
-a = edep ./ ion
-
-
-path = glob("*backscatter*", "$(dirname(TOP_LEVEL))/build/results/lat_45deg_input_450km/")[1]
-data = readdlm(path, ',', skipstart = 1)
-particle_name = data[:,1]
-mask = particle_name .== "gamma"
-e = data[mask,3]
-pa = data[mask,4]
-weight = data[mask,2]
-
-
-histogram(log10.(e), yscale = :log10)
-display(plot!())
-
-histogram(pa, xlims = (0, 180), xticks = (0:30:90))
-display(plot!())
-=#
-
-#=
-for i in 1:size(counts)[3]
-    heatmap(log10.(energy[begin:end-1]), altitude, log10.(counts[:, :, i]),
-        title = "$(pa[i])º - $(pa[i+1])º",
-        xlabel = "Log10 Energy, keV",
-        ylabel = "Altitude, km",
-        bg=:black,
-        colorbar_title = "Log10 counts",
-        clims = (-2, 3),
-        ylims = (0, 500)
-    )
-    display(plot!())
-end
-=#
-
-
 omnidirectional = dropdims(sum(counts, dims = 3), dims = 3)
 heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     title = "Omnidirectional",
@@ -125,3 +76,51 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylims = (0, 1000)
 )
 display(plot!())
+=#
+
+function my_histogram(data, edges)
+    weights = exact_1d_histogram(data, edges)
+    plot(edges, [weights..., weights[end]],
+        linetype = :steppost
+    )
+    return plot!()
+end
+
+
+dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
+path = glob("*backscatter*", dir)[1]
+data = readdlm(path, ',', skipstart = 1)
+
+particle_name = data[:,1]
+mask = particle_name .== "gamma"
+e = data[mask,3]
+pa = data[mask,4]
+weight = data[mask,2]
+
+e_bin_edges = 10.0 .^ (1:.1:3)
+my_histogram(e, e_bin_edges)
+display(plot!(
+    xscale = :log10,
+    xlabel = "Energy (keV)",
+    ylabel = "Gamma counts"
+))
+
+
+pa_bin_edges = 0:5:180
+Ω = 2π .* [cosd(pa_bin_edges[i]) - cosd(pa_bin_edges[i+1]) for i in 1:length(pa_bin_edges)-1]
+pa_weights = exact_1d_histogram(pa, pa_bin_edges) ./ Ω
+plot(pa_bin_edges, [pa_weights..., pa_weights[end]],
+    xlabel = "Pitch Angle (deg)",
+    ylabel = "Gamma couns (#/str)",
+    xticks = 0:30:180,
+    linetype = :steppost
+)
+display(plot!())
+
+
+pa_bin_edges_rad = pa_bin_edges .* (π/180)
+
+plot(pa_bin_edges_rad, [pa_weights..., pa_weights[end]],
+    linetype = :steppost,
+    projection = :polar
+)
