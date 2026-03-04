@@ -227,7 +227,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
       msisAtmosTable[i][4]*kelvin,  // temperature
       pressure*pascal   	          // pressure
     );
-        
+
     // I'd love to replace this with a for loop but it doesn't seem worth trying to figure out how
     // to put both G4Element and G4Material in the same vector. Too bad!
     if(msisAtmosTable[i][1] > zeroThreshold)  // O

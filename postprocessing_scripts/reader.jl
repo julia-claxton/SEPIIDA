@@ -52,7 +52,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
     end
 end
 
-#=
+
 dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
 path = glob("*spectra_e-*", dir)[1]
 file = open(path, "r")
@@ -76,7 +76,8 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylims = (0, 1000)
 )
 display(plot!())
-=#
+
+error()
 
 function my_histogram(data, edges)
     weights = exact_1d_histogram(data, edges)
