@@ -48,8 +48,8 @@ set(SEPIIDA_FILES
   run_beam.mac
   EDIT_THIS_FILE.mac
   ${atmosphereProfiles}
-  libjupitermag.dylib
-  libjupitermag.so
+  #libjupitermag.dylib
+  libjupitermag.so  
 )
 
 
