@@ -49,6 +49,7 @@ set(SEPIIDA_FILES
   EDIT_THIS_FILE.mac
   ${atmosphereProfiles}
   libjupitermag.dylib
+  libjupitermag.so
 )
 
 
