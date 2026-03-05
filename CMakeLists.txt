@@ -36,7 +36,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(SEPIIDA atmosphericEPP_main.cc ${sources} ${headers})
 target_link_libraries(SEPIIDA ${Geant4_LIBRARIES})
-target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.dylib)
+#target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.dylib)
+target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.so)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -48,7 +49,7 @@ set(SEPIIDA_FILES
   run_beam.mac
   EDIT_THIS_FILE.mac
   ${atmosphereProfiles}
-  #libjupitermag.dylib
+  libjupitermag.dylib
   libjupitermag.so  
 )
 
