@@ -192,6 +192,7 @@ int main(int argc,char** argv)
     {"-brem_splitting",      "100"},                    // Number of times to split bremsstrahlung photons
     {"-altitude_offset",     "0.0"},                    // Amount by which to offset altitude axis labels [km] TODO not implemented
     {"-injection_altitude",  "450.0"},                  // Altitude to inject particles at [km]
+    {"-result_prefix",       ""}
   };
   // Add backscatter argument after map is made so we can reference the injection altitude for its default value
   optionalFlags.insert(
@@ -263,6 +264,12 @@ int main(int argc,char** argv)
   // Backscatter altitude
   UImanager->ApplyCommand("/dataCollection/setCollectionAltitude " + optionalFlags["-backscatter_altitude"]);
 
+  // Result prefix
+  if(strcmp(optionalFlags["-result_prefix"], "") != 0){
+    // Add trailing underscore if prefix contains characters
+    optionalFlags["-result_prefix"] = optionalFlags["-result_prefix"] + "_";
+  }
+  UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + optionalFlags["-result_prefix"]);
 
   // Print status block
   G4cout << "=====================================================================" << G4endl;
@@ -351,13 +358,16 @@ void printHelpScreen(){
   println("      Backscatter recording altitude [km]");
   println("      Default: injection_altitude + 1.0");
   println("");
+  println("  -result_prefix");
+  println("      String to prepend to result files. Do NOT use whitespace in this or else everything breaks.");
+  println("");
   println("  -help");
   println("      Print help screen if value is 1");
   println("      Default: 0");
   println("");
-  println("Press enter to continue...");
   println("-----------------------------------------------------------------------------------------------------");
-  getchar();
+  println("");
+  println("Exiting...");
 }
 
 void println(G4String line){

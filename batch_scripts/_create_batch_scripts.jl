@@ -3,78 +3,71 @@ using Glob
 using Printf
 
 function main()
-  number_of_particles = 10 #_000 #100_000  # Number of particles to input
-  particle = "e-" # "e-" = electrons, "proton" = protons, "gamma" = photons
-  energies_to_simulate = 1e3
-  pitch_angles_to_simulate = 0
+    # Create shell scripts
+    rm.(glob("*keV*.sh", @__DIR__))
 
-  magnetic_models = ["earth_tilted_dipole", "jrm33"]
-  atmospheres = ["msis_earth_atmosphere_profile.csv", "jupiter_atmosphere_profile.csv"]
+    write_job_script("blanca-lair", 10, "e-", 1000, 0, 
+        prefix = "jupiter",
+        flags = "
+            -brem_splitting 10
+            -magnetic_model jrm33
+        "
+    )
+end
 
-  # Create shell scripts
-  rm.(glob("*keV.sh", @__DIR__))
-  written = 0
-  skipped = 0
-  lair = 0
-
-  for i in eachindex(magnetic_models)
-    pa = pitch_angles_to_simulate[1]
-    
-    i == 1 ? planet = "earth" : planet = "jupiter"
-
-    input_particle_longname = particle == "e-" ? "electron" : particle
-    energy_string = "1000.0" #@sprintf "%.1f" E
-    job_name = "SEPIIDA_$(planet)_$(input_particle_longname)_$(energy_string)keV_$(pa)deg"
-    qos = "preemptable"
-    time_limit = "1-00:00:00"
-
-    # Send long-runtime beams to blanca-lair
-    #=
-    if E ≥ 2e7
-      qos = "blanca-lair"
-      time_limit = "3-00:00:00"
-      lair += 1
+function write_job_script(qos, n_particles, input_particle, energy, pa; prefix = "", flags = "")
+    # Prepare input
+    input_particle_longname = input_particle == "e-" ? "electron" : input_particle
+    energy_string = @sprintf "%.1f" energy
+    if (prefix != "") && (!contains(flags, "-result_prefix"))
+        flags = "$(flags) -result_prefix $(prefix)"
     end
-    =#
+    flags = replace(flags, "\n" => " ")
+    qos == "blanca-lair" ? time_limit = "4-00:00:00" : time_limit = "1-00:00:00"
 
-    println("TODO ADD TIMESTAMPS TO RESULTS AND LOGS")
+    # Remove double+ and leading whitespaces from flags
+    while contains(flags, "  ")
+        flags = replace(flags, "  " => " ")
+    end
+    if startswith(flags, " ")
+        flags = flags[2:end]
+    end
 
-
+    # Write file
+    job_name = "SEPIIDA_$(prefix)_$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles)particles"
     file = open("$(@__DIR__)/$(job_name).sh", "w")
-    println(file,
+    print(file,
     """
-    #!/bin/bash
+        #!/bin/bash
 
-    #SBATCH --job-name $(job_name)
-    #SBATCH --nodes 1
-    #SBATCH --ntasks-per-node 40
-    #SBATCH --time $(time_limit)
-    #SBATCH --output /projects/jucl6426/SEPIIDA/results/$(job_name).log
-    #SBATCH --qos=$(qos)
-    #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
-    #SBATCH --requeue
-    #SBATCH --mail-type=BEGIN,END,FAIL
-    #SBATCH --mail-user=jucl6426@colorado.edu
+        #SBATCH --job-name $(job_name)
+        #SBATCH --nodes 1
+        #SBATCH --ntasks-per-node 40
+        #SBATCH --time $(time_limit)
+        #SBATCH --output /projects/jucl6426/SEPIIDA/results/$(job_name).log
+        #SBATCH --qos=$(qos)
+        #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
+        #SBATCH --requeue
+        #SBATCH --mail-type=BEGIN,END,FAIL
+        #SBATCH --mail-user=julia.claxton@colorado.edu
 
-    # Terminate on any non-zero exit status
-    set -e
+        # Terminate on any non-zero exit status
+        set -e
 
-    # Run simulation
-    cd /projects/jucl6426/SEPIIDA/build/
-    ./SEPIIDA 10000 e- 1000.0 0.0 -magnetic_model $(magnetic_models[i]) -atmosphere_filename $(atmospheres[i]) -lat 70 -brem_splitting 10 -altitude_offset 0 -injection_altitude 500 -backscatter_altitude 505
+        # Load modules
+        module purge
+        module load gcc/14.2.0
 
-    # Copy results to safe folder
-    cp /projects/jucl6426/SEPIIDA/build/results/lat_70deg_input_500km/$(job_name)* /projects/jucl6426/SEPIIDA/results
+        # Run simulation
+        cd /projects/jucl6426/SEPIIDA/build/
+        ./SEPIIDA $(n_particles) $(input_particle) $(energy_string) $(pa) $(flags)
+
+        # Copy results to safe folder
+        cp /projects/jucl6426/SEPIIDA/build/results/$(input_particle_longname)*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
     """
     )
     close(file)
-
-    written += 1
-  end
-
-  println("$(written) files written.")
-  println("$(skipped) files skipped.")
-  println("$(lair) files sent to blanca-lair.")
+    println("Wrote batch_scripts/$(job_name).sh.")
 end
 
 main()
