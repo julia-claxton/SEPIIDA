@@ -23,4 +23,4 @@ cd /projects/jucl6426/SEPIIDA/build/
 ./SEPIIDA 10 e- 1000.0 0 -brem_splitting 10 -magnetic_model jrm33 -result_prefix jupiter
 
 # Copy results to safe folder
-cp /projects/jucl6426/SEPIIDA/build/results/electron*1000.0keV_0deg_10particles* /projects/jucl6426/SEPIIDA/results
+cp /projects/jucl6426/SEPIIDA/build/results/jupiter*electron_input*1000.0keV_0deg_10particles* /projects/jucl6426/SEPIIDA/results

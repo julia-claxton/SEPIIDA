@@ -147,9 +147,19 @@ int main(int argc,char** argv)
   UImanager->ApplyCommand("/run/particle/verbose 0");
   UImanager->ApplyCommand("/geometry/navigator/verbose 0");
   UImanager->ApplyCommand("/process/had/verbose 0");
+  UImanager->ApplyCommand("/process/em/verbose 0");
 
   // Let's go, lesbians!
   UImanager->ApplyCommand("/run/initialize");
+
+  // Turn on deexcitation physics
+  UImanager->ApplyCommand("/process/em/deexcitation world true true true");
+  UImanager->ApplyCommand("/process/em/fluo true");
+  UImanager->ApplyCommand("/process/em/auger true");
+  UImanager->ApplyCommand("/process/em/augerCascade true");
+  UImanager->ApplyCommand("/process/em/pixe true");
+  UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
+  // /cuts/setMaxCutEnergy 50 eV #?
 
   // ==========================================
   // Parse command line arguments
@@ -186,13 +196,13 @@ int main(int argc,char** argv)
 
   // Set default values for optional arguments
   std::map<G4String, G4String> optionalFlags = {
-    {"-magnetic_model",  "earth_tilted_dipole"},   // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
-    {"-lat",                  "67.0"},                  // Magnetic latitude [deg]
-    {"-atmosphere_filename", "atmosphere_profile.csv"}, // Filename for atmospheric profile
-    {"-brem_splitting",      "100"},                    // Number of times to split bremsstrahlung photons
-    {"-altitude_offset",     "0.0"},                    // Amount by which to offset altitude axis labels [km] TODO not implemented
-    {"-injection_altitude",  "450.0"},                  // Altitude to inject particles at [km]
-    {"-result_prefix",       ""}
+    {"-magnetic_model",      "earth_tilted_dipole"},               // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
+    {"-lat",                 "67.0"},                              // Magnetic latitude [deg]
+    {"-atmosphere_filename", "msis_earth_atmosphere_profile.csv"}, // Filename for atmospheric profile
+    {"-brem_splitting",      "100"},                               // Number of times to split bremsstrahlung photons
+    {"-altitude_offset",     "0.0"},                               // Amount by which to offset altitude axis labels [km] TODO not implemented
+    {"-injection_altitude",  "450.0"},                             // Altitude to inject particles at [km]
+    {"-prefix",              ""}                                   // Prefix to prepend to result files
   };
   // Add backscatter argument after map is made so we can reference the injection altitude for its default value
   optionalFlags.insert(
@@ -265,11 +275,18 @@ int main(int argc,char** argv)
   UImanager->ApplyCommand("/dataCollection/setCollectionAltitude " + optionalFlags["-backscatter_altitude"]);
 
   // Result prefix
-  if(strcmp(optionalFlags["-result_prefix"], "") != 0){
-    // Add trailing underscore if prefix contains characters
-    optionalFlags["-result_prefix"] = optionalFlags["-result_prefix"] + "_";
+  G4String prefixToSet;
+  // If a prefix is set,
+  if(strcmp(optionalFlags["-prefix"], "") != 0){
+    // add trailing underscore.
+    prefixToSet = optionalFlags["-prefix"] + "_";
   }
-  UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + optionalFlags["-result_prefix"]);
+  else{
+    // Otherwise, set prefix to be blank
+    prefixToSet = "\"\"";
+  }
+  UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + prefixToSet);
+
 
   // Print status block
   G4cout << "=====================================================================" << G4endl;
@@ -340,7 +357,7 @@ void printHelpScreen(){
   println("");
   println("  -atmosphere_filename");
   println("      Atmosphere profile filename");
-  println("      Default: atmosphere_profile.csv");
+  println("      Default: msis_earth_atmosphere_profile.csv");
   println("");
   println("  -brem_splitting");
   println("      Bremsstrahlung photon splitting");
@@ -358,7 +375,7 @@ void printHelpScreen(){
   println("      Backscatter recording altitude [km]");
   println("      Default: injection_altitude + 1.0");
   println("");
-  println("  -result_prefix");
+  println("  -prefix");
   println("      String to prepend to result files. Do NOT use whitespace in this or else everything breaks.");
   println("");
   println("  -help");

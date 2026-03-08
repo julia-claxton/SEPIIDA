@@ -65,8 +65,7 @@ function get_W_from_atmosphere_profile(atmosphere_path)
 end
 
 function get_energy_deposition()
-    dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
-    path = glob("*energydeposition*", dir)[1]
+    path = glob("*energydeposition*", "$(dirname(TOP_LEVEL))/build/results")[1]
 
     data = readdlm(path, ',', skipstart = 1)
 
@@ -87,7 +86,7 @@ function get_energy_deposition()
 end
 
 
-W = get_W_from_atmosphere_profile("$(TOP_LEVEL)/crude_jupiter_atmosphere_profile.csv")
+W = get_W_from_atmosphere_profile("$(TOP_LEVEL)/jupiter_atmosphere_profile.csv")
 z_min, z_max, energy_deposition = get_energy_deposition()
 mean_altitude = (z_min .+ z_max) ./ 2
 

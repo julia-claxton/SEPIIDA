@@ -1,14 +1,6 @@
 # ==================================================
 # The format for setting variables is:
-# /control/alias variable_name variable_value
-#
-# Beam parameters (e.g. energy, pitch angle, etc), are
-# controlled via command line arguments to SEPIIDA in
-# the following format:
-# ./SEPIIDA number_of_particles particle_type beam_energy_keV beam_pitch_angle_deg
-# With <particle_type> chosen from e-, proton, gamma,
-# or another Geant4 particle name.
-#
+# /control/alias <variable name> <variable value>
 # ==================================================
 
 # Directory that you built/will build SEPIIDA in. Houses the executable, results folder,

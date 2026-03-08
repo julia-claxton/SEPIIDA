@@ -53,8 +53,9 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
-path = glob("*spectra_e-*", dir)[1]
+prefix = "jupiter"
+
+path = glob("$(prefix)*spectra_e-*", "$(dirname(TOP_LEVEL))/build/results")[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -77,8 +78,6 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
 )
 display(plot!())
 
-error()
-
 function my_histogram(data, edges)
     weights = exact_1d_histogram(data, edges)
     plot(edges, [weights..., weights[end]],
@@ -88,8 +87,7 @@ function my_histogram(data, edges)
 end
 
 
-dir = glob("*", "$(dirname(TOP_LEVEL))/build/results/")[1]
-path = glob("*backscatter*", dir)[1]
+path = glob("$(prefix)*backscatter*", "$(dirname(TOP_LEVEL))/build/results")[1]
 data = readdlm(path, ',', skipstart = 1)
 
 particle_name = data[:,1]

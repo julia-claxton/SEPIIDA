@@ -3,9 +3,10 @@ using Glob
 using Printf
 
 function main()
-    # Create shell scripts
+    # Remove existing jobscripts
     rm.(glob("*keV*.sh", @__DIR__))
-
+    
+    # Write new scripts
     write_job_script("blanca-lair", 10, "e-", 1000, 0, 
         prefix = "jupiter",
         flags = "
@@ -63,7 +64,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     ./SEPIIDA $(n_particles) $(input_particle) $(energy_string) $(pa) $(flags)
 
     # Copy results to safe folder
-    cp /projects/jucl6426/SEPIIDA/build/results/$(input_particle_longname)*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
+    cp /projects/jucl6426/SEPIIDA/build/results/$(prefix)*$(input_particle_longname)_input*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
     """
     )
     close(file)
