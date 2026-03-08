@@ -38,32 +38,32 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     file = open("$(@__DIR__)/$(job_name).sh", "w")
     print(file,
     """
-        #!/bin/bash
+    #!/bin/bash
 
-        #SBATCH --job-name $(job_name)
-        #SBATCH --nodes 1
-        #SBATCH --ntasks-per-node 40
-        #SBATCH --time $(time_limit)
-        #SBATCH --output /projects/jucl6426/SEPIIDA/results/$(job_name).log
-        #SBATCH --qos=$(qos)
-        #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
-        #SBATCH --requeue
-        #SBATCH --mail-type=BEGIN,END,FAIL
-        #SBATCH --mail-user=julia.claxton@colorado.edu
+    #SBATCH --job-name $(job_name)
+    #SBATCH --nodes 1
+    #SBATCH --ntasks-per-node 40
+    #SBATCH --time $(time_limit)
+    #SBATCH --output /projects/jucl6426/SEPIIDA/results/$(job_name).log
+    #SBATCH --qos=$(qos)
+    #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
+    #SBATCH --requeue
+    #SBATCH --mail-type=BEGIN,END,FAIL
+    #SBATCH --mail-user=julia.claxton@colorado.edu
 
-        # Terminate on any non-zero exit status
-        set -e
+    # Terminate on any non-zero exit status
+    set -e
 
-        # Load modules
-        module purge
-        module load gcc/14.2.0
+    # Load modules
+    module purge
+    module load gcc/14.2.0
 
-        # Run simulation
-        cd /projects/jucl6426/SEPIIDA/build/
-        ./SEPIIDA $(n_particles) $(input_particle) $(energy_string) $(pa) $(flags)
+    # Run simulation
+    cd /projects/jucl6426/SEPIIDA/build/
+    ./SEPIIDA $(n_particles) $(input_particle) $(energy_string) $(pa) $(flags)
 
-        # Copy results to safe folder
-        cp /projects/jucl6426/SEPIIDA/build/results/$(input_particle_longname)*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
+    # Copy results to safe folder
+    cp /projects/jucl6426/SEPIIDA/build/results/$(input_particle_longname)*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
     """
     )
     close(file)
