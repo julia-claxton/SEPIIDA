@@ -7,7 +7,7 @@ function main()
     rm.(glob("*keV*.sh", @__DIR__))
     
     # Write new scripts
-    write_job_script("blanca-lair", 10, "e-", 1000, 0, 
+    write_job_script("preemptable", 10, "e-", 1000, 0, 
         prefix = "jupiter",
         flags = "
             -brem_splitting 10
@@ -15,7 +15,7 @@ function main()
             -atmosphere_filename jupiter_atmosphere_profile.csv
         "
     )
-    write_job_script("blanca-lair", 10, "e-", 1000, 0, 
+    write_job_script("preemptable", 10, "e-", 1000, 0, 
         prefix = "earth",
         flags = "
             -brem_splitting 10
