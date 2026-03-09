@@ -12,6 +12,15 @@ function main()
         flags = "
             -brem_splitting 10
             -magnetic_model jrm33
+            -atmosphere_filename jupiter_atmosphere_profile.csv
+        "
+    )
+    write_job_script("blanca-lair", 10, "e-", 1000, 0, 
+        prefix = "earth",
+        flags = "
+            -brem_splitting 10
+            -magnetic_model earth_tilted_dipole
+            -atmosphere_filename msis_earth_atmosphere_profile.csv
         "
     )
 end

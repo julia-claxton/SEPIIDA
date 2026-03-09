@@ -20,7 +20,7 @@ module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 10 e- 1000.0 0 -brem_splitting 10 -magnetic_model jrm33 -result_prefix jupiter
+./SEPIIDA 10 e- 1000.0 0 -brem_splitting 10 -magnetic_model jrm33 -atmosphere_filename jupiter_atmosphere_profile.csv -result_prefix jupiter
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/jupiter*electron_input*1000.0keV_0deg_10particles* /projects/jucl6426/SEPIIDA/results
