@@ -3,9 +3,9 @@
 #SBATCH --job-name SEPIIDA_earth_electron_1000.0keV_0deg_10particles
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node 40
-#SBATCH --time 4-00:00:00
+#SBATCH --time 1-00:00:00
 #SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_earth_electron_1000.0keV_0deg_10particles.log
-#SBATCH --qos=blanca-lair
+#SBATCH --qos=preemptable
 #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
 #SBATCH --requeue
 #SBATCH --mail-type=BEGIN,END,FAIL
