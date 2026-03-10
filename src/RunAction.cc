@@ -105,6 +105,12 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
+  G4cout << "bora" << G4endl;
+
+
+
+
+
   int threadID = G4Threading::G4GetThreadId();
 
   // If we are a worker thread (not the main thread)
