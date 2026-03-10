@@ -108,7 +108,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
   G4cout << "bora" << G4endl;
 
 
-
+  G4cout << fBaseResultPath << G4endl;
 
 
   int threadID = G4Threading::G4GetThreadId();
