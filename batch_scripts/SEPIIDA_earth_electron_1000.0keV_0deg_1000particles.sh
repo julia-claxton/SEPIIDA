@@ -16,7 +16,7 @@ set -e
 
 # Load modules
 module purge
-module load gcc/11.2.0
+module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
