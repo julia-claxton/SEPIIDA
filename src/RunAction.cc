@@ -96,6 +96,9 @@ RunAction::RunAction():
   energySpectrumHistogramFactor = pow(10, (std::log10(fEnergyMaxkeV) - std::log10(fEnergyMinkeV)) / fNumberOfEnergyBins);
   altitudeSpacing_km = std::abs(sampleAltitudes_km[1] - sampleAltitudes_km[0]);
   pitchAngleBinSize_deg = (fPitchAngleMax - fPitchAngleMin) / fNumberOfPitchAngleBins;
+
+
+  G4cout << "ra::ra end" << G4endl;
 }
 
 RunAction::~RunAction()
