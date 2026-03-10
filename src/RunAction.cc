@@ -121,11 +121,14 @@ void RunAction::BeginOfRunAction(const G4Run*)
   }
 
   G4cout << "a" << G4endl;
+  G4cout << "basepath = " << fBaseResultPath.c_str() << G4endl;
 
   // If we are here, then we are the main thread
   // First, make sure that the build directory set by the user is correct
   std::filesystem::path baseResultsPath = fBaseResultPath.c_str();
   G4cout << "b" << G4endl;
+
+  // Guard
   std::filesystem::path buildDirectory = baseResultsPath.parent_path().parent_path();
   G4cout << "c" << G4endl;
   if(std::filesystem::is_directory(buildDirectory) == false)
@@ -133,7 +136,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
     G4cout << "\n" <<
       ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
-      "ERROR: User-specified build directory " << buildDirectory << " does not exist. This path is user-specified in set_simulation_parameters.mac. Check that SEPIIDA_BUILD_DIR in EDIT_THIS_FILE.mac matches your build directory and does not have a slash at the end."
+      "ERROR: Something is evil, you should never see this." <<
       ANSI_NOCOLOR <<
     G4endl;
     throw;
