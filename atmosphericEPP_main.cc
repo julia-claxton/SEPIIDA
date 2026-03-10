@@ -149,18 +149,6 @@ int main(int argc,char** argv)
   UImanager->ApplyCommand("/process/had/verbose 0");
   UImanager->ApplyCommand("/process/em/verbose 0");
 
-  // Let's go, lesbians!
-  UImanager->ApplyCommand("/run/initialize");
-
-  // Turn on deexcitation physics
-  UImanager->ApplyCommand("/process/em/deexcitation world true true true");
-  UImanager->ApplyCommand("/process/em/fluo true");
-  UImanager->ApplyCommand("/process/em/auger true");
-  UImanager->ApplyCommand("/process/em/augerCascade true");
-  UImanager->ApplyCommand("/process/em/pixe true");
-  UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
-  // /cuts/setMaxCutEnergy 50 eV #?
-
   // ==========================================
   // Parse command line arguments
   // ==========================================
@@ -246,16 +234,25 @@ int main(int argc,char** argv)
     optionalFlags[flagName] = flagValue;
   }
 
-  // Pass optional arguments to simulation
-  // B field mode
-  UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
+
+
+  // Set simulation parameters
+  // Atmosphere filename
+  UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
+
+  // Initialize run
+  UImanager->ApplyCommand("/run/initialize");
+  // For some horrible reason I cannot comprehend, the atmosphere filename setting must happen
+  // before initialization or else it doesn't work. Meanwhile the fieldParameters must be set
+  // *after* initialization or else they don't work. All commands are set to accept pre-init,
+  // init, and idle states so I have no clue what could possibly be happening here. Whatever.
 
   // Latitude
   UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
   UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
 
-  // Atmosphere filename
-  UImanager->ApplyCommand("/dataCollection/setAtmosFileName " + optionalFlags["-atmosphere_filename"]);
+  // B field mode
+  UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
 
   // Brem splitting
   if(std::stod(optionalFlags["-brem_splitting"]) < 1.0){
@@ -287,6 +284,14 @@ int main(int argc,char** argv)
   }
   UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + prefixToSet);
 
+  // Turn on deexcitation physics
+  UImanager->ApplyCommand("/process/em/deexcitation world true true true");
+  UImanager->ApplyCommand("/process/em/fluo true");
+  UImanager->ApplyCommand("/process/em/auger true");
+  UImanager->ApplyCommand("/process/em/augerCascade true");
+  UImanager->ApplyCommand("/process/em/pixe true");
+  UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
+  // /cuts/setMaxCutEnergy 50 eV #?
 
   // Print status block
   G4cout << "=====================================================================" << G4endl;
@@ -314,7 +319,7 @@ int main(int argc,char** argv)
   G4cout << "=====================================================================" << G4endl;
   G4cout << G4endl;
 
-  // Execute run
+  // Let's go, lesbians!
   UImanager->ApplyCommand("/control/execute run_beam.mac");
 
   // End run

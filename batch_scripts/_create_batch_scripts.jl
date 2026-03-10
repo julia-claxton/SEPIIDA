@@ -7,6 +7,7 @@ function main()
     rm.(glob("*keV*.sh", @__DIR__))
     
     # Write new scripts
+    #=
     write_job_script("preemptable", 10, "e-", 1000, 0, 
         prefix = "jupiter",
         flags = "
@@ -15,6 +16,7 @@ function main()
             -atmosphere_filename jupiter_atmosphere_profile.csv
         "
     )
+    =#
     write_job_script("preemptable", 10, "e-", 1000, 0, 
         prefix = "earth",
         flags = "
@@ -30,7 +32,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     input_particle_longname = input_particle == "e-" ? "electron" : input_particle
     energy_string = @sprintf "%.1f" energy
     if (prefix != "") && (!contains(flags, "-result_prefix"))
-        flags = "$(flags) -result_prefix $(prefix)"
+        flags = "$(flags) -prefix $(prefix)"
     end
     flags = replace(flags, "\n" => " ")
     qos == "blanca-lair" ? time_limit = "4-00:00:00" : time_limit = "1-00:00:00"

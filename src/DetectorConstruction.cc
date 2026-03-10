@@ -47,11 +47,14 @@
 #include "G4SDManager.hh"
 
 #include "DetectorMessenger.hh"
+#include "ANSIColors.h"
+
+#include <fstream>
 
 
 DetectorConstruction::DetectorConstruction():
   G4VUserDetectorConstruction(),
-  fAtmosphereFilename("atmosphere_profile.csv"),
+  fAtmosphereFilename("none"),
   fDetectorMessenger(),
   fTableSize(0),
   fLogicWorld(0)
@@ -313,12 +316,23 @@ void DetectorConstruction::GetMSIStable(G4double tableEntry[][11], G4String file
 G4int DetectorConstruction::GetMSIStableSize(G4String filename)
 {
   std::ifstream filePtr(filename, std::ios::in);
+
+  if(filePtr.is_open() == false){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Atmosphere file `" <<
+      filename <<
+      "` could not be opened."
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
+
   G4String line;
   G4int counter = 0;
 
   while(getline(filePtr, line)){counter++;}
   filePtr.close();
 
-  int numberOfHeaderLines = 1;
+  G4int numberOfHeaderLines = 1;
   return counter - numberOfHeaderLines;
 }

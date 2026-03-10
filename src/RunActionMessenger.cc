@@ -11,7 +11,7 @@ RunActionMessenger::RunActionMessenger(RunAction* runAct)
   fPrimDir = new G4UIdirectory("/dataCollection/");
 
   fcmd1 = new G4UIcmdWithAString("/dataCollection/setBaseResultPath", this);
-  fcmd1->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fcmd1->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 
   fcmd2 = new G4UIcmdWithAString("/dataCollection/setCollectionAltitude", this);
   fcmd2->SetDefaultValue("451.0");

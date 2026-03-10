@@ -93,15 +93,15 @@ F03FieldMessenger::~F03FieldMessenger()
 
 void F03FieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 {
-  if( command == fStepperCmd )
+  if(command == fStepperCmd )
     fEMfieldSetup->SetStepperType(fStepperCmd->GetNewIntValue(newValue));
-  if( command == fUpdateCmd )
+  if(command == fUpdateCmd )
     fEMfieldSetup->UpdateField();
-  if( command == fMagFieldCmd )
+  if(command == fMagFieldCmd)
   {
     fEMfieldSetup->SetFieldValue(fMagFieldCmd->GetNewDoubleValue(newValue));
   }
-  if( command == fMinStepCmd )
+  if(command == fMinStepCmd)
     fEMfieldSetup->SetMinStep(fMinStepCmd->GetNewDoubleValue(newValue));
 }
 

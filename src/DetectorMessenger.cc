@@ -10,14 +10,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* detCon)
   : G4UImessenger(),
     fDetectorMessenger(detCon) 
 {
-  fPrimDir = new G4UIdirectory("/dataCollection/");
-  fPrimDir->SetGuidance("Choose file to generate atmosphere.");
+  fPrimDir = new G4UIdirectory("/atmosphere/");
 
-  fcmd1 = new G4UIcmdWithAString("/dataCollection/setAtmosFileName",this);
-  
-  fcmd1->SetParameterName("Enter atmosphere file name.",true);
-  fcmd1->SetDefaultValue("atmosphere_profile.csv");
-  fcmd1->AvailableForStates(G4State_PreInit);
+  fcmd1 = new G4UIcmdWithAString("/atmosphere/setFilename", this);
+  fcmd1->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 }
 
 DetectorMessenger::~DetectorMessenger()
@@ -26,11 +22,8 @@ DetectorMessenger::~DetectorMessenger()
   delete fcmd1;
 }
 
-void DetectorMessenger::SetNewValue(G4UIcommand* command, 
-					    G4String newValue)
+void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 {
-  if(command == fcmd1){
-    fDetectorMessenger->SetAtmosFilename(newValue);
-  }    	  
+  if(command == fcmd1){fDetectorMessenger->SetAtmosFilename(newValue);}    	  
 
 }

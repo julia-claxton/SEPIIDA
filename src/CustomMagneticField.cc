@@ -19,7 +19,7 @@ CustomMagneticField::CustomMagneticField()
 : G4MagneticField(),
   fMagneticFieldMessenger(0),
   fDipoleMoment(6.4e22), // Earth magnetic moment, A * m^2. Value source: https://sciencedemonstrations.fas.harvard.edu/presentations/earths-magnetic-field
-  fLAT_degrees(65.77),  // Units: deg
+  fLAT_degrees(-999),  // Units: deg
   fFieldModel("none"), 
   fRe(6371e3),           // Units: m
   fu0(1.257e-6),         // Units: N * A^-2
@@ -28,11 +28,18 @@ CustomMagneticField::CustomMagneticField()
   fMagneticFieldMessenger = new CustomMagneticFieldMessenger(this);
 }
 
-
 CustomMagneticField::~CustomMagneticField(){}
 
 void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
 {
+  if(fLAT_degrees == -999){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Magnetic latitude not set. You should not see this." <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
+
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   // Bfield is a pointer to a 6x1 array of E- and B-field components
   if(fFieldModel == "earth_tilted_dipole"){

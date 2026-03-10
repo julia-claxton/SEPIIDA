@@ -19,22 +19,22 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* pri
   fcmd3 = new G4UIcmdWithAString("/beamParameters/setBeamParticle",this);
   fcmd3->SetParameterName("Particle to input. e- = electron, proton = proton, gamma = photon", true);
   fcmd3->SetDefaultValue("e-");
-  fcmd3->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fcmd3->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
   
   fDcmd = new G4UIcmdWithADouble("/beamParameters/setBeamEnergy",this);
   fDcmd->SetParameterName("Beam energy [keV]",true);
   fDcmd->SetDefaultValue(100.0);
-  fDcmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fDcmd->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
   
   fDcmd2 = new G4UIcmdWithADouble("/beamParameters/setBeamPitchAngle",this);
   fDcmd2->SetParameterName("Beam pitch angle [deg]",true);
   fDcmd2->SetDefaultValue(0.0);
-  fDcmd2->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fDcmd2->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 
   fDcmd3 = new G4UIcmdWithADouble("/beamParameters/setParticleStartingAltitude",this);
   fDcmd3->SetParameterName("Particle initial altitude [km]",true);
   fDcmd3->SetDefaultValue(450.0);
-  fDcmd3->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fDcmd3->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 }
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()

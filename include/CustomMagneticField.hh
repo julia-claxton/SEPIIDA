@@ -24,8 +24,8 @@ public:
   std::vector<G4double> G4world_to_SIII(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
 
   // Messenger methods
-  void SetLAT(G4double LAT_deg){ fLAT_degrees = LAT_deg; };
-  void SetFieldModel(G4String fieldModel){ fFieldModel = fieldModel; };
+  void SetLAT(G4double LAT_deg){fLAT_degrees = LAT_deg;};
+  void SetFieldModel(G4String fieldModel){fFieldModel = fieldModel;};
 
 private:
   CustomMagneticFieldMessenger* fMagneticFieldMessenger;

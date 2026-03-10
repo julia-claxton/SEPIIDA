@@ -59,12 +59,13 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void GetMSIStable(G4double(*)[11], G4String, unsigned int);
 
   public:
-    G4String           fAtmosphereFilename;
+    G4String fAtmosphereFilename;
+
   private:
     DetectorMessenger* fDetectorMessenger;
-    G4int	       fTableSize;
-    G4LogicalVolume*   fLogicWorld;
-    G4Cache<F03FieldSetup*>    fEmFieldSetup;
+    G4int fTableSize;
+    G4LogicalVolume* fLogicWorld;
+    G4Cache<F03FieldSetup*> fEmFieldSetup;
 
 };
 

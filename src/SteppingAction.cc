@@ -44,6 +44,7 @@
 #include "G4FieldManager.hh"
 #include "G4MagneticField.hh"
 #include <chrono>
+#include "ANSIColors.h"
 
 SteppingAction::SteppingAction(EventAction* eventAction, RunAction* RuAct)
 : G4UserSteppingAction(),
@@ -282,8 +283,20 @@ G4double SteppingAction::logbase(G4double base, G4double x){
 
 G4double SteppingAction::overlap(G4double a1, G4double a2, G4double b1, G4double b2){
   // min of maxes - max of mins
-  if(a1 > a2){G4cout << "SteppingAction::overlapFraction: Ranges must be sorted!" << G4endl; throw;}
-  if(b1 > b2){G4cout << "SteppingAction::overlapFraction: Ranges must be sorted!" << G4endl; throw;}
+  if(a1 > a2){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "Ranges must be sorted!" <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
+  if(b1 > b2){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "Ranges must be sorted!" <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
 
   return std::min(a2, b2) - std::max(a1, b1);
 }

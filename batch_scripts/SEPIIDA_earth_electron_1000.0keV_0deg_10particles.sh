@@ -20,7 +20,7 @@ module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 10 e- 1000.0 0 -brem_splitting 10 -magnetic_model earth_tilted_dipole -atmosphere_filename msis_earth_atmosphere_profile.csv -result_prefix earth
+./SEPIIDA 10 e- 1000.0 0 -brem_splitting 10 -magnetic_model earth_tilted_dipole -atmosphere_filename msis_earth_atmosphere_profile.csv -prefix earth
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/earth*electron_input*1000.0keV_0deg_10particles* /projects/jucl6426/SEPIIDA/results

@@ -45,11 +45,11 @@ CustomMagneticFieldMessenger::CustomMagneticFieldMessenger(CustomMagneticField* 
 
   fLatCmd = new G4UIcmdWithADouble("/fieldParameters/setLAT", this);
   fLatCmd->SetParameterName("Injection latitude [deg]",true);
-  fLatCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fLatCmd->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 
   fModelCmd = new G4UIcmdWithAString("/fieldParameters/setFieldModel", this);
   fModelCmd->SetParameterName("Magnetic field model",true);
-  fModelCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  fModelCmd->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 }
 
 CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()
@@ -61,7 +61,7 @@ CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()
 
 void CustomMagneticFieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 {
-  if( command == fLatCmd ){ fMagneticField->SetLAT(std::stod(newValue)); }
-  if( command == fModelCmd ){ fMagneticField->SetFieldModel(newValue); }
+  if(command == fLatCmd ){fMagneticField->SetLAT(std::stod(newValue));}
+  if(command == fModelCmd ){fMagneticField->SetFieldModel(newValue);}
 }
 
