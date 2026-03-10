@@ -65,7 +65,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     set -e
 
     # Print job ID
-    echo "Job ID: \$SLURM_ARRAY_JOB_ID"
+    echo "Job ID: \$SLURM_JOB_ID"
 
     # Load modules
     module purge
