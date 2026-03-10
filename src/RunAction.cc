@@ -108,7 +108,6 @@ void RunAction::BeginOfRunAction(const G4Run*)
   G4cout << "bora" << G4endl;
 
 
-  G4cout << fBaseResultPath << G4endl;
 
 
   int threadID = G4Threading::G4GetThreadId();
@@ -121,10 +120,14 @@ void RunAction::BeginOfRunAction(const G4Run*)
     return;
   }
 
+  G4cout << "a" << G4endl;
+
   // If we are here, then we are the main thread
   // First, make sure that the build directory set by the user is correct
   std::filesystem::path baseResultsPath = fBaseResultPath.c_str();
+  G4cout << "b" << G4endl;
   std::filesystem::path buildDirectory = baseResultsPath.parent_path().parent_path();
+  G4cout << "c" << G4endl;
   if(std::filesystem::is_directory(buildDirectory) == false)
   {
     G4cout << "\n" <<
@@ -136,6 +139,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
     throw;
   }
 
+  G4cout << "d" << G4endl;
   // Change parameters for looping particles
   ChangeLooperParameters( G4Electron::Definition() );
 }
