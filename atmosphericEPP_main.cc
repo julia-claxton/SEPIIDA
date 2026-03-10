@@ -137,7 +137,24 @@ int main(int argc,char** argv)
 
   // Get the pointer to the user interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-  UImanager->ApplyCommand("/control/execute EDIT_THIS_FILE.mac");
+
+  // Set build directory (machine-dependent)
+  // This is hardcoded for my purposes. If you need to change this, do so.
+  G4String linuxBuildDir = "/projects/jucl6426/SEPIIDA/build";
+  G4String macosBuildDir = "/Users/luna/Research/geant4/SEPIIDA/build";
+  
+  G4String buildDir;
+  #ifdef __APPLE__
+    buildDir = macosBuildDir;
+  #elif __linux__
+    buildDir = linuxBuildDir;
+  #else
+    G4cout << ANSI_RED <<
+      "ERROR: OS `" << os << "` not recognized. Come visit me at " << __FILE__ << " line " << __LINE__ << " and fix this." <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  #endif
+  UImanager->ApplyCommand("/control/alias SEPIIDA_BUILD_DIR " + buildDir);
 
   // Verbosity off
   UImanager->ApplyCommand("/control/verbose 0");

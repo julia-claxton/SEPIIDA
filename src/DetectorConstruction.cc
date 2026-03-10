@@ -129,9 +129,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   
   // Cast to const for table instantiation
-  G4cout << "Table reading" << G4endl;
   fTableSize = GetMSIStableSize(fAtmosphereFilename);
-  G4cout << "fTableSize = " << fTableSize << G4endl;
   unsigned const int tableSize = fTableSize;
   G4double msisAtmosTable[tableSize][11];
  

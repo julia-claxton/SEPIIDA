@@ -32,8 +32,6 @@ CustomMagneticField::~CustomMagneticField(){}
 
 void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
 {
-  G4cout << "getfieldvalue now" << G4endl;
-  
   if(fLAT_degrees == -999){
     G4cout << ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
