@@ -14,6 +14,9 @@
 # Terminate on any non-zero exit status
 set -e
 
+# Print job ID
+echo "Job ID: $SLURM_ARRAY_JOB_ID"
+
 # Load modules
 module purge
 module load gcc/14.2.0
