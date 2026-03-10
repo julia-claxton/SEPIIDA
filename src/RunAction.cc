@@ -121,11 +121,11 @@ void RunAction::BeginOfRunAction(const G4Run*)
   }
 
   G4cout << "a" << G4endl;
-  G4cout << "basepath = " << fBaseResultPath.c_str() << G4endl;
+  G4cout << "basepath = " << fBaseResultPath << G4endl;
 
   // If we are here, then we are the main thread
   // First, make sure that the build directory set by the user is correct
-  std::filesystem::path baseResultsPath = fBaseResultPath.c_str();
+  std::filesystem::path baseResultsPath = std::string(fBaseResultPath);
   G4cout << "b" << G4endl;
 
   // Guard
