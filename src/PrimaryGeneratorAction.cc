@@ -55,7 +55,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fPrimaryMessenger(0),
   fBeamEnergy(100.),
   fBeamPitchAngle_deg(0.0),
-  fInitialParticleAlt(450.0),
+  fInitialParticleAlt(-999.0),
   fPI(3.14159265359),
   fRad2Deg(180.0 / 3.14159265359),
   fSourceType("e-")
@@ -72,6 +72,15 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+  if(fInitialParticleAlt == -999.0){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Initial particle altitude unset. You should never see this."
+    << G4endl;
+    throw;
+  }
+
   // Select input particle type
   fParticleGun  = new G4ParticleGun();
   G4ParticleDefinition* inputParticle = G4ParticleTable::GetParticleTable()->FindParticle(fSourceType); // Electron = "e-", proton = "proton", photon = "gamma"
@@ -109,8 +118,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // In the extremely rare case B is perfectly aligned with the x-axis, we'll throw an error. This should never happen
   // in this simulation as it is now, so I'll deal with it in the moment if this happens. Somehow.
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
-  G4ThreeVector x(1.0, 0.0, 0.0);
 
+  // If the simulation is unmagnetized, make the reference vector be vertical downward
+  if(B[0] == B[1] == B[2] == 0.0){
+    unitB = {0.0, 0.0, -1.0};
+  }
+  // TODO CLI flag to switch between pitch angle specification and angle from vertical incidence
+
+  G4ThreeVector x(1.0, 0.0, 0.0);
   if(std::abs(1 - unitB.dot(x)) < 1e-10){
     // If this error happens, switch to a different vector than x. y or z would be fine.
     G4cout << "\n" <<

@@ -256,7 +256,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if(msisAtmosTable[i][10] > zeroThreshold) // H2
       layerMaterial->AddMaterial(H2, msisAtmosTable[i][10]/totalLayerMassDensity);
-    
+
     // Create layer
     logicLayer = new G4LogicalVolume(atmosphereLayer, layerMaterial, "AtmosphereLayer"+std::to_string(i));
     layerLocation = (i-fTableSize/2)*layerThickness + layerThickness/2.0;

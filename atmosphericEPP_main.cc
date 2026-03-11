@@ -201,10 +201,10 @@ int main(int argc,char** argv)
 
   // Set default values for optional arguments
   std::map<G4String, G4String> optionalFlags = {
-    {"-magnetic_model",      "earth_tilted_dipole"},               // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
+    {"-magnetic_model",      "igrf2025"},                          // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
     {"-lat",                 "67.0"},                              // Magnetic latitude [deg]
     {"-atmosphere_filename", "msis_earth_atmosphere_profile.csv"}, // Filename for atmospheric profile
-    {"-brem_splitting",      "100"},                               // Number of times to split bremsstrahlung photons
+    {"-brem_splitting",      "1"},                                 // Number of times to split bremsstrahlung photons
     {"-altitude_offset",     "0.0"},                               // Amount by which to offset altitude axis labels [km] TODO not implemented
     {"-injection_altitude",  "450.0"},                             // Altitude to inject particles at [km]
     {"-prefix",              ""}                                   // Prefix to prepend to result files
@@ -257,12 +257,19 @@ int main(int argc,char** argv)
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
+  UImanager->ApplyCommand("/field/setStepperType turd");
+
+
   // Initialize run
   UImanager->ApplyCommand("/run/initialize");
   // For some horrible reason I cannot comprehend, the atmosphere filename setting must happen
   // before initialization or else it doesn't work. Meanwhile the fieldParameters must be set
   // *after* initialization or else they don't work. All commands are set to accept pre-init,
   // init, and idle states so I have no clue what could possibly be happening here. Whatever.
+
+  UImanager->ApplyCommand("/field/setStepperType turd");
+
+
 
   // Latitude
   UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
@@ -370,8 +377,8 @@ void printHelpScreen(){
   println("Optional flags:");
   println("  -magnetic_model");
   println("      Magnetic field configuration");
-  println("      Default: earth_tilted_dipole");
-  println("      Options: earth_tilted_dipole, jrm33");
+  println("      Default: igrf2025");
+  println("      Options: igrf2025, jrm33, none");
   println("");
   println("  -lat");
   println("      Latitude [deg]");
@@ -383,7 +390,7 @@ void printHelpScreen(){
   println("");
   println("  -brem_splitting");
   println("      Bremsstrahlung photon splitting");
-  println("      Default: 100");
+  println("      Default: 1");
   println("");
   println("  -altitude_offset");
   println("      Amount to offset world altitude labels by [km]");

@@ -53,7 +53,7 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-prefix = "jupiter"
+prefix = ""
 
 path = glob("$(prefix)*spectra_e-*", "$(dirname(TOP_LEVEL))/build/results")[1]
 file = open(path, "r")

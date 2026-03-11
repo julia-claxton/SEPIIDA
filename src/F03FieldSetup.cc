@@ -62,6 +62,9 @@
 #include "G4CashKarpRKF45.hh"
 #include "G4RKG3_Stepper.hh"
 #include "G4DormandPrince745.hh"
+#include "G4ExactHelixStepper.hh"
+#include "G4HelixHeum.hh"
+#include "G4HelixMixedStepper.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -73,6 +76,7 @@ F03FieldSetup::F03FieldSetup()
    fEquation(0),
    fMagneticField(0),
    fStepper(0),
+   fStepperType("unset"),
    fFieldMessenger(0)
 {
   fMagneticField = new CustomMagneticField(); 
@@ -81,8 +85,16 @@ F03FieldSetup::F03FieldSetup()
 
   // Default values
   fMinStep     = 0.01*km ; 
-  fStepperType = 10;
+  fStepperType = "G4HelixExplicitEuler"; // Set the stepper here
   fFieldManager = GetGlobalFieldManager();
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
+
+  // G4HelixExplicitEuler  | abort
+  // G4HelixImplicitEuler  | abort
+  // G4HelixSimpleRunge    | abort
+  // G4ExactHelixStepper   | abort
+  // G4HelixHeum           | abort
+  // G4HelixMixedStepper   | abort
 
   UpdateField();
 }
@@ -101,6 +113,7 @@ void F03FieldSetup::UpdateField()
 {
   // It must be possible to call 'again' - e.g. to choose an alternative stepper
   // has been chosen, or in case other changes have been made.
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // 1. Clean up previous state
   delete fChordFinder;
@@ -121,88 +134,58 @@ void F03FieldSetup::SetStepper()
 {
   delete fStepper;
   fStepper= nullptr;
-  bool reportStepper = false; // Whether to print the stepper beign used to terminal at start of simulation
+  bool reportStepper = true; // Whether to print the stepper beign used to terminal at start of simulation
 
-  switch ( fStepperType )
-  {
-    case 0:
-      fStepper = new G4ExplicitEuler( fEquation );
-      if(reportStepper){G4cout<<"G4ExplicitEuler is called"<<G4endl;}
-      break;
-    case 1:
-      fStepper = new G4ImplicitEuler( fEquation );
-      if(reportStepper){G4cout<<"G4ImplicitEuler is called"<<G4endl;}
-      break;
-    case 2:
-      fStepper = new G4SimpleRunge( fEquation );
-      if(reportStepper){G4cout<<"G4SimpleRunge is called"<<G4endl;}
-      break;
-    case 3:
-      fStepper = new G4SimpleHeum( fEquation );
-      if(reportStepper){G4cout<<"G4SimpleHeum is called"<<G4endl;}
-      break;
-    case 4:
-      fStepper = new G4ClassicalRK4( fEquation );
-      if(reportStepper){G4cout<<"G4ClassicalRK4 (default) is called"<<G4endl;}
-      break;
-    case 5:
-      fStepper = new G4HelixExplicitEuler( fEquation );
-      if(reportStepper){G4cout<<"G4HelixExplicitEuler is called"<<G4endl;}
-      break;
-    case 6:
-      fStepper = new G4HelixImplicitEuler( fEquation );
-      if(reportStepper){G4cout<<"G4HelixImplicitEuler is called"<<G4endl;}
-      break;
-    case 7:
-      fStepper = new G4HelixSimpleRunge( fEquation );
-      if(reportStepper){G4cout<<"G4HelixSimpleRunge is called"<<G4endl;}
-      break;
-    case 8:
-      fStepper = new G4CashKarpRKF45( fEquation );
-      if(reportStepper){G4cout<<"G4CashKarpRKF45 is called"<<G4endl;}
-      break;
-    case 9:
-      fStepper = new G4RKG3_Stepper( fEquation );
-      if(reportStepper){G4cout<<"G4RKG3_Stepper is called"<<G4endl;}
-      break;
-    case 10:
-      fStepper = new G4DormandPrince745( fEquation );
-      if(reportStepper){G4cout<<"ode45 is called"<<G4endl;}
-      break;
-    default: fStepper = 0;
+  if(fStepperType == "G4ExplicitEuler"){
+    fStepper = new G4ExplicitEuler( fEquation );
   }
-}
-
-void F03FieldSetup::SetFieldValue(G4double fieldStrength)
-{
-  G4ThreeVector fieldSetVec(0.0, 0.0, fieldStrength);
-  SetFieldValue( fieldSetVec );
-}
-
-void F03FieldSetup::SetFieldValue(G4ThreeVector fieldVector)
-{
-  if(fMagneticField) delete fMagneticField;
-
-  if(fieldVector != G4ThreeVector(0.,0.,0.))
-  {
-    fMagneticField = new CustomMagneticField();
+  else if(fStepperType == "G4ImplicitEuler"){
+    fStepper = new G4ImplicitEuler( fEquation );
   }
-  else
-  {
-    // If the new field's value is Zero, then
-    // setting the pointer to zero ensures
-    // that it is not used for propagation.
-    fMagneticField = 0;
+  else if(fStepperType == "G4SimpleRunge"){
+    fStepper = new G4SimpleRunge( fEquation );
   }
-  
-
-  // Either
-  //   - UpdateField() to reset all (ChordFinder, Equation);
-  // UpdateField();
-  //     or simply update the field manager & equation of motion
-  //     with pointer to new field
-  GetGlobalFieldManager()->SetDetectorField(fMagneticField);
-  fEquation->SetFieldObj( fMagneticField );
+  else if(fStepperType == "G4SimpleHeum"){
+    fStepper = new G4SimpleHeum( fEquation );
+  }
+  else if(fStepperType == "G4ClassicalRK4"){
+    fStepper = new G4ClassicalRK4( fEquation );
+  }
+  else if(fStepperType == "G4HelixExplicitEuler"){
+    fStepper = new G4HelixExplicitEuler( fEquation );
+  }
+  else if(fStepperType == "G4HelixImplicitEuler"){
+    fStepper = new G4HelixImplicitEuler( fEquation );
+  }
+  else if(fStepperType == "G4HelixSimpleRunge"){
+    fStepper = new G4HelixSimpleRunge( fEquation );
+  }
+  else if(fStepperType == "G4CashKarpRKF45"){
+    fStepper = new G4CashKarpRKF45( fEquation );
+  }
+  else if(fStepperType == "G4RKG3_Stepper"){
+    fStepper = new G4RKG3_Stepper( fEquation );
+  }
+  else if(fStepperType == "G4DormandPrince745"){
+    fStepper = new G4DormandPrince745( fEquation );
+  }
+  else if(fStepperType == "G4ExactHelixStepper"){
+    fStepper = new G4ExactHelixStepper( fEquation );
+  }
+  else if(fStepperType == "G4HelixHeum"){
+    fStepper = new G4HelixHeum( fEquation );
+  }
+  else if(fStepperType == "G4HelixMixedStepper"){
+    fStepper = new G4HelixMixedStepper( fEquation );
+  }
+  else {
+    G4cout
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Stepper " << fStepperType << " not recognized."
+    << G4endl;
+    throw;
+  }
+  if(reportStepper){G4cout << "Using stepper " << fStepperType << G4endl;}
 }
 
 G4FieldManager* F03FieldSetup::GetGlobalFieldManager(){

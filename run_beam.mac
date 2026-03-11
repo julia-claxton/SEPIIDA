@@ -7,9 +7,16 @@
 # Set global range cut
     /run/setCut 1 mm
 
-# Set the integrator. Integrator options are listed in in /src/F03FieldSetup.cc
-# 10 = RungeKutta w/ PrinceDormand method, order 7-8
-    /field/setStepperType 10
+# Set the integrator in /src/F03FieldSetup.cc
+
+
+
+
+
+# temp?
+/control/suppressAbortion
+
+
 
 # Dump particle list for reference
     #/run/particle/dumpList
@@ -26,4 +33,5 @@
     /dataCollection/setBaseResultPath {RESULTS_DIR}/{RESULT_PREFIX}{BEAM_PARAMETERS}
 
 # Execute run
+    /run/printProgress 1 # Print status message every N events. -1 for no printing
     /run/beamOn {NUMBER_OF_PARTICLES}

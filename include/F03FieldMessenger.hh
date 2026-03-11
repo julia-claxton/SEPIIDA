@@ -39,6 +39,7 @@
 class F03FieldSetup;
 class G4UIdirectory;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
 
@@ -57,7 +58,7 @@ class F03FieldMessenger: public G4UImessenger
 
     G4UIdirectory*             fFieldDir;
 
-    G4UIcmdWithAnInteger*      fStepperCmd;
+    G4UIcmdWithAString*        fStepperCmd;
     G4UIcmdWithADoubleAndUnit* fMagFieldCmd;
     G4UIcmdWithADoubleAndUnit* fMinStepCmd;
     G4UIcmdWithoutParameter*   fUpdateCmd;

@@ -56,14 +56,11 @@ public:
   F03FieldSetup();           //  A zero field
   virtual ~F03FieldSetup();
 
-  void SetStepperType( G4int i ) { fStepperType = i; }
+  void SetStepperType( G4String i ) { fStepperType = i; }
 
   void SetStepper();
 
   void SetMinStep(G4double se) { fMinStep = se; }
-
-  void SetFieldValue(G4ThreeVector fieldVector);
-  void SetFieldValue(G4double      fieldValue);
 
   void UpdateField();
   
@@ -78,7 +75,7 @@ protected:
   CustomMagneticField*    fMagneticField;
 
   G4MagIntegratorStepper* fStepper;
-  G4int                   fStepperType;
+  G4String                fStepperType;
 
   G4double                fMinStep;
  

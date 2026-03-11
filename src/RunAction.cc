@@ -56,7 +56,8 @@
 RunAction::RunAction():
   G4UserRunAction(),
   fRunActionMessenger(),
-  fBaseResultPath() 
+  fBaseResultPath(),
+  fCollectionAltitude(-999.0)
 {
   // Set killing energies
   fWarningEnergy = 0.01 * keV; // Particles below this energy are killed after 1 step. Value arbitrary 
@@ -105,9 +106,18 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-  int threadID = G4Threading::G4GetThreadId();
+  // Guard
+  if(fCollectionAltitude == -999.0){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Backscatter altitude unset. You should never see this."
+    << G4endl;
+    throw;
+  }
 
   // If we are a worker thread (not the main thread)
+  int threadID = G4Threading::G4GetThreadId();
   if(threadID != -1){
     printTimestamp();
     G4cout <<"STARTING: Thread " << threadID << G4endl;
