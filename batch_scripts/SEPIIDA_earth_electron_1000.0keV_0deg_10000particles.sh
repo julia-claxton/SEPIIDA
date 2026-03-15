@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name SEPIIDA_earth_electron_1000.0keV_0deg_1000particles
+#SBATCH --job-name SEPIIDA_earth_electron_1000.0keV_0deg_10000particles
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node 40
 #SBATCH --time 1-00:00:00
-#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_earth_electron_1000.0keV_0deg_1000particles.log
+#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_earth_electron_1000.0keV_0deg_10000particles.log
 #SBATCH --qos=preemptable
 #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
 #SBATCH --requeue
@@ -23,7 +23,7 @@ module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 1000 e- 1000.0 0 -brem_splitting 10 -magnetic_model earth_tilted_dipole -atmosphere_filename msis_earth_atmosphere_profile.csv -prefix earth
+./SEPIIDA 10000 e- 1000.0 0 -brem_splitting 10 -magnetic_model igrf2025 -atmosphere_filename msis_earth_atmosphere_profile.csv -prefix earth
 
 # Copy results to safe folder
-cp /projects/jucl6426/SEPIIDA/build/results/earth*electron_input*1000.0keV_0deg_1000particles* /projects/jucl6426/SEPIIDA/results
+cp /projects/jucl6426/SEPIIDA/build/results/earth*electron_input*1000.0keV_0deg_10000particles* /projects/jucl6426/SEPIIDA/results
