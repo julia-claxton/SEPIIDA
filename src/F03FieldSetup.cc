@@ -65,6 +65,7 @@
 #include "G4ExactHelixStepper.hh"
 #include "G4HelixHeum.hh"
 #include "G4HelixMixedStepper.hh"
+#include "G4NystromRK4.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -74,66 +75,56 @@ F03FieldSetup::F03FieldSetup()
  : fFieldManager(0),
    fChordFinder(0),
    fEquation(0),
-   fMagneticField(0),
    fStepper(0),
    fStepperType("unset"),
    fFieldMessenger(0)
 {
-  fMagneticField = new CustomMagneticField(); 
+  // Constants
+  fStepperType = "G4DormandPrince745"; // Set the stepper here
+  G4double cacheRadius = 0.01 * km;
+  fMinStep = 0.01 * km;
+
+  // Field options
+  G4MagneticField* nonCachedMagneticField = new CustomMagneticField(); 
+  G4MagneticField* cachedMagneticField= new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius);
+
+  G4MagneticField* fieldToUse = cachedMagneticField;
+
+
+  // Field setup stuff
+  fFieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fFieldMessenger = new F03FieldMessenger(this);
-  fEquation = new G4Mag_UsualEqRhs(fMagneticField);
+  fEquation = new G4Mag_UsualEqRhs(fieldToUse);
 
-  // Default values
-  fMinStep     = 0.01*km ; 
-  fStepperType = "G4HelixExplicitEuler"; // Set the stepper here
-  fFieldManager = GetGlobalFieldManager();
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
-  // G4HelixExplicitEuler  | abort
-  // G4HelixImplicitEuler  | abort
-  // G4HelixSimpleRunge    | abort
-  // G4ExactHelixStepper   | abort
-  // G4HelixHeum           | abort
-  // G4HelixMixedStepper   | abort
+  // 1. Clean up previous state
+  delete fChordFinder;
+  fChordFinder = nullptr;
 
-  UpdateField();
+  // 2. Create the steppers (Note: this also deletes the previous ones.)
+  SetStepper();
+
+  // 3. Create the chord finder(s)
+  fChordFinder = new G4ChordFinder(fieldToUse, fMinStep, fStepper);
+  fFieldManager->SetChordFinder(fChordFinder);
+
+  // 4. Ensure that the field is updated (in Field manager & equation)
+  fFieldManager->SetDetectorField(fieldToUse);
 }
 
 
 F03FieldSetup::~F03FieldSetup()
 {
-  delete fMagneticField;
   delete fChordFinder;
   delete fStepper;
   delete fFieldMessenger;
 }
 
 
-void F03FieldSetup::UpdateField()
-{
-  // It must be possible to call 'again' - e.g. to choose an alternative stepper
-  // has been chosen, or in case other changes have been made.
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-
-  // 1. Clean up previous state
-  delete fChordFinder;
-  fChordFinder= nullptr;
-
-  // 2. Create the steppers ( Note: this also deletes the previous ones. )
-  SetStepper();
-
-  // 3. Create the chord finder(s)
-  fChordFinder = new G4ChordFinder(fMagneticField, fMinStep, fStepper);
-  fFieldManager->SetChordFinder(fChordFinder);
-
-  // 4. Ensure that the field is updated (in Field manager & equation)
-  fFieldManager->SetDetectorField(fMagneticField);
-}
-
 void F03FieldSetup::SetStepper()
 {
   delete fStepper;
-  fStepper= nullptr;
+  fStepper = nullptr;
   bool reportStepper = true; // Whether to print the stepper beign used to terminal at start of simulation
 
   if(fStepperType == "G4ExplicitEuler"){
@@ -178,6 +169,9 @@ void F03FieldSetup::SetStepper()
   else if(fStepperType == "G4HelixMixedStepper"){
     fStepper = new G4HelixMixedStepper( fEquation );
   }
+  else if (fStepperType == "G4NystromRK4"){
+    fStepper = new G4NystromRK4( fEquation );
+  }
   else {
     G4cout
       << __FILE__ << ": " << __FUNCTION__ << "\n"
@@ -191,4 +185,3 @@ void F03FieldSetup::SetStepper()
 G4FieldManager* F03FieldSetup::GetGlobalFieldManager(){
   return G4TransportationManager::GetTransportationManager()->GetFieldManager();
 }
-

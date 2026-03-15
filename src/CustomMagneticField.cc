@@ -32,9 +32,6 @@ CustomMagneticField::~CustomMagneticField(){}
 
 void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
 {
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-
-
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   
   // Guard
@@ -101,7 +98,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
       Point[2]/m
   );
 
-  // Position vector between Jupiter center and particle.
+  // Position vector between planet center and particle.
   // Units: m
   // Frame: Planet-centered
   G4double r[3] = {
@@ -138,7 +135,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
       By_nT_planetCentered, 
       Bz_nT_planetCentered
   );
-
+  
   // Assign values
   Bfield[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
   Bfield[1] = B_worldFrame[1] * 1e-9 * tesla; // By
@@ -146,7 +143,6 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   Bfield[3] = 0; // Ex
   Bfield[4] = 0; // Ey
   Bfield[5] = 0; // Ez
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 }
 
 void CustomMagneticField::earthFieldDipole(const G4double Point[4], G4double *Bfield) const {

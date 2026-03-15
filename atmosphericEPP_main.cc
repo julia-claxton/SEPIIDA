@@ -257,7 +257,18 @@ int main(int argc,char** argv)
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
-  UImanager->ApplyCommand("/field/setStepperType turd");
+
+
+
+
+
+  UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
+  UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
+
+  // B field mode
+  UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
+
+
 
 
   // Initialize run
@@ -267,7 +278,7 @@ int main(int argc,char** argv)
   // *after* initialization or else they don't work. All commands are set to accept pre-init,
   // init, and idle states so I have no clue what could possibly be happening here. Whatever.
 
-  UImanager->ApplyCommand("/field/setStepperType turd");
+
 
 
 

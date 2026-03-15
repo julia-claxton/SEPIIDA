@@ -48,8 +48,7 @@ F03FieldMessenger::F03FieldMessenger(F03FieldSetup* fieldSetup)
    fFieldDir(0),
    fStepperCmd(0),
    fMagFieldCmd(0),
-   fMinStepCmd(0),
-   fUpdateCmd(0)
+   fMinStepCmd(0)
 {
   fFieldDir = new G4UIdirectory("/field/");
   fFieldDir->SetGuidance("F03 field tracking control.");
@@ -58,12 +57,6 @@ F03FieldMessenger::F03FieldMessenger(F03FieldSetup* fieldSetup)
   fStepperCmd->SetGuidance("Select stepper type for magnetic field");
   fStepperCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  fUpdateCmd = new G4UIcmdWithoutParameter("/field/update",this);
-  fUpdateCmd->SetGuidance("Update calorimeter geometry.");
-  fUpdateCmd->SetGuidance("This command MUST be applied before \"beamOn\" ");
-  fUpdateCmd->SetGuidance("if you changed geometrical value(s).");
-  fUpdateCmd->AvailableForStates(G4State_Idle);
- 
   fMagFieldCmd = new G4UIcmdWithADoubleAndUnit("/field/setFieldZ",this);
   fMagFieldCmd->SetGuidance("Define magnetic field.");
   fMagFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
@@ -86,7 +79,6 @@ F03FieldMessenger::~F03FieldMessenger()
   delete fMagFieldCmd;
   delete fMinStepCmd;
   delete fFieldDir;
-  delete fUpdateCmd;
 }
 
 
@@ -94,8 +86,6 @@ void F03FieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 {
   if(command == fStepperCmd )
     fEMfieldSetup->SetStepperType(newValue);
-  if(command == fUpdateCmd )
-    fEMfieldSetup->UpdateField();
   if(command == fMinStepCmd)
     fEMfieldSetup->SetMinStep(fMinStepCmd->GetNewDoubleValue(newValue));
 }

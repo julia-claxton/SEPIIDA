@@ -33,5 +33,5 @@
     /dataCollection/setBaseResultPath {RESULTS_DIR}/{RESULT_PREFIX}{BEAM_PARAMETERS}
 
 # Execute run
-    /run/printProgress 1 # Print status message every N events. -1 for no printing
+    /run/printProgress -1 # Print status message every N events. -1 for no printing
     /run/beamOn {NUMBER_OF_PARTICLES}

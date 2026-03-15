@@ -55,24 +55,16 @@ class F03FieldSetup
 public:
   F03FieldSetup();           //  A zero field
   virtual ~F03FieldSetup();
-
   void SetStepperType( G4String i ) { fStepperType = i; }
-
   void SetStepper();
-
   void SetMinStep(G4double se) { fMinStep = se; }
-
-  void UpdateField();
-  
-  // Find the global Field Manager
-  G4FieldManager*            GetGlobalFieldManager();
+  G4FieldManager* GetGlobalFieldManager();
 
 protected:
 
   G4FieldManager*         fFieldManager;
   G4ChordFinder*          fChordFinder;
   G4Mag_UsualEqRhs*       fEquation;
-  CustomMagneticField*    fMagneticField;
 
   G4MagIntegratorStepper* fStepper;
   G4String                fStepperType;

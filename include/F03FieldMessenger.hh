@@ -61,7 +61,6 @@ class F03FieldMessenger: public G4UImessenger
     G4UIcmdWithAString*        fStepperCmd;
     G4UIcmdWithADoubleAndUnit* fMagFieldCmd;
     G4UIcmdWithADoubleAndUnit* fMinStepCmd;
-    G4UIcmdWithoutParameter*   fUpdateCmd;
 };
 
 #endif
