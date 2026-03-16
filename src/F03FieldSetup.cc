@@ -88,7 +88,7 @@ F03FieldSetup::F03FieldSetup()
   G4MagneticField* nonCachedMagneticField = new CustomMagneticField(); 
   G4MagneticField* cachedMagneticField= new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius);
 
-  G4MagneticField* fieldToUse = nonCachedMagneticField;
+  G4MagneticField* fieldToUse = cachedMagneticField;
 
 
   // Field setup stuff
