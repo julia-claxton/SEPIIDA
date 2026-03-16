@@ -53,9 +53,10 @@ function fill_value(result, nested_result, dims, n_dimensions; current_position 
 end
 
 
-prefix = ""
+prefix = "earth"
+dir_to_read = "/Users/luna/Research/geant4/SEPIIDA/results/SEPIIDA 2026.03.15" # "$(dirname(TOP_LEVEL))/build/results"
 
-path = glob("$(prefix)*spectra_e-*", "$(dirname(TOP_LEVEL))/build/results")[1]
+path = glob("$(prefix)*spectra_e-*", dir_to_read)[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -73,8 +74,8 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylabel = "Altitude, km",
     bg=:black,
     colorbar_title = "Log10 counts",
-    clims = (-2, 3),
-    ylims = (0, 1000)
+    clims = (-2, 4),
+    ylims = (0, 500)
 )
 display(plot!())
 
@@ -87,7 +88,7 @@ function my_histogram(data, edges)
 end
 
 
-path = glob("$(prefix)*backscatter*", "$(dirname(TOP_LEVEL))/build/results")[1]
+path = glob("$(prefix)*backscatter*", dir_to_read)[1]
 data = readdlm(path, ',', skipstart = 1)
 
 particle_name = data[:,1]

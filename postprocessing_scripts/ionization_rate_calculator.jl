@@ -12,7 +12,7 @@ using Plots, Plots.PlotMeasures
     )
 
 const TOP_LEVEL = dirname(@__DIR__)
-
+results_dir = "/Users/luna/Research/geant4/SEPIIDA/results/SEPIIDA 2026.03.15"
 
 function get_W_from_atmosphere_profile(atmosphere_path)
     # Energy per ion pair data by species. Units: eV/pair
@@ -64,8 +64,8 @@ function get_W_from_atmosphere_profile(atmosphere_path)
         # Units: eV pair⁻¹
 end
 
-function get_energy_deposition()
-    path = glob("*energydeposition*", "$(dirname(TOP_LEVEL))/build/results")[1]
+function get_energy_deposition(; prefix = "")
+    path = glob("*$(prefix)*energydeposition*", results_dir)[1]
 
     data = readdlm(path, ',', skipstart = 1)
 
@@ -87,10 +87,12 @@ end
 
 
 W = get_W_from_atmosphere_profile("$(TOP_LEVEL)/jupiter_atmosphere_profile.csv")
-z_min, z_max, energy_deposition = get_energy_deposition()
+z_min, z_max, energy_deposition = get_energy_deposition(prefix = "jupiter")
 mean_altitude = (z_min .+ z_max) ./ 2
 
 ionization = (energy_deposition .* 1e3) ./ W.(mean_altitude)
+n_particles = 1e5
+ionization ./= n_particles
 
 plot(W.(mean_altitude), mean_altitude,
     xlabel = "W (eV pair⁻¹)",
