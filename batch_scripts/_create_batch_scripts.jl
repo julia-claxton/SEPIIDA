@@ -29,6 +29,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     # Prepare input
     input_particle_longname = input_particle == "e-" ? "electron" : input_particle
     energy_string = @sprintf "%.1f" energy
+    n_particles_string = @sprintf "%i" n_particles
     if (prefix != "") && (!contains(flags, "-result_prefix"))
         flags = "$(flags) -prefix $(prefix)"
     end
@@ -44,7 +45,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     end
 
     # Write file
-    job_name = "SEPIIDA_$(prefix)_$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles)particles"
+    job_name = "SEPIIDA_$(prefix)_$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles_string)particles"
     file = open("$(@__DIR__)/$(job_name).sh", "w")
     print(file,
     """
@@ -73,10 +74,10 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
 
     # Run simulation
     cd /projects/jucl6426/SEPIIDA/build/
-    ./SEPIIDA $(n_particles) $(input_particle) $(energy_string) $(pa) $(flags)
+    ./SEPIIDA $(n_particles_string) $(input_particle) $(energy_string) $(pa) $(flags)
 
     # Copy results to safe folder
-    cp /projects/jucl6426/SEPIIDA/build/results/$(prefix)*$(input_particle_longname)_input*$(energy_string)keV_$(pa)deg_$(n_particles)particles* /projects/jucl6426/SEPIIDA/results
+    cp /projects/jucl6426/SEPIIDA/build/results/$(prefix)*$(input_particle_longname)_input*$(energy_string)keV_$(pa)deg_$(n_particles_string)particles* /projects/jucl6426/SEPIIDA/results
     """
     )
     close(file)
