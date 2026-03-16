@@ -7,18 +7,18 @@ function main()
     rm.(glob("*keV*.sh", @__DIR__))
     
     # Write new scripts
-    write_job_script("preemptable", 10_000, "e-", 1000, 180, 
+    write_job_script("preemptable", 1e5, "e-", 1000, 180, 
         prefix = "jupiter",
         flags = "
-            -brem_splitting 10
+            -brem_splitting 100
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv
         "
     )
-    write_job_script("preemptable", 10_000, "e-", 1000, 0, 
+    write_job_script("preemptable", 1e5, "e-", 1000, 0, 
         prefix = "earth",
         flags = "
-            -brem_splitting 10
+            -brem_splitting 100
             -magnetic_model igrf2025
             -atmosphere_filename msis_earth_atmosphere_profile.csv
         "
