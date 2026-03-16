@@ -81,14 +81,14 @@ F03FieldSetup::F03FieldSetup()
 {
   // Constants
   fStepperType = "G4DormandPrince745"; // Set the stepper here
-  G4double cacheRadius = 0.01 * km;
+  G4double cacheRadius = 0.1 * km;
   fMinStep = 0.01 * km;
 
   // Field options
   G4MagneticField* nonCachedMagneticField = new CustomMagneticField(); 
   G4MagneticField* cachedMagneticField= new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius);
 
-  G4MagneticField* fieldToUse = cachedMagneticField;
+  G4MagneticField* fieldToUse = nonCachedMagneticField;
 
 
   // Field setup stuff

@@ -54,9 +54,9 @@ end
 
 
 prefix = "earth"
-dir_to_read = "/Users/luna/Research/geant4/SEPIIDA/results/SEPIIDA 2026.03.15" # "$(dirname(TOP_LEVEL))/build/results"
+dir_to_read = "/Users/luna/Research/geant4/SEPIIDA/results/results" # "$(dirname(TOP_LEVEL))/build/results"
 
-path = glob("$(prefix)*spectra_e-*", dir_to_read)[1]
+path = glob("$(prefix)*100000*spectra_e-*", dir_to_read)[1]
 file = open(path, "r")
 contents = read(file, String)
 lines = split(contents, "\n", keepempty = false)
@@ -74,7 +74,7 @@ heatmap(log10.(energy[begin:end-1]), altitude, log10.(omnidirectional),
     ylabel = "Altitude, km",
     bg=:black,
     colorbar_title = "Log10 counts",
-    clims = (-2, 4),
+    clims = (-2, 5),
     ylims = (0, 500)
 )
 display(plot!())
@@ -88,7 +88,7 @@ function my_histogram(data, edges)
 end
 
 
-path = glob("$(prefix)*backscatter*", dir_to_read)[1]
+path = glob("$(prefix)*100000*backscatter*", dir_to_read)[1]
 data = readdlm(path, ',', skipstart = 1)
 
 particle_name = data[:,1]

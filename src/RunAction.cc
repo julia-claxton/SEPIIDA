@@ -121,6 +121,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
   if(threadID != -1){
     printTimestamp();
     G4cout <<"STARTING: Thread " << threadID << G4endl;
+    simStartTimestamp = std::time(nullptr);
   }
 
   // Change parameters for looping particles
@@ -164,13 +165,24 @@ void RunAction::EndOfRunAction(const G4Run*){
   // If we are not the main thread, write results to file and exit
   if(threadID != -1)
   {
+    // Get simulation wallclock time
+    simEndTimestamp = std::time(nullptr);
+    std::time_t simTimeSeconds = simEndTimestamp - simStartTimestamp;
+
+    // Write thread data
     printTimestamp();
-    G4cout << ANSI_CYAN << " WRITING: Thread " << threadID << ANSI_NOCOLOR << G4endl;
+    G4cout << ANSI_CYAN << " WRITING: Thread " << threadID << ANSI_NOCOLOR << " (Simulation in " << simTimeSeconds << " seconds)" << G4endl;
     threadWriteSpectra(threadID);
     threadWriteEnergyDepositionAndIonCount(threadID);
     threadWriteBackscatter(threadID);
+    
+    // Get writing wallclock time
+    std::time_t writeEndTimestamp = std::time(nullptr);
+    std::time_t writeTimeSeconds = writeEndTimestamp - simEndTimestamp;
+
+    // Print finish message
     printTimestamp();
-    G4cout << ANSI_GREEN << "FINISHED: Thread " << threadID << ANSI_NOCOLOR << G4endl;
+    G4cout << ANSI_GREEN << "FINISHED: Thread " << threadID << ANSI_NOCOLOR << " (Write in " << writeTimeSeconds << " seconds)" << G4endl;
     return;
   }
   // If we are the main thread, merge datafiles from each thread. Main thread ends after workers are done, so this is the end of the simulation
