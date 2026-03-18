@@ -16,6 +16,7 @@ set -e
 
 # Print job ID
 echo "Job ID: $SLURM_JOB_ID"
+echo "Node ID: $SLURMD_NODENAME"
 
 # Load modules
 module purge
