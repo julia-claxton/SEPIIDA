@@ -64,6 +64,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*keV*.sh", @__DIR__))
 
+#=
 # Write new scripts
 for energy in logrange(10, 10000, 21)
     for pitch_angle in [180.0, 160.0, 140.0, 120.0, 100.0]
@@ -78,7 +79,6 @@ for energy in logrange(10, 10000, 21)
     end
 end
 
-#=
 for energy in logrange(10, 10000, 21)
     for pitch_angle in [0.0, 67.0, 72.0]
         write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
@@ -92,3 +92,12 @@ for energy in logrange(10, 10000, 21)
     end
 end
 =#
+
+write_job_script("preemptable", 1e5, "e-", 7079.5, 0.0, 
+    prefix = "earth",
+    flags = "
+        -brem_splitting 100
+        -magnetic_model igrf2025
+        -atmosphere_filename msis_earth_atmosphere_profile.csv
+    "
+)

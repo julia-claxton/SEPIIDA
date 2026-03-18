@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name SEPIIDA_jupiter_electron_316.2keV_180.0deg_100000particles
+#SBATCH --job-name SEPIIDA_earth_electron_7079.5keV_0.0deg_100000particles
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node 40
 #SBATCH --time 1-00:00:00
-#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_jupiter_electron_316.2keV_180.0deg_100000particles.log
+#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_earth_electron_7079.5keV_0.0deg_100000particles.log
 #SBATCH --qos=preemptable
 #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
 #SBATCH --requeue
@@ -23,7 +23,7 @@ module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 100000 e- 316.2 180.0 -brem_splitting 100 -magnetic_model jrm33 -atmosphere_filename jupiter_atmosphere_profile.csv -prefix jupiter
+./SEPIIDA 100000 e- 7079.5 0.0 -brem_splitting 100 -magnetic_model igrf2025 -atmosphere_filename msis_earth_atmosphere_profile.csv -prefix earth
 
 # Copy results to safe folder
-cp /projects/jucl6426/SEPIIDA/build/results/jupiter*electron_input*316.2keV_180.0deg_100000particles* /projects/jucl6426/SEPIIDA/results
+cp /projects/jucl6426/SEPIIDA/build/results/earth*electron_input*7079.5keV_0.0deg_100000particles* /projects/jucl6426/SEPIIDA/results
