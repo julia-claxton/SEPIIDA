@@ -121,9 +121,9 @@ function get_available_beams(dir_to_search)
         n_particles = parse(Int64, captures[6])
 
         # Find backscatter altitude
-        backscatter_search = [match(Regex("$(base_filename)_backscatter_$(regex_float)km.csv"), filename) for filename in filenames]
-        backscatter_altitude = backscatter_search[backscatter_search .≠ nothing][1].captures[1]
-        backscatter_altitude = parse(Float64, backscatter_altitude)
+        backscatter_filename = glob("$(base_filename)_backscatter_*", dir_to_search)[1]
+        backscatter_match = match(Regex("$(base_filename)_backscatter_$(regex_float)km.csv"), backscatter_filename)
+        backscatter_altitude = parse(Float64, backscatter_match.captures[1])
 
         # Construct BeamInfo object
         push!(beams, BeamInfo(
@@ -434,26 +434,40 @@ function get_backscatter(beaminfo::BeamInfo)
 end
 
 
-results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--11.46"
+results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--14.36"
 
 #prebake_directory(results_dir)
 
-beaminfos = get_available_beams(results_dir)
-beams = load_beam.(beaminfos)
+beamlist = get_available_beams(results_dir)
+beam = load_beam(beamlist[1])
+
+omnidirectional = dropdims(sum(beam.spectra["gamma"], dims = 3), dims = 3)
+heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
+    title = "Omnidirectional",
+    xlabel = "Log10 Energy, keV",
+    ylabel = "Altitude, km",
+    bg=:black,
+    colorbar_title = "Log10 counts",
+    clims = (-log10.(beam.info.n_particles)-2, 0),
+    xticks = (-2:8),
+    ylims = (0, 500)
+)
+display(plot!())
 
 
+#=
+altitude_idx = 200
 
-for beam in beams
-    omnidirectional = dropdims(sum(beam.spectra["e-"], dims = 3), dims = 3)
-    heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
-        title = "Omnidirectional",
-        xlabel = "Log10 Energy, keV",
-        ylabel = "Altitude, km",
-        bg=:black,
-        colorbar_title = "Log10 counts",
-        clims = (-log10.(beam.info.n_particles)-2, 0),
-        xticks = (-2:8),
-        ylims = (0, 500)
-    )
-    display(plot!())
-end
+α = beam.pitch_angle_bin_edges
+E = beam.energy_bin_edges
+
+Ω = 2π .* [cosd(α[i]) - cosd(α[i+1]) for i in eachindex(beam.pitch_angle_bin_means)]
+ΔE = diff(E)
+
+gamma_backscatter = beam.spectra["gamma"][altitude_idx,:,:]
+energy_spectrum = dropdims(sum(gamma_backscatter, dims = 2), dims = 2)
+energy_spectrum ./= ΔE
+
+pa_spectrum = dropdims(sum(gamma_backscatter, dims = 1), dims = 1)
+pa_spectrum ./= Ω
+=#
