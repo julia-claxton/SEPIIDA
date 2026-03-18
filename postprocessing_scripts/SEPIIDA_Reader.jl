@@ -80,7 +80,7 @@ end
 # =====================================
 # Main getter functions (frontend)
 # =====================================
-function get_available_sepiida_beams(dir_to_search)
+function get_available_beams(dir_to_search)
     regex_any = "(.*)"
     regex_float = "([0-9]+[\\.]?[0-9]*)" # With optional decimal point
     regex_int = "([0-9]+)"
@@ -141,32 +141,7 @@ function get_available_sepiida_beams(dir_to_search)
     return beams
 end
 
-function load_sepiida_beam(beaminfo::BeamInfo)
-    # ==============================
-    # Get spectra
-    # ==============================
-    altitude_bin_edges = nothing
-    energy_bin_edges = nothing
-    pitch_angle_bin_edges = nothing
-
-    species_to_get = ["e-", "gamma", "proton", "alpha", "neutron"]
-    spectra = Dict{String, Array{Float64}}()
-    for species in species_to_get
-        species_data = read_spectrum(beaminfo, species)
-
-        if isnothing(altitude_bin_edges)
-            altitude_bin_edges = species_data["altitude_bin_edges"]
-            energy_bin_edges = species_data["energy_bin_edges"]
-            pitch_angle_bin_edges = species_data["pitch_angle_bin_edges"]
-        else
-            altitude_bin_edges == species_data["altitude_bin_edges"]       || error("Mismatch in axis labels across spectra files!")
-            energy_bin_edges == species_data["energy_bin_edges"]           || error("Mismatch in axis labels across spectra files!")
-            pitch_angle_bin_edges == species_data["pitch_angle_bin_edges"] || error("Mismatch in axis labels across spectra files!")
-        end
-
-        spectra[species] = species_data["counts"] ./ beaminfo.n_particles
-    end
-
+function load_beam(beaminfo::BeamInfo)
     # ==============================
     # Get backscatter
     # ==============================
@@ -176,7 +151,23 @@ function load_sepiida_beam(beaminfo::BeamInfo)
     # Get energy deposition
     # ==============================
     energy_deposition_data = get_energy_deposition(beaminfo)
-    energy_deposition_data["altitude_bin_edges"] == altitude_bin_edges || error("Altitude bin edge mismatch between spectra and energy deposition!")
+
+    # ==============================
+    # Get spectra
+    # ==============================
+    prebaked_path = "$(beaminfo.dir)/preprocessed_spectra/$(beaminfo.base_filename).npz"
+    if isfile(prebaked_path)
+        spectra = npzread(prebaked_path)
+    else
+        prebake_beam(beaminfo)
+        return load_beam(beaminfo)
+    end
+
+    # Assign bin edge variables
+    energy_deposition_data["altitude_bin_edges"] == spectra["altitude_bin_edges"] || error("Altitude bin edge mismatch between spectra and energy deposition!")
+    altitude_bin_edges = spectra["altitude_bin_edges"]
+    energy_bin_edges = spectra["energy_bin_edges"]
+    pitch_angle_bin_edges = spectra["pitch_angle_bin_edges"]
 
     # ==============================
     # Construct and return
@@ -200,6 +191,60 @@ function load_sepiida_beam(beaminfo::BeamInfo)
     )
 end
 
+# =====================================
+# Prebake functions
+# =====================================
+function prebake_directory(dir_to_prebake)
+    if isdir("$(dir_to_prebake)/preprocessed_spectra")
+        rm("$(dir_to_prebake)/preprocessed_spectra", recursive = true)
+    end
+
+    beams = get_available_beams(dir_to_prebake)
+    println("Prebaking $(length(beams)) beams in $(dir_to_prebake)...")
+    print_progress_bar(0)
+
+    for i in eachindex(beams)
+        prebake_beam(beams[i])
+        print_progress_bar(i/length(beams))
+    end
+end
+
+function prebake_beam(beaminfo::BeamInfo)
+    # ==============================
+    # Get spectra
+    # ==============================
+    altitude_bin_edges = nothing
+    energy_bin_edges = nothing
+    pitch_angle_bin_edges = nothing
+
+    species_to_get = ["e-", "gamma", "proton", "alpha", "neutron"]
+    spectra = Dict{String, Array{Float64}}()
+    for species in species_to_get
+        species_data = read_spectrum(beaminfo, species)
+
+        if isnothing(altitude_bin_edges)
+            spectra["altitude_bin_edges"] = species_data["altitude_bin_edges"]
+            spectra["energy_bin_edges"] = species_data["energy_bin_edges"]
+            spectra["pitch_angle_bin_edges"] = species_data["pitch_angle_bin_edges"]
+        else
+            spectra["altitude_bin_edges"] == species_data["altitude_bin_edges"]       || error("Mismatch in axis labels across spectra files!")
+            spectra["energy_bin_edges"] == species_data["energy_bin_edges"]           || error("Mismatch in axis labels across spectra files!")
+            spectra["pitch_angle_bin_edges"] == species_data["pitch_angle_bin_edges"] || error("Mismatch in axis labels across spectra files!")
+        end
+
+        spectra[species] = species_data["counts"] ./ beaminfo.n_particles
+    end
+
+    # ==============================
+    # Write prebaked spectra
+    # ==============================
+    prebaked_dir = "$(beaminfo.dir)/preprocessed_spectra"
+    if isdir(prebaked_dir) == false
+        mkdir(prebaked_dir)
+    end
+    npzwrite("$(prebaked_dir)/$(beaminfo.base_filename).npz", spectra)
+    return
+end
 
 # =====================================
 # Spectrum reader functions
@@ -381,20 +426,24 @@ end
 
 
 results_dir = "$(dirname(TOP_LEVEL))/results/test"
-beams = get_available_sepiida_beams(results_dir)
-    tick()
-beam = load_sepiida_beam(beams[1])
-    tock()
+beaminfos = get_available_beams(results_dir)
+
+tick()
+beams = load_beam.(beaminfos)
+tock()
 
 
-omnidirectional = dropdims(sum(beam.spectra["e-"], dims = 3), dims = 3)
-heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
-    title = "Omnidirectional",
-    xlabel = "Log10 Energy, keV",
-    ylabel = "Altitude, km",
-    bg=:black,
-    colorbar_title = "Log10 counts",
-    clims = (-log10.(beam.info.n_particles)-2, 0),
-    ylims = (0, 500)
-)
-display(plot!())
+
+for beam in beams
+    omnidirectional = dropdims(sum(beam.spectra["e-"], dims = 3), dims = 3)
+    heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
+        title = "Omnidirectional",
+        xlabel = "Log10 Energy, keV",
+        ylabel = "Altitude, km",
+        bg=:black,
+        colorbar_title = "Log10 counts",
+        clims = (-log10.(beam.info.n_particles)-2, 0),
+        ylims = (0, 500)
+    )
+    display(plot!())
+end
