@@ -2,29 +2,6 @@ using Statistics, LinearAlgebra
 using Glob
 using Printf
 
-function main()
-    # Remove existing jobscripts
-    rm.(glob("*keV*.sh", @__DIR__))
-    
-    # Write new scripts
-    write_job_script("preemptable", 1e5, "e-", 1000, 180, 
-        prefix = "jupiter",
-        flags = "
-            -brem_splitting 100
-            -magnetic_model jrm33
-            -atmosphere_filename jupiter_atmosphere_profile.csv
-        "
-    )
-    write_job_script("preemptable", 1e5, "e-", 1000, 0, 
-        prefix = "earth",
-        flags = "
-            -brem_splitting 100
-            -magnetic_model igrf2025
-            -atmosphere_filename msis_earth_atmosphere_profile.csv
-        "
-    )
-end
-
 function write_job_script(qos, n_particles, input_particle, energy, pa; prefix = "", flags = "")
     # Prepare input
     input_particle_longname = input_particle == "e-" ? "electron" : input_particle
@@ -84,4 +61,32 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     println("Wrote batch_scripts/$(job_name).sh.")
 end
 
-main()
+# Remove existing jobscripts
+rm.(glob("*keV*.sh", @__DIR__))
+
+# Write new scripts
+for energy in logrange(10, 10000, 21)
+    for pitch_angle in [180.0, 160.0, 140.0, 120.0, 100.0]
+        write_job_script("preemptable", 1e5, "e-", 1000, 180, 
+            prefix = "jupiter",
+            flags = "
+                -brem_splitting 100
+                -magnetic_model jrm33
+                -atmosphere_filename jupiter_atmosphere_profile.csv
+            "
+        )
+    end
+end
+
+for energy in logrange(10, 10000, 21)
+    for pitch_angle in [0.0, 67.0, 72.0]
+        write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
+            prefix = "earth",
+            flags = "
+                -brem_splitting 100
+                -magnetic_model igrf2025
+                -atmosphere_filename msis_earth_atmosphere_profile.csv
+            "
+        )
+    end
+end
