@@ -4,6 +4,7 @@ using NPZ, DelimitedFiles                # File interactions
 using Glob
 using Printf
 using BasicInterpolators
+using Base.Threads
 using Plots, Plots.PlotMeasures
     default(
         dpi = 300,
@@ -194,8 +195,8 @@ end
 # =====================================
 # Prebake functions
 # =====================================
-function prebake_directory(dir_to_prebake)
-    if isdir("$(dir_to_prebake)/preprocessed_spectra")
+function prebake_directory(dir_to_prebake; overwrite = true)
+    if overwrite && isdir("$(dir_to_prebake)/preprocessed_spectra")
         rm("$(dir_to_prebake)/preprocessed_spectra", recursive = true)
     end
 
@@ -203,10 +204,18 @@ function prebake_directory(dir_to_prebake)
     println("Prebaking $(length(beams)) beams in $(dir_to_prebake)...")
     print_progress_bar(0)
 
-    for i in eachindex(beams)
-        prebake_beam(beams[i])
-        print_progress_bar(i/length(beams))
+    stdout_lock = ReentrantLock()
+    completed_beams = 0
+    Threads.@threads for i in eachindex(beams)
+        overwrite ? prebake_beam(beams[i]) : load_beam(beams[i])
+
+        # Print status message
+        lock(stdout_lock) do 
+            print_progress_bar(completed_beams/length(beams))
+            completed_beams += 1
+        end
     end
+    return
 end
 
 function prebake_beam(beaminfo::BeamInfo)
@@ -425,12 +434,12 @@ function get_backscatter(beaminfo::BeamInfo)
 end
 
 
-results_dir = "$(dirname(TOP_LEVEL))/results/test"
-beaminfos = get_available_beams(results_dir)
+results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--11.46"
 
-tick()
+#prebake_directory(results_dir)
+
+beaminfos = get_available_beams(results_dir)
 beams = load_beam.(beaminfos)
-tock()
 
 
 
@@ -443,6 +452,7 @@ for beam in beams
         bg=:black,
         colorbar_title = "Log10 counts",
         clims = (-log10.(beam.info.n_particles)-2, 0),
+        xticks = (-2:8),
         ylims = (0, 500)
     )
     display(plot!())

@@ -178,7 +178,6 @@ int main(int argc,char** argv)
   // Set particle definition variable, uses Geant4's particle names: https://fismed.ciemat.es/GAMOS/GAMOS_doc/GAMOS.5.1.0/x11519.html
   G4String particle = argv[2];
   UImanager->ApplyCommand("/control/alias BEAM_PARTICLE " + particle); 
-  UImanager->ApplyCommand("/beamParameters/setBeamParticle {BEAM_PARTICLE}");
   
   // Set particle longname - what the result file will call the input particle. This is just for clarity to 
   // the end user on what each result file represents, as I think "photon" and "electron" are clearer than
@@ -192,12 +191,10 @@ int main(int argc,char** argv)
   // Set beam energy
   G4String energy = argv[3];
   UImanager->ApplyCommand("/control/alias BEAM_ENERGY_KEV " + energy);
-  UImanager->ApplyCommand("/beamParameters/setBeamEnergy {BEAM_ENERGY_KEV}");
   
   // Set beam pitch angle
   G4String pitchAngle = argv[4];
   UImanager->ApplyCommand("/control/alias BEAM_PITCH_ANGLE_DEG " + pitchAngle);
-  UImanager->ApplyCommand("/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}");
 
   // Set default values for optional arguments
   std::map<G4String, G4String> optionalFlags = {
@@ -246,29 +243,17 @@ int main(int argc,char** argv)
       throw;
     }
 
-    // Do things
+    // Housekeeping
     flagsUserChanged.push_back(flagName);
     optionalFlags[flagName] = flagValue;
   }
-
-
 
   // Set simulation parameters
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
-
-
-
-
-
-  UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
-  UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
-
   // B field mode
   UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
-
-
 
 
   // Initialize run
@@ -277,9 +262,6 @@ int main(int argc,char** argv)
   // before initialization or else it doesn't work. Meanwhile the fieldParameters must be set
   // *after* initialization or else they don't work. All commands are set to accept pre-init,
   // init, and idle states so I have no clue what could possibly be happening here. Whatever.
-
-
-
 
 
   // Latitude
@@ -318,6 +300,11 @@ int main(int argc,char** argv)
     prefixToSet = "\"\"";
   }
   UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + prefixToSet);
+
+  // Beam parameters
+  UImanager->ApplyCommand("/beamParameters/setBeamParticle {BEAM_PARTICLE}");
+  UImanager->ApplyCommand("/beamParameters/setBeamEnergy {BEAM_ENERGY_KEV}");
+  UImanager->ApplyCommand("/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}");
 
   // Turn on deexcitation physics
   UImanager->ApplyCommand("/process/em/deexcitation world true true true");

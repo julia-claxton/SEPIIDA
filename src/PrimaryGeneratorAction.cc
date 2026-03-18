@@ -53,12 +53,12 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0),
   fPrimaryMessenger(0),
-  fBeamEnergy(100.),
-  fBeamPitchAngle_deg(0.0),
+  fBeamEnergy(-999.0),
+  fBeamPitchAngle_deg(-999.0),
   fInitialParticleAlt(-999.0),
   fPI(3.14159265359),
   fRad2Deg(180.0 / 3.14159265359),
-  fSourceType("e-")
+  fSourceType("unset")
 {
   fPrimaryMessenger = new PrimaryGeneratorMessenger(this);
 }
@@ -77,6 +77,30 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       << ANSI_RED << "\n"
       << __FILE__ << ": " << __FUNCTION__ << "\n"
       << "Initial particle altitude unset. You should never see this."
+    << G4endl;
+    throw;
+  }
+  if(fBeamEnergy == -999.0){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Beam energy unset. You should never see this."
+    << G4endl;
+    throw;
+  }
+  if(fBeamPitchAngle_deg == -999.0){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Beam pitch angle unset. You should never see this."
+    << G4endl;
+    throw;
+  }
+  if(fSourceType == "unset"){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Beam particle unset. You should never see this."
     << G4endl;
     throw;
   }
