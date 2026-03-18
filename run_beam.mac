@@ -7,17 +7,6 @@
 # Set global range cut
     /run/setCut 1 mm
 
-# Set the integrator in /src/F03FieldSetup.cc
-
-
-
-
-
-# temp?
-/control/suppressAbortion
-
-
-
 # Dump particle list for reference
     #/run/particle/dumpList
 

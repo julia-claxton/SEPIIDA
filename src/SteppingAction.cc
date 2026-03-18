@@ -87,13 +87,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // Check for NaN energy
   if(std::isnan(postStepKineticEnergy))
   {  
-    G4cout << "WARNING: Killed " << particleName << "at " << postStepKineticEnergy/keV << " keV. Reason: NaN energy. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
+    G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: NaN energy. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
   // Check for exceeding 1 second of simulation time
   if(track->GetProperTime()/second > 1)
   {
-    G4cout << "WARNING: Killed " << particleName << "at " << postStepKineticEnergy/keV << " keV. Reason: Exceeded 1s simulation time. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
+    G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Exceeded 1s simulation time. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
   // Check for stuck photons. Occassionally they seem to get 'wedged' between atmospheric layers and stop propagating without being automatically killed, hanging the program forever
