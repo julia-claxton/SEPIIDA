@@ -34,7 +34,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     #SBATCH --time $(time_limit)
     #SBATCH --output /projects/jucl6426/SEPIIDA/results/$(job_name).log
     #SBATCH --qos=$(qos)
-    #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
+    #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22,bmem-rico1
     #SBATCH --requeue
     #SBATCH --mail-type=BEGIN,END,FAIL
     #SBATCH --mail-user=julia.claxton@colorado.edu

@@ -6,7 +6,7 @@
 #SBATCH --time 1-00:00:00
 #SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_earth_electron_1258.9keV_72.0deg_100000particles.log
 #SBATCH --qos=preemptable
-#SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22
+#SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22,bmem-rico1
 #SBATCH --requeue
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=julia.claxton@colorado.edu
