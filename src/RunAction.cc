@@ -705,7 +705,7 @@ std::vector<G4double> RunAction::add1DAltitudeVectors(std::vector<G4double> v1, 
 
 std::vector<G4double> RunAction::linspace(G4double start, G4double stop, int n){
   std::vector<G4double> result;
-  G4double stepSize = (stop - start) / (n-1);
+  G4double stepSize = (stop - start) / (static_cast<G4double>(n)-1.0);
 
   for(int i = 0; i < n; i++){
     result.push_back(start + (i * stepSize));

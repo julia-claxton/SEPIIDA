@@ -200,6 +200,7 @@ void SteppingAction::logIonProduction(RunAction* fRunAction,
   const G4double preStepAltitudeIndex, 
   const G4double trackWeight
 ){
+  if(std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()){return;}
   fRunAction->ionCounts.at(std::floor(preStepAltitudeIndex)) += 1 * trackWeight;
 }
 

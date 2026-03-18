@@ -139,7 +139,11 @@ function get_available_beams(dir_to_search)
             base_filename
         ))
     end
-    return beams
+
+    # Sort result
+    energies = [el.energy for el in beams]
+    sortvec = sortperm(energies)
+    return beams[sortvec]
 end
 
 function load_beam(beaminfo::BeamInfo)
@@ -434,26 +438,31 @@ function get_backscatter(beaminfo::BeamInfo)
 end
 
 
-results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--14.36"
+#results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--14.36"
+results_dir = "$(dirname(TOP_LEVEL))/build/results"
 
 #prebake_directory(results_dir)
 
 beamlist = get_available_beams(results_dir)
-beam = load_beam(beamlist[1])
+beam_energies = [el.energy for el in beamlist]
+beam_pitch_angles = [el.pitch_angle for el in beamlist]
 
-omnidirectional = dropdims(sum(beam.spectra["gamma"], dims = 3), dims = 3)
-heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
-    title = "Omnidirectional",
-    xlabel = "Log10 Energy, keV",
-    ylabel = "Altitude, km",
-    bg=:black,
-    colorbar_title = "Log10 counts",
-    clims = (-log10.(beam.info.n_particles)-2, 0),
-    xticks = (-2:8),
-    ylims = (0, 500)
-)
-display(plot!())
+beams = load_beam.(beamlist)
 
+for beam in beams
+    omnidirectional = dropdims(sum(beam.spectra["e-"], dims = 3), dims = 3)
+    heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
+        title = "Omnidirectional",
+        xlabel = "Log10 Energy, keV",
+        ylabel = "Altitude, km",
+        bg=:black,
+        colorbar_title = "Log10 counts/input particle",
+        clims = (-log10.(beam.info.n_particles)-2, 0),
+        xticks = (-2:8),
+        #ylims = (0, 500)
+    )
+    display(plot!())
+end
 
 #=
 altitude_idx = 200
