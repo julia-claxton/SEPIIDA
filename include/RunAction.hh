@@ -53,9 +53,9 @@ class RunAction : public G4UserRunAction
     static constexpr G4double fMaxSampleAltitude_km = 500.0;
     static constexpr G4int fNumberOfSamplePlanes = 501; // 1 plane per km
 
-    static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
+    static constexpr G4double fEnergyMinkeV = 1e-1; // 100 eV
     static constexpr G4double fEnergyMaxkeV = 1e8; // 100 GeV
-    static constexpr G4int fNumberOfEnergyBins = 110; // 10 bins per decade
+    static constexpr G4int fNumberOfEnergyBins = 90; // 10 bins per decade
 
     static constexpr G4double fPitchAngleMin = 0.0;
     static constexpr G4double fPitchAngleMax = 180.0;
@@ -68,7 +68,7 @@ class RunAction : public G4UserRunAction
     std::vector<G4double> pitchAngleBinEdges_deg;
 
     // Histograms
-    std::vector<std::string> particlesToRecord = {"proton", "e-", "alpha", "gamma", "neutron"};
+    std::vector<std::string> particlesToRecord = {"proton", "e-", "alpha", "gamma"};
     std::vector<std::vector<std::vector<std::vector<G4double>>>> mainSpectrum; // Dimensions: particle species, altitude, energy, pitch angle
     
     std::vector<G4double> totalEnergyDeposition; 

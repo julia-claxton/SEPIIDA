@@ -89,11 +89,8 @@ function get_available_beams(dir_to_search;
     regex_float = "([0-9]+[\\.]?[0-9]*)" # With optional decimal point
     regex_int = "([0-9]+)"
     
-    # Add user-specified search prefix, if it exists
-    isnothing(prefix) ? prefix_search = regex_any : prefix_search = prefix
-    
     search_string = 
-        "$(prefix_search)_input_" *
+        "$(regex_any)_input_" *
         "inject$(regex_float)km_" *
         "lat$(regex_float)deg_" *
         "$(regex_float)keV_" *
@@ -120,7 +117,8 @@ function get_available_beams(dir_to_search;
             parsed_particle = captures[1]
         end
 
-        # Pass over beams that don't match user-sepcified particle, if specified
+        # Pass over beams that don't match user-sepcified particle/prefix, if specified
+        if (prefix ≠ nothing) && (parsed_prefix ≠ prefix); continue; end
         if (particle ≠ nothing) && (parsed_particle ≠ particle); continue; end
 
         # Parse other captures
@@ -256,7 +254,7 @@ function prebake_beam(beaminfo::BeamInfo)
     energy_bin_edges = nothing
     pitch_angle_bin_edges = nothing
 
-    species_to_get = ["e-", "gamma", "proton", "alpha", "neutron"]
+    species_to_get = ["e-", "gamma", "proton", "alpha"]
     spectra = Dict{String, Array{Float64}}()
     for species in species_to_get
         species_data = read_spectrum(beaminfo, species)

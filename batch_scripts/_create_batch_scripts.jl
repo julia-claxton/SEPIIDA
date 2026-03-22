@@ -76,11 +76,7 @@ for energy in logrange(10, 10000, 21)
                 -atmosphere_filename jupiter_atmosphere_profile.csv
             "
         )
-    end
-end
 
-for energy in logrange(10, 10000, 21)
-    for pitch_angle in [0.0, 67.0, 72.0]
         write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
             prefix = "earth",
             flags = "
