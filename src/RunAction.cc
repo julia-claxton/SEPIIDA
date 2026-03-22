@@ -207,7 +207,14 @@ void RunAction::threadWriteSpectra(int threadID){
     for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes; altitudeIndex++){
       for(int energyIndex = 0; energyIndex < fNumberOfEnergyBins; energyIndex++){
         for(int paIndex = 0; paIndex < fNumberOfPitchAngleBins; paIndex++){
-          data.append(std::to_string(mainSpectrum[particleIndex][altitudeIndex][energyIndex][paIndex]));
+          G4String countsAsString = std::to_string(mainSpectrum[particleIndex][altitudeIndex][energyIndex][paIndex]);
+
+          // Remove trailing zeroes after decimal point for filesize considerations
+          std::string::size_type trimAfter = countsAsString.find_last_not_of('0');
+          G4String toWrite = countsAsString.substr(0, trimAfter+1);
+          if(toWrite == "0."){toWrite = "0";}
+          
+          data.append(toWrite);
           data.append(";");
         }
         data.append(";");
@@ -344,7 +351,14 @@ void RunAction::mergeEnergySpectra(){
     for(int altitudeIndex = 0; altitudeIndex < fNumberOfSamplePlanes; altitudeIndex++){
       for(int energyIndex = 0; energyIndex < fNumberOfEnergyBins; energyIndex++){
         for(int paIndex = 0; paIndex < fNumberOfPitchAngleBins; paIndex++){
-          data.append(std::to_string(mainSpectrum[particleIndex][altitudeIndex][energyIndex][paIndex]));
+          G4String countsAsString = std::to_string(mainSpectrum[particleIndex][altitudeIndex][energyIndex][paIndex]);
+
+          // Remove trailing zeroes after decimal point for filesize considerations
+          std::string::size_type trimAfter = countsAsString.find_last_not_of('0');
+          G4String toWrite = countsAsString.substr(0, trimAfter+1);
+          if(toWrite == "0."){toWrite = "0";}
+          
+          data.append(toWrite);
           data.append(";");
         }
         data.append(";");

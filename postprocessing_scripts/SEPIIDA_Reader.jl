@@ -420,10 +420,18 @@ end
 function get_backscatter(beaminfo::BeamInfo)
     backscatter_alt = @sprintf "%.2f" beaminfo.backscatter_alt
     path = "$(beaminfo.dir)/$(beaminfo.base_filename)_backscatter_$(backscatter_alt)km.csv"
-    data = readdlm(path, ',', skipstart = 1)
-
-    result = Dict{String, Any}()
     column_names = ["particle_names", "weights", "energies_keV", "pitch_angles_deg", "x_unit_momenta", "y_unit_momenta", "z_unit_momenta", "x_positions_m", "y_positions_m", "z_positions_m"]
+
+    file_contents = readdlm(path, ',')
+    # If no backscatter data, return empty dict
+    if size(file_contents)[1] == 1
+        result = Dict{String, Any}()
+        [result[colname] = [] for colname in column_names]
+        return result
+    end
+
+    data = file_contents[2:end, :]
+    result = Dict{String, Any}()
     for i in eachindex(column_names)
         i == 1 ? to_write = String.(data[:,i]) : to_write = Float64.(data[:,i])
         result[column_names[i]] = to_write
@@ -440,29 +448,23 @@ end
 
 #results_dir = "$(dirname(TOP_LEVEL))/results/2026-03-18--14.36"
 results_dir = "$(dirname(TOP_LEVEL))/build/results"
-
-#prebake_directory(results_dir)
-
 beamlist = get_available_beams(results_dir)
-beam_energies = [el.energy for el in beamlist]
-beam_pitch_angles = [el.pitch_angle for el in beamlist]
+beam = load_beam(beamlist[1])
 
-beams = load_beam.(beamlist)
+omni = dropdims(sum(beam.spectra["e-"] .* beam.info.n_particles, dims = 3), dims = 3)
+heatmap(log10.(omni),
+    title = "$(round(beam.info.energy)) keV, $(beam.info.pitch_angle)º",
+    bg = :black,
+    clims = (-2, log10(beam.info.n_particles)),
+    #ylims = (0, 300),
+    yticks = 0:100:1000
+)
+display(plot!())
 
-for beam in beams
-    omnidirectional = dropdims(sum(beam.spectra["e-"], dims = 3), dims = 3)
-    heatmap(log10.(beam.energy_bin_means), beam.altitude_bin_edges, log10.(omnidirectional),
-        title = "Omnidirectional",
-        xlabel = "Log10 Energy, keV",
-        ylabel = "Altitude, km",
-        bg=:black,
-        colorbar_title = "Log10 counts/input particle",
-        clims = (-log10.(beam.info.n_particles)-2, 0),
-        xticks = (-2:8),
-        #ylims = (0, 500)
-    )
-    display(plot!())
-end
+
+
+
+
 
 #=
 altitude_idx = 200
