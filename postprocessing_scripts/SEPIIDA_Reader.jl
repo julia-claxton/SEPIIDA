@@ -81,12 +81,19 @@ end
 # =====================================
 # Main getter functions (frontend)
 # =====================================
-function get_available_beams(dir_to_search)
+function get_available_beams(dir_to_search;
+    prefix = nothing,
+    particle = nothing
+    )
     regex_any = "(.*)"
     regex_float = "([0-9]+[\\.]?[0-9]*)" # With optional decimal point
     regex_int = "([0-9]+)"
+    
+    # Add user-specified search prefix, if it exists
+    isnothing(prefix) ? prefix_search = regex_any : prefix_search = prefix
+    
     search_string = 
-        "$(regex_any)_input_" *
+        "$(prefix_search)_input_" *
         "inject$(regex_float)km_" *
         "lat$(regex_float)deg_" *
         "$(regex_float)keV_" *
@@ -106,12 +113,15 @@ function get_available_beams(dir_to_search)
         # Parse prefix, if there is one
         prefix_exists = count(Regex("$(regex_any)_"), captures[1]) > 0
         if prefix_exists
-            prefix = match(Regex("$(regex_any)_"), captures[1]).captures[1]
-            particle = match(Regex("$(prefix)_$(regex_any)"), captures[1]).captures[1]
+            parsed_prefix = match(Regex("$(regex_any)_"), captures[1]).captures[1]
+            parsed_particle = match(Regex("$(parsed_prefix)_$(regex_any)"), captures[1]).captures[1]
         else
-            prefix = ""
-            particle = captures[1]
+            parsed_prefix = ""
+            parsed_particle = captures[1]
         end
+
+        # Pass over beams that don't match user-sepcified particle, if specified
+        if (particle ≠ nothing) && (parsed_particle ≠ particle); continue; end
 
         # Parse other captures
         injection_altitude = parse(Float64, captures[2])
@@ -127,8 +137,8 @@ function get_available_beams(dir_to_search)
 
         # Construct BeamInfo object
         push!(beams, BeamInfo(
-            prefix, 
-            particle, 
+            parsed_prefix, 
+            parsed_particle, 
             injection_altitude, 
             backscatter_altitude, 
             latitude, 
@@ -141,7 +151,7 @@ function get_available_beams(dir_to_search)
     end
 
     # Sort result
-    energies = [el.energy for el in beams]
+    energies = energy_list(beams)
     sortvec = sortperm(energies)
     return beams[sortvec]
 end
@@ -194,6 +204,22 @@ function load_beam(beaminfo::BeamInfo)
         pitch_angle_bin_edges,
         edges_to_means(pitch_angle_bin_edges)
     )
+end
+
+function energy_list(beamlist::Vector{BeamInfo})
+    return [el.energy for el in beamlist]
+end
+
+function energy_list(beaminfo::BeamInfo)
+    return beaminfo.energy
+end
+
+function pitch_angle_list(beamlist::Vector{BeamInfo})
+    return [el.pitch_angle for el in beamlist]
+end
+
+function pitch_angle_list(beaminfo::BeamInfo)
+    return beaminfo.pitch_angle
 end
 
 # =====================================

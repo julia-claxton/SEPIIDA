@@ -65,10 +65,9 @@ end
 # Remove existing jobscripts
 rm.(glob("*keV*.sh", @__DIR__))
 
-
 # Write new scripts
 for energy in logrange(10, 10000, 21)
-    for pitch_angle in [180.0, 160.0, 140.0, 120.0, 100.0]
+    for pitch_angle in 0:20:80
         write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
             prefix = "jupiter",
             flags = "

@@ -54,8 +54,8 @@ class RunAction : public G4UserRunAction
     static constexpr G4int fNumberOfSamplePlanes = 501; // 1 plane per km
 
     static constexpr G4double fEnergyMinkeV = 1e-3; // 1 eV
-    static constexpr G4double fEnergyMaxkeV = 100e6; // 100 GeV
-    static constexpr G4int fNumberOfEnergyBins = 90; // 10 bins per decade
+    static constexpr G4double fEnergyMaxkeV = 1e8; // 100 GeV
+    static constexpr G4int fNumberOfEnergyBins = 110; // 10 bins per decade
 
     static constexpr G4double fPitchAngleMin = 0.0;
     static constexpr G4double fPitchAngleMax = 180.0;
