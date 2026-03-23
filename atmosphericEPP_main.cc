@@ -93,8 +93,6 @@ int main(int argc,char** argv)
     G4endl;
     throw;
   }
-
-  // TODO consider making base units eV instead of keV
   
   // Start simulation timer
   auto t_start = std::chrono::high_resolution_clock::now();
@@ -196,20 +194,21 @@ int main(int argc,char** argv)
   G4String pitchAngle = argv[4];
   UImanager->ApplyCommand("/control/alias BEAM_PITCH_ANGLE_DEG " + pitchAngle);
 
-  // Set default values for optional arguments
+  // ==========================================
+  // Optional Flags
+  // ==========================================
+  // Set default values for optional arguments. Description of parameters located in printHelpScreen()
   std::map<G4String, G4String> optionalFlags = {
-    {"-magnetic_model",      "igrf2025"},                          // What magnetic field model to use. Current options: "earth-tilted-dipole", "jrm33"
-    {"-lat",                 "67.0"},                              // Magnetic latitude [deg]
-    {"-atmosphere_filename", "msis_earth_atmosphere_profile.csv"}, // Filename for atmospheric profile
-    {"-brem_splitting",      "1"},                                 // Number of times to split bremsstrahlung photons
-    {"-altitude_offset",     "0.0"},                               // Amount by which to offset altitude axis labels [km] TODO not implemented
-    {"-injection_altitude",  "450.0"},                             // Altitude to inject particles at [km]
-    {"-prefix",              ""}                                   // Prefix to prepend to result files
+    {"-magnetic_model",         "igrf2025"},
+    {"-lat",                    "67.0"},
+    {"-atmosphere_filename",    "msis_earth_atmosphere_profile.csv"},
+    {"-brem_splitting",         "1"},
+    {"-altitude_offset",        "0.0"},
+    {"-injection_altitude",     "450.0"},
+    {"-backscatter_altitude",   "451.0"},
+    {"-prefix",                 ""},
+    {"-min_energy_eV",          "10"}
   };
-  // Add backscatter argument after map is made so we can reference the injection altitude for its default value
-  optionalFlags.insert(
-    {"-backscatter_altitude", std::to_string(std::stod(optionalFlags["-injection_altitude"]) + 1.0)} // Altitude to track backscattered particles at [km]
-  );
 
   // Get length of longest flag for printing purposes later on
   G4int flagsMaxLength = 0;
@@ -217,7 +216,7 @@ int main(int argc,char** argv)
     if(el.first.length() > flagsMaxLength){flagsMaxLength = el.first.length();}
   }
 
-  // Assign optional arguments
+  // Assign flag values from CLI
   std::vector<G4String> flagsUserChanged;
   for(int argIdx = 5; argIdx < argc; argIdx += 2){
     G4String flagName = argv[argIdx];
@@ -243,18 +242,33 @@ int main(int argc,char** argv)
       throw;
     }
 
-    // Housekeeping
+    // Change flag
     flagsUserChanged.push_back(flagName);
     optionalFlags[flagName] = flagValue;
   }
 
-  // Set simulation parameters
+  // Parse the prefix
+  G4String prefixToSet;
+  // If a prefix is set,
+  if(strcmp(optionalFlags["-prefix"], "") != 0){
+    // add trailing underscore.
+    prefixToSet = optionalFlags["-prefix"] + "_";
+  }
+  else{
+    // Otherwise, set prefix to be blank
+    prefixToSet = "\"\"";
+  }
+
+
+  // ==========================================
+  // Apply Simulation Parameters
+  // ==========================================
+  
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
   // B field mode
   UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
-
 
   // Initialize run
   UImanager->ApplyCommand("/run/initialize");
@@ -262,7 +276,6 @@ int main(int argc,char** argv)
   // before initialization or else it doesn't work. Meanwhile the fieldParameters must be set
   // *after* initialization or else they don't work. All commands are set to accept pre-init,
   // init, and idle states so I have no clue what could possibly be happening here. Whatever.
-
 
   // Latitude
   UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
@@ -288,18 +301,12 @@ int main(int argc,char** argv)
   // Backscatter altitude
   UImanager->ApplyCommand("/dataCollection/setCollectionAltitude " + optionalFlags["-backscatter_altitude"]);
 
-  // Result prefix
-  G4String prefixToSet;
-  // If a prefix is set,
-  if(strcmp(optionalFlags["-prefix"], "") != 0){
-    // add trailing underscore.
-    prefixToSet = optionalFlags["-prefix"] + "_";
-  }
-  else{
-    // Otherwise, set prefix to be blank
-    prefixToSet = "\"\"";
-  }
+  // Apply prefix
   UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + prefixToSet);
+
+  // Kill energy
+  UImanager->ApplyCommand("/process/em/lowestElectronEnergy " + optionalFlags["-min_energy_eV"] + " eV");
+  UImanager->ApplyCommand("/process/em/lowestMuHadEnergy " + optionalFlags["-min_energy_eV"] + " eV");
 
   // Beam parameters
   UImanager->ApplyCommand("/beamParameters/setBeamParticle {BEAM_PARTICLE}");
@@ -313,9 +320,10 @@ int main(int argc,char** argv)
   UImanager->ApplyCommand("/process/em/augerCascade true");
   UImanager->ApplyCommand("/process/em/pixe true");
   UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
-  // /cuts/setMaxCutEnergy 50 eV #?
 
-  // Print status block
+  // ==========================================
+  // Print Status Block
+  // ==========================================
   G4cout << "=====================================================================" << G4endl;
   std::time_t t = std::time(nullptr);
   std::tm tm = *std::localtime(&t);
@@ -344,7 +352,9 @@ int main(int argc,char** argv)
   // Let's go, lesbians!
   UImanager->ApplyCommand("/control/execute run_beam.mac");
 
-  // End run
+  // ==========================================
+  // End Run
+  // ==========================================
   delete runManager;
   auto t_end = std::chrono::high_resolution_clock::now();
 
@@ -400,10 +410,14 @@ void printHelpScreen(){
   println("");
   println("  -backscatter_altitude");
   println("      Backscatter recording altitude [km]");
-  println("      Default: injection_altitude + 1.0");
+  println("      Default: 451.0");
   println("");
   println("  -prefix");
   println("      String to prepend to result files. Do NOT use whitespace in this or else everything breaks.");
+  println("");
+  println("  -min_energy_eV");
+  println("      Energy (in eV) for muons, hadrons, and electrons/positrons below which they are no longer tracked.");
+  println("      Default: 10");
   println("");
   println("  -help");
   println("      Print help screen if value is 1");

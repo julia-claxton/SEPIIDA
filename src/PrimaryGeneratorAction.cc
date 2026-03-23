@@ -144,7 +144,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
   // If the simulation is unmagnetized, make the reference vector be vertical downward
-  if(B[0] == B[1] == B[2] == 0.0){
+  if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
   }
   // TODO CLI flag to switch between pitch angle specification and angle from vertical incidence

@@ -5,13 +5,13 @@ using Glob
 using Printf
 using BasicInterpolators
 using Base.Threads
-using Plots, Plots.PlotMeasures
+using Plots
     default(
         dpi = 300,
         framestyle = :box,
         tickdirection = :out,
         label = false
-    )
+    )        
 
 const TOP_LEVEL = dirname(@__DIR__)
 include("$(@__DIR__)/General_Functions.jl")
@@ -34,6 +34,7 @@ struct BeamInfo
     n_particles::Int64
     dir::String
     base_filename::String
+    log_path::String
 end
 
 struct Beam
@@ -83,7 +84,10 @@ end
 # =====================================
 function get_available_beams(dir_to_search;
     prefix = nothing,
-    particle = nothing
+    particle = nothing,
+    energy = nothing,
+    pitch_angle = nothing,
+    sort_by = "energy"
     )
     regex_any = "(.*)"
     regex_float = "([0-9]+[\\.]?[0-9]*)" # With optional decimal point
@@ -117,21 +121,28 @@ function get_available_beams(dir_to_search;
             parsed_particle = captures[1]
         end
 
-        # Pass over beams that don't match user-sepcified particle/prefix, if specified
-        if (prefix ≠ nothing) && (parsed_prefix ≠ prefix); continue; end
-        if (particle ≠ nothing) && (parsed_particle ≠ particle); continue; end
-
         # Parse other captures
         injection_altitude = parse(Float64, captures[2])
         latitude = parse(Float64, captures[3])
-        energy = parse(Float64, captures[4])
-        pitch_angle = parse(Float64, captures[5])
+        parsed_energy = parse(Float64, captures[4])
+        parsed_pitch_angle = parse(Float64, captures[5])
         n_particles = parse(Int64, captures[6])
 
         # Find backscatter altitude
         backscatter_filename = glob("$(base_filename)_backscatter_*", dir_to_search)[1]
         backscatter_match = match(Regex("$(base_filename)_backscatter_$(regex_float)km.csv"), backscatter_filename)
         backscatter_altitude = parse(Float64, backscatter_match.captures[1])
+
+        # Get log path
+        parsed_prefix == "" ? log_prefix = "" : log_prefix = "$(parsed_prefix)_"
+        log_path = "$(dir)/SEPIIDA_$(captures[1])_$(captures[4])keV_$(captures[5])deg_$(captures[6])particles.log"
+        if isfile(log_path) == false; log_path = ""; end
+
+        # Pass over beams that don't match user-sepcified particle/prefix, if specified
+        if (prefix ≠ nothing) && (parsed_prefix ≠ prefix); continue; end
+        if (particle ≠ nothing) && (parsed_particle ≠ particle); continue; end
+        if (energy ≠ nothing) && (parsed_energy ≠ energy); continue; end
+        if (pitch_angle ≠ nothing) && (parsed_pitch_angle ≠ pitch_angle); continue; end
 
         # Construct BeamInfo object
         push!(beams, BeamInfo(
@@ -140,25 +151,34 @@ function get_available_beams(dir_to_search;
             injection_altitude, 
             backscatter_altitude, 
             latitude, 
-            energy,
-            pitch_angle, 
+            parsed_energy,
+            parsed_pitch_angle, 
             n_particles, 
             dir_to_search,
-            base_filename
+            base_filename,
+            log_path
         ))
     end
 
     # Sort result
-    energies = energy_list(beams)
-    sortvec = sortperm(energies)
+    if sort_by == "energy"
+        vec_to_sort_by = energy_list(beams)
+    elseif sort_by == "pitch angle"
+        vec_to_sort_by = pitch_angle_list(beams)
+    else
+        error("Sorting option \"$(sort_by)\" not recognized")
+    end
+    sortvec = sortperm(vec_to_sort_by)
     return beams[sortvec]
 end
 
-function load_beam(beaminfo::BeamInfo)
+function load_beam(beaminfo::BeamInfo;
+    load_backscatter = true
+    )
     # ==============================
     # Get backscatter
     # ==============================
-    backscatter = get_backscatter(beaminfo)
+    backscatter = get_backscatter(beaminfo, return_empty = !load_backscatter)
 
     # ==============================
     # Get energy deposition
@@ -219,6 +239,12 @@ end
 function pitch_angle_list(beaminfo::BeamInfo)
     return beaminfo.pitch_angle
 end
+
+# =====================================
+# Visualization (frontend)
+# =====================================
+function
+
 
 # =====================================
 # Prebake functions
@@ -441,12 +467,21 @@ end
 # =====================================
 # Backscatter reader functions
 # =====================================
-function get_backscatter(beaminfo::BeamInfo)
+function get_backscatter(beaminfo::BeamInfo; return_empty = false)
     backscatter_alt = @sprintf "%.2f" beaminfo.backscatter_alt
     path = "$(beaminfo.dir)/$(beaminfo.base_filename)_backscatter_$(backscatter_alt)km.csv"
     column_names = ["particle_names", "weights", "energies_keV", "pitch_angles_deg", "x_unit_momenta", "y_unit_momenta", "z_unit_momenta", "x_positions_m", "y_positions_m", "z_positions_m"]
+    
+    # Exit without reading if needed
+    if return_empty == true
+        result = Dict{String, Any}()
+        [result[colname] = [] for colname in column_names]
+        return result
+    end
 
+    # Read data
     file_contents = readdlm(path, ',')
+
     # If no backscatter data, return empty dict
     if size(file_contents)[1] == 1
         result = Dict{String, Any}()

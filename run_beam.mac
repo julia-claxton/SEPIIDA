@@ -10,10 +10,6 @@
 # Dump particle list for reference
     #/run/particle/dumpList
 
-# Particle tracking cut
-    /process/em/lowestElectronEnergy 100 eV
-    /process/em/lowestMuHadEnergy 100 eV
-
 # Check that user-specified build directory exists
     /control/shell if [ ! -d {SEPIIDA_BUILD_DIR} ]; then echo '** ERROR: Specified build directory {SEPIIDA_BUILD_DIR} does not exist. Set the correct build directory in EDIT_THIS_FILE.mac'; killall SEPIIDA; fi
 

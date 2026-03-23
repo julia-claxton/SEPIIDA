@@ -60,9 +60,9 @@ RunAction::RunAction():
   fCollectionAltitude(-999.0)
 {
   // Set killing energies
-  fWarningEnergy = 100 * eV; // Particles below this energy are killed after 1 step. Value arbitrary 
-  fImportantEnergy = 1 * keV; // Particles above this energy are killed after fNumberOfTrials if they are looping. Value arbitrary 
-  fNumberOfTrials = 1000; // Number of trials before a looping 'important' particle is killed. Value arbitrary
+  fWarningEnergy = 10 * keV; // Looping particles above this energy generate a warning when killed.
+  fImportantEnergy = 1 * keV; // Looping particles above this energy are given fNumberOfTrials to become unlooping before being killed. Below this, no trials are given. 
+  fNumberOfTrials = 1000; // Number of trials before a looping particles above fImportantEnergy is killed.
 
   fRunActionMessenger = new RunActionMessenger(this); 
 
@@ -734,7 +734,7 @@ void RunAction::printProgressBar(double fraction, int barLength){
     << std::string(filled, '=')
     << std::string(barLength - filled, ' ')
     << "] "
-    << 100.0 * std::round(fraction * 1000.0) / 1000 << "%"
+    << static_cast<int>(100.0 * std::round(fraction * 1000.0) / 1000) << "%"
     << "\r"
     << std::flush
   ;
