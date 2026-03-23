@@ -243,7 +243,81 @@ end
 # =====================================
 # Visualization (frontend)
 # =====================================
-function
+function plot_energy_spectrum(beam::Beam; species = "e-", show_plot = true)
+    to_plot = dropdims(sum(beam.spectra[species], dims = 3), dims = 3)
+    
+    show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
+    
+    xmin = beam.energy_bin_edges[begin]
+    xmax = beam.energy_bin_edges[end]
+
+    ymin = beam.altitude_bin_edges[begin]
+    ymax = beam.altitude_bin_edges[end]
+
+    cmin = log10(minimum(to_plot))
+    cmax = max(log10(maximum(to_plot)), 0)
+    
+    heatmap(beam.energy_bin_means, beam.altitude_bin_edges, log10.(to_plot),
+        title = title,
+        
+        xlabel = "Energy (keV)",
+        xlims = (xmin, xmax),
+        xticks = 10.0 .^ (log10(xmin):1:log10(xmax)),
+        xscale = :log10,
+        
+        ylabel = "Altitude (km)",
+        ylims = (ymin, ymax),
+        yticks = ymin:50:ymax,
+
+        colorbar_title = "Log10 $(species)/Input Particle",
+        clims = (cmin, cmax),
+        
+        bg_color_inside = :black
+    )
+    box_aspect!(1)
+    if show_plot; display(plot!()); end
+    return plot!()
+end
+
+function plot_energy_spectrum(beaminfo::BeamInfo)
+    return plot_energy_spectrum(load_beam(beaminfo))
+end
+
+function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true, show_plot = true)
+    to_plot = dropdims(sum(beam.spectra[species], dims = 2), dims = 2)
+    
+    show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
+
+    xmin = beam.pitch_angle_bin_edges[begin]
+    xmax = beam.pitch_angle_bin_edges[end]
+
+    ymin = beam.altitude_bin_edges[begin]
+    ymax = beam.altitude_bin_edges[end]
+
+    cmin = log10(minimum(to_plot))
+    cmax = max(log10(maximum(to_plot)), 0)
+    
+    heatmap(beam.pitch_angle_bin_means, beam.altitude_bin_edges, log10.(to_plot),
+        title = title,
+        
+        xlabel = "Energy (keV)",
+        xlims = (xmin, xmax),
+        xticks = xmin:30:xmax,
+        
+        ylabel = "Altitude (km)",
+        ylims = (ymin, ymax),
+        yticks = ymin:50:ymax,
+
+        colorbar_title = "Log10 $(species)/Input Particle",
+        clims = (cmin, cmax),
+        
+        bg_color_inside = :black
+    )
+    box_aspect!(1)
+    if show_plot; display(plot!()); end
+    return plot!()
+end
+
 
 
 # =====================================
@@ -503,3 +577,6 @@ function get_backscatter(beaminfo::BeamInfo; return_empty = false)
 
     return result
 end
+
+
+plot_pitch_angle_spectrum(beam, species = "e-")

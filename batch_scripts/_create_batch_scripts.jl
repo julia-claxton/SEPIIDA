@@ -68,7 +68,6 @@ rm.(glob("*keV*.sh", @__DIR__))
 # Write new scripts
 for pitch_angle in 0:5:180
     write_job_script("preemptable", 1000, "e-", 10e3, pitch_angle, 
-        prefix = "jupiter",
         flags = "
             -prefix patest
             -magnetic_model jrm33
