@@ -10,7 +10,10 @@ using Plots
         dpi = 300,
         framestyle = :box,
         tickdirection = :out,
-        label = false
+        label = false,
+        colormap = :bone_1,
+        linecolor = :black,
+        linewidth = 1.2
     )        
 
 const TOP_LEVEL = dirname(@__DIR__)
@@ -243,7 +246,49 @@ end
 # =====================================
 # Visualization (frontend)
 # =====================================
-function plot_energy_spectrum(beam::Beam; species = "e-", show_plot = true)
+function quicklook(beam::Beam)
+    primary_species = replace(beam.info.particle, "electron" => "e-")
+    primary_species == "gamma" ? secondary_species = "e-" : secondary_species = "gamma"
+
+    p1 = plot_energy_spectrum(beam, 
+        species = primary_species, 
+        show_title = false, 
+        show_plot = false
+    )
+    p2 = plot_energy_spectrum(beam, 
+        species = secondary_species, 
+        show_title = false, 
+        show_plot = false
+    )
+
+    p3 = plot_pitch_angle_spectrum(beam, 
+        species = primary_species, 
+        show_title = false, 
+        show_plot = false
+    )
+    p4 = plot_pitch_angle_spectrum(beam, 
+        species = secondary_species, 
+        show_title = false, 
+        show_plot = false
+    )
+    p5 = plot_energy_deposition(beam,
+        show_title = false, 
+        show_plot = false
+    )
+
+    leftplot = plot(p1, p2, p3, p4,
+        suptitle = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º",
+        layout = (2, 2),
+        size = (1.5, 1) .* 600
+    )
+
+    @warn "todo make edep plot show up"
+
+    display(plot!())
+    return
+end
+
+function plot_energy_spectrum(beam::Beam; species = "e-", show_title = true, show_plot = true)
     to_plot = dropdims(sum(beam.spectra[species], dims = 3), dims = 3)
     
     show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
@@ -300,7 +345,7 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
     heatmap(beam.pitch_angle_bin_means, beam.altitude_bin_edges, log10.(to_plot),
         title = title,
         
-        xlabel = "Energy (keV)",
+        xlabel = "Pitch Angle (deg)",
         xlims = (xmin, xmax),
         xticks = xmin:30:xmax,
         
@@ -318,7 +363,34 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
     return plot!()
 end
 
+function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
+    show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
+    
+    plot_mask = (beam.energy_deposition .≠ 0) .&& isfinite.(beam.energy_deposition)
+    xmin = minimum(beam.energy_deposition[plot_mask])
+    xmax = maximum(beam.energy_deposition[plot_mask])
 
+    ymin = beam.altitude_bin_edges[begin]
+    ymax = beam.altitude_bin_edges[end]
+
+    plot(beam.energy_deposition[plot_mask], beam.altitude_bin_means[plot_mask],
+        title = title,
+        
+        xlabel = "Energy Deposition (keV/input particle)",
+        xlims = (xmin, 2.5*xmax),
+        xticks = 10.0 .^ (ceil(log10(xmin)):2:floor(log10(xmax))),
+        xminorticks = 1,
+        xminorgrid = true,
+        xscale = :log10,
+        
+        ylabel = "Altitude (km)",
+        ylims = (ymin, ymax),
+        yticks = ymin:50:ymax,
+    )
+    box_aspect!(1.5)
+    if show_plot; display(plot!()); end
+    return
+end
 
 # =====================================
 # Prebake functions
@@ -577,6 +649,3 @@ function get_backscatter(beaminfo::BeamInfo; return_empty = false)
 
     return result
 end
-
-
-plot_pitch_angle_spectrum(beam, species = "e-")
