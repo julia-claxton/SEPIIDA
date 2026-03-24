@@ -105,6 +105,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     throw;
   }
 
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
+
   // Select input particle type
   fParticleGun  = new G4ParticleGun();
   G4ParticleDefinition* inputParticle = G4ParticleTable::GetParticleTable()->FindParticle(fSourceType); // Electron = "e-", proton = "proton", photon = "gamma"
@@ -122,6 +124,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Get initial velocity vector. We do this by getting the B field vector, finding an
   // orthogonal vector to it, then rotating by the desired pitch angle about the orthogonal
   // rotation vector.
+
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // Get B field vector
   G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};
@@ -144,6 +148,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
   // If the simulation is unmagnetized, make the reference vector be vertical downward
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
   }
@@ -163,17 +168,22 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // TODO this ^^ is actually very easy to fix by switching to y unit vector if the condition is true
 
   // Get rotation axis
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4ThreeVector rotationAxis = unitB.cross(x);
   rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
 
   // Euler's finite rotation formula
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4double fBeamPitchAngle_rad = fBeamPitchAngle_deg * fPI / 180.0;
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4ThreeVector v0 = 
     (unitB * std::cos(fBeamPitchAngle_rad))
     + (rotationAxis.cross(unitB) * std::sin(fBeamPitchAngle_rad))
     + (rotationAxis * rotationAxis.dot(unitB) * (1 - std::cos(fBeamPitchAngle_rad)))
   ;
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   v0 = v0 / v0.mag();
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // Safety check: Verify that pitch angle generation is correct
   G4double generatedPitchAngle_deg;

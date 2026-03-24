@@ -138,7 +138,7 @@ function get_available_beams(dir_to_search;
 
         # Get log path
         parsed_prefix == "" ? log_prefix = "" : log_prefix = "$(parsed_prefix)_"
-        log_path = "$(dir)/SEPIIDA_$(captures[1])_$(captures[4])keV_$(captures[5])deg_$(captures[6])particles.log"
+        log_path = "$(dir_to_search)/SEPIIDA_$(captures[1])_$(captures[4])keV_$(captures[5])deg_$(captures[6])particles.log"
         if isfile(log_path) == false; log_path = ""; end
 
         # Pass over beams that don't match user-sepcified particle/prefix, if specified
@@ -250,16 +250,19 @@ function quicklook(beam::Beam)
     primary_species = replace(beam.info.particle, "electron" => "e-")
     primary_species == "gamma" ? secondary_species = "e-" : secondary_species = "gamma"
 
-    p1 = plot_energy_spectrum(beam, 
+    plot_energy_spectrum(beam, 
         species = primary_species, 
         show_title = false, 
         show_plot = false
     )
-    p2 = plot_energy_spectrum(beam, 
+    p1 = plot!(title = primary_species)
+
+    plot_energy_spectrum(beam, 
         species = secondary_species, 
         show_title = false, 
         show_plot = false
     )
+    p2 = plot!(title = secondary_species)
 
     p3 = plot_pitch_angle_spectrum(beam, 
         species = primary_species, 
@@ -276,14 +279,15 @@ function quicklook(beam::Beam)
         show_plot = false
     )
 
-    leftplot = plot(p1, p2, p3, p4,
+    layout = @layout [
+    [grid(2,2)] b{0.25w}
+    ]
+
+    plot(p1, p2, p3, p4, p5,
         suptitle = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º",
-        layout = (2, 2),
-        size = (1.5, 1) .* 600
+        layout = layout,
+        size = (2, 1.1) .* 600
     )
-
-    @warn "todo make edep plot show up"
-
     display(plot!())
     return
 end
@@ -324,10 +328,6 @@ function plot_energy_spectrum(beam::Beam; species = "e-", show_title = true, sho
     return plot!()
 end
 
-function plot_energy_spectrum(beaminfo::BeamInfo)
-    return plot_energy_spectrum(load_beam(beaminfo))
-end
-
 function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true, show_plot = true)
     to_plot = dropdims(sum(beam.spectra[species], dims = 2), dims = 2)
     
@@ -363,6 +363,19 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
     return plot!()
 end
 
+function quicklook(beaminfo::BeamInfo)
+    return quicklook(load_beam(beaminfo, load_backscatter = false))
+end
+
+function plot_energy_spectrum(beaminfo::BeamInfo)
+    return plot_energy_spectrum(load_beam(beaminfo, load_backscatter = false), species = species, show_title = show_title, show_plot = show_plot)
+end
+
+function plot_pitch_angle_spectrum(beaminfo::BeamInfo; species = "e-", show_title = true, show_plot = true)
+    return plot_pitch_angle_spectrum(load_beam(beaminfo, load_backscatter = false), species = species, show_title = show_title, show_plot = show_plot)
+end
+
+
 function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
     show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
     
@@ -387,9 +400,9 @@ function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
         ylims = (ymin, ymax),
         yticks = ymin:50:ymax,
     )
-    box_aspect!(1.5)
+    box_aspect!(2)
     if show_plot; display(plot!()); end
-    return
+    return plot!()
 end
 
 # =====================================
@@ -411,8 +424,8 @@ function prebake_directory(dir_to_prebake; overwrite = true)
 
         # Print status message
         lock(stdout_lock) do 
-            print_progress_bar(completed_beams/length(beams))
             completed_beams += 1
+            print_progress_bar(completed_beams/length(beams))
         end
     end
     return
@@ -649,3 +662,10 @@ function get_backscatter(beaminfo::BeamInfo; return_empty = false)
 
     return result
 end
+
+#
+beamlist = get_available_beams(dir,
+    prefix = "patest",
+    sort_by = "pitch angle"
+)
+[quicklook(el) for el in beamlist]
