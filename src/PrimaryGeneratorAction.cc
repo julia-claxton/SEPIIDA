@@ -191,6 +191,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   if(std::abs(for_acos - 1.0) < 1e-10){generatedPitchAngle_deg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
   else if(std::abs(for_acos) < 1e-10){generatedPitchAngle_deg = 90;}
   else {generatedPitchAngle_deg = std::acos(for_acos) * 180/fPI;}
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   if(std::abs(generatedPitchAngle_deg - fBeamPitchAngle_deg) > 1e-5){
     G4cout << "\n" <<
@@ -206,6 +207,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
  
   // Assign position & velocity
   r->xPos = x0[0];
@@ -215,13 +217,16 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   r->yDir = v0[1];
   r->zDir = v0[2];
   
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   // Communicate parameters to particle gun
   fParticleGun->SetParticlePosition(G4ThreeVector(r->xPos, r->yPos, r->zPos)); 
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(r->xDir, r->yDir, r->zDir));
   fParticleGun->SetParticleEnergy(r->energy);
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   
   // Geant method to create initial particle with the above properties 
   fParticleGun->GeneratePrimaryVertex(anEvent);
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // Free memory from ParticleSample struct
   delete r;
