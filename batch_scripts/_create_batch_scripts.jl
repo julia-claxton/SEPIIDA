@@ -66,12 +66,11 @@ end
 rm.(glob("*keV*.sh", @__DIR__))
 
 # Write new scripts
-for pitch_angle in 0:5:180
-    write_job_script("preemptable", 1000, "e-", 10e3, pitch_angle, 
-        prefix = "patest",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename jupiter_atmosphere_profile.csv
-        "
-    )
-end
+write_job_script("preemptable", 10000, "proton", 10000000, 0, 
+    prefix = "muon_test",
+    flags = "
+        -magnetic_model igrf2025
+        -atmosphere_filename msis_earth_atmosphere_profile.csv
+        -backscatter_altitude -1.0
+    "
+)

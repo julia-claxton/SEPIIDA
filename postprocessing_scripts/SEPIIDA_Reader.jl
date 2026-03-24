@@ -85,7 +85,7 @@ end
 # =====================================
 # Main getter functions (frontend)
 # =====================================
-function get_available_beams(dir_to_search;
+function get_beamlist(dir_to_search;
     prefix = nothing,
     particle = nothing,
     energy = nothing,
@@ -413,7 +413,7 @@ function prebake_directory(dir_to_prebake; overwrite = true)
         rm("$(dir_to_prebake)/preprocessed_spectra", recursive = true)
     end
 
-    beams = get_available_beams(dir_to_prebake)
+    beams = get_beamlist(dir_to_prebake)
     println("Prebaking $(length(beams)) beams in $(dir_to_prebake)...")
     print_progress_bar(0)
 
@@ -439,7 +439,10 @@ function prebake_beam(beaminfo::BeamInfo)
     energy_bin_edges = nothing
     pitch_angle_bin_edges = nothing
 
-    species_to_get = ["e-", "gamma", "proton", "alpha"]
+    # Detect what species were recorded
+    spectra_files = glob("$(beaminfo.base_filename)_spectra_*.csv", beaminfo.dir)
+    species_to_get = String.([match(r"spectra_(.*).csv", el).captures[1] for el in spectra_files])
+
     spectra = Dict{String, Array{Float64}}()
     for species in species_to_get
         species_data = read_spectrum(beaminfo, species)
@@ -662,10 +665,3 @@ function get_backscatter(beaminfo::BeamInfo; return_empty = false)
 
     return result
 end
-
-#
-beamlist = get_available_beams(dir,
-    prefix = "patest",
-    sort_by = "pitch angle"
-)
-[quicklook(el) for el in beamlist]

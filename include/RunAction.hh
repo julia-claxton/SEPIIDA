@@ -68,7 +68,7 @@ class RunAction : public G4UserRunAction
     std::vector<G4double> pitchAngleBinEdges_deg;
 
     // Histograms
-    std::vector<std::string> particlesToRecord = {"proton", "e-", "alpha", "gamma"};
+    std::vector<std::string> particlesToRecord = {"proton", "e-", "alpha", "gamma", "mu-", "mu+"};
     std::vector<std::vector<std::vector<std::vector<G4double>>>> mainSpectrum; // Dimensions: particle species, altitude, energy, pitch angle
     
     std::vector<G4double> totalEnergyDeposition; 
