@@ -85,6 +85,23 @@ end
 # =====================================
 # Main getter functions (frontend)
 # =====================================
+function load_dir(dir;
+    prefix = nothing,
+    particle = nothing,
+    energy = nothing,
+    pitch_angle = nothing,
+    sort_by = "energy"
+    )
+
+    return load_beam(get_beamlist(dir,
+        prefix = prefix,
+        particle = particle,
+        energy = energy,
+        pitch_angle = pitch_angle,
+        sort_by = sort_by
+    ))
+end
+
 function get_beamlist(dir_to_search;
     prefix = nothing,
     particle = nothing,
@@ -93,8 +110,8 @@ function get_beamlist(dir_to_search;
     sort_by = "energy"
     )
     regex_any = "(.*)"
-    regex_float = "([0-9]+[\\.]?[0-9]*)" # With optional decimal point
-    regex_int = "([0-9]+)"
+    regex_float = "([\\-]?[0-9]+[\\.]?[0-9]*)" # With optional sign and decimal point
+    regex_int = "([\\-]?[0-9]+)" # With optional sign
     
     search_string = 
         "$(regex_any)_input_" *
@@ -225,6 +242,12 @@ function load_beam(beaminfo::BeamInfo;
         pitch_angle_bin_edges,
         edges_to_means(pitch_angle_bin_edges)
     )
+end
+
+function load_beam(beaminfo::Vector{BeamInfo},
+    load_backscatter = true
+)
+    return [load_beam(el, load_backscatter = load_backscatter) for el in beaminfo]
 end
 
 function energy_list(beamlist::Vector{BeamInfo})
