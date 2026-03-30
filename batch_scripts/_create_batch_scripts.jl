@@ -66,11 +66,12 @@ end
 rm.(glob("*keV*.sh", @__DIR__))
 
 # Write new scripts
-write_job_script("preemptable", 10000, "proton", 10000000, 0, 
-    prefix = "muon_test",
+write_job_script("preemptable", 1e5, "e-", 10_000, 179.9, 
+    prefix = "x_ray_test",
     flags = "
-        -magnetic_model igrf2025
-        -atmosphere_filename msis_earth_atmosphere_profile.csv
-        -backscatter_altitude -1.0
+        -magnetic_model jrm33
+        -atmosphere_filename jupiter_atmosphere_profile.csv
+        -backscatter_altitude 451.0
+        -brem_splitting 1000
     "
 )
