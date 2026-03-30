@@ -16,7 +16,6 @@ using Plots
         linewidth = 1.2
     )        
 
-const TOP_LEVEL = dirname(@__DIR__)
 include("$(@__DIR__)/General_Functions.jl")
 
 """
@@ -251,7 +250,15 @@ function load_beam(beaminfo::Vector{BeamInfo},
 end
 
 function energy_list(beamlist::Vector{BeamInfo})
-    return [el.energy for el in beamlist]
+    return energy_list.(beamlist)
+end
+
+function energy_list(beams::Vector{Beam})
+    return energy_list.(beams)
+end
+
+function energy_list(beam::Beam)
+    return energy_list(beam.info)
 end
 
 function energy_list(beaminfo::BeamInfo)
@@ -259,12 +266,22 @@ function energy_list(beaminfo::BeamInfo)
 end
 
 function pitch_angle_list(beamlist::Vector{BeamInfo})
-    return [el.pitch_angle for el in beamlist]
+    return pitch_angle_list.(beamlist)
+end
+
+function pitch_angle_list(beams::Vector{Beam})
+    return pitch_angle_list.(beams)
+end
+
+function pitch_angle_list(beam::Beam)
+    return pitch_angle_list(beam.info)
 end
 
 function pitch_angle_list(beaminfo::BeamInfo)
     return beaminfo.pitch_angle
 end
+
+
 
 # =====================================
 # Visualization (frontend)
