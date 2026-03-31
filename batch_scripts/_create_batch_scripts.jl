@@ -67,11 +67,11 @@ rm.(glob("*keV*.sh", @__DIR__))
 
 # Write new scripts
 write_job_script("preemptable", 1e5, "e-", 10_000, 179.9, 
-    prefix = "x_ray_test",
+    prefix = "x_ray_test_azimuth_randomization",
     flags = "
         -magnetic_model jrm33
         -atmosphere_filename jupiter_atmosphere_profile.csv
         -backscatter_altitude 451.0
-        -brem_splitting 1000
+        -brem_splitting 100
     "
 )

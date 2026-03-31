@@ -133,48 +133,45 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Rotate B vector by the desired input pitch angle to get input velocity vector.
   // We first need to find a vector that is orthogonal to B that we can rotate about.
-  // We will do this by crossing B with the X-axis.
+  // We will do this by crossing B with a coordinate axis.
 
   // It sucks that we have to do this for every particle rather than pre-calculating the velocity
-  // direction, but GetFieldValue() isn't alive when this script starts, so whatever. Oh well.
-
-  // In the extremely rare case B is perfectly aligned with the x-axis, we'll throw an error. This should never happen
-  // in this simulation as it is now, so I'll deal with it in the moment if this happens. Somehow.
+  // direction, but GetFieldValue() isn't alive when the beginning of this file runs, so whatever. 
+  // Oh well, too bad, etc.
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
-  // If the simulation is unmagnetized, make the reference vector be vertical downward
-
+  // If the simulation is unmagnetized, make "B" be vertical downward
   if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
   }
   // TODO CLI flag to switch between pitch angle specification and angle from vertical incidence
 
-  G4ThreeVector x(1.0, 0.0, 0.0);
-  if(std::abs(1 - unitB.dot(x)) < 1e-10){
-    // If this error happens, switch to a different vector than x. y or z would be fine.
+  G4ThreeVector referenceVector(1.0, 0.0, 0.0);
+  if(std::abs(1 - unitB.dot(referenceVector)) < 1e-10){
+    referenceVector = {0.0, 1.0, 0.0};
+  }
+  G4ThreeVector rotationAxis = unitB.cross(referenceVector);
+  rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
+
+  // Rotate to correct pitch angle
+  G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
+  v0 = v0 / v0.mag();
+
+  // Randomize azimuth (gyrophase)
+  // TODO CLI flag to control whether phase is randomized?
+  G4double phaseAngleDeg = G4UniformRand() * 360.0;
+  v0 = rotateVector(v0, unitB, phaseAngleDeg);
+
+  // Safety check: Magnitude of v0 == 1 (to float precision)
+  if(std::abs(v0.mag() - 1.0) > 1e-12){
     G4cout << "\n" <<
       ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
-      "ERROR: B is parallel to X-axis at primary generation point. Cannot generate orthogonal vector." 
+      "ERROR: Magnitude of initial velocity = " << v0.mag() << " (!= 1.0). You should never see this." <<
       ANSI_NOCOLOR <<
     G4endl;
+    throw;
   }
-
-  // TODO this ^^ is actually very easy to fix by switching to y unit vector if the condition is true
-
-  // Get rotation axis
-  G4ThreeVector rotationAxis = unitB.cross(x);
-  rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
-
-  // Euler's finite rotation formula
-  G4double fBeamPitchAngle_rad = fBeamPitchAngle_deg * fPI / 180.0;
-  G4ThreeVector v0 = 
-    (unitB * std::cos(fBeamPitchAngle_rad))
-    + (rotationAxis.cross(unitB) * std::sin(fBeamPitchAngle_rad))
-    + (rotationAxis * rotationAxis.dot(unitB) * (1 - std::cos(fBeamPitchAngle_rad)))
-  ;
-
-  v0 = v0 / v0.mag();
 
   // Safety check: Verify that pitch angle generation is correct
   G4double generatedPitchAngle_deg;
@@ -216,6 +213,21 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Free memory from ParticleSample struct
   delete r;
+}
+
+G4ThreeVector PrimaryGeneratorAction::rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngleDeg){
+  G4ThreeVector v = startingVector; // To match nomenclature on wikipedia to reduce chances of a typo
+  G4ThreeVector k = rotateAbout / rotateAbout.mag(); // Unit vector for axis of rotation
+  G4double rotationAngleRad = rotationAngleDeg * fPI / 180.0;
+
+  // Euler/Rodrigues's finite rotation formula
+  // https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula#Statement
+  G4ThreeVector rotatedVector = 
+    (v * std::cos(rotationAngleRad))
+    + (k.cross(v) * std::sin(rotationAngleRad))
+    + (k * k.dot(v) * (1 - std::cos(rotationAngleRad)))
+  ;
+  return rotatedVector;
 }
 
 std::vector<G4double> PrimaryGeneratorAction::randDowngoingDirection(){
