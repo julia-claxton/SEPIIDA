@@ -53,17 +53,18 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void SetAtmosFilename(G4String name){fAtmosphereFilename = name;};
+    void SetAtmosFilename(G4String name){atmospherePath = name;};
 
-    G4int GetMSIStableSize(G4String);
-    void GetMSIStable(G4double(*)[11], G4String, unsigned int);
+    G4int getNumberOfAtmosphereLayers(G4String);
+    void readAtmosphereHeader(G4String path);
+    void readAtmosphereData(G4double(*)[11], G4String, unsigned int);
 
   public:
-    G4String fAtmosphereFilename;
+    G4String atmospherePath;
 
   private:
     DetectorMessenger* fDetectorMessenger;
-    G4int fTableSize;
+    G4int fNLayers;
     G4LogicalVolume* fLogicWorld;
     G4Cache<F03FieldSetup*> fEmFieldSetup;
 
