@@ -24,6 +24,6 @@ DetectorMessenger::~DetectorMessenger()
 
 void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 {
-  if(command == fcmd1){fDetectorMessenger->SetAtmosFilename(newValue);}    	  
+  if(command == fcmd1){fDetectorMessenger->SetAtmosphereFilename(newValue);}    	  
 
 }

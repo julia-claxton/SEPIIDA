@@ -135,7 +135,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
       By_nT_planetCentered, 
       Bz_nT_planetCentered
   );
-  
+
   // Assign values
   Bfield[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
   Bfield[1] = B_worldFrame[1] * 1e-9 * tesla; // By

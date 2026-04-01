@@ -136,15 +136,25 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double atmosphereData[nLayers][11];
   readAtmosphereData(atmosphereData, atmospherePath, nLayers); // Populate array with atmosphere table data
 
+
+
+
+
+
+
+
+
+
   // MEOW
   G4NistManager* manager = G4NistManager::Instance();
-  G4Material* elm = manager->FindOrBuildMaterial("H");
+  
+  parseChemicalSymbol("CO2");
 
 
 
 
 
-
+  
 
   
 
@@ -156,7 +166,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4Element* H  = new G4Element("Hydrogen", "H",  1.0,  1.0078 * g/mole);
 
   // Layers are the size needed to fill the 1000 km column
-  G4double layerThickness = (1000.0 / nLayers) * km;
+  G4double layerThickness = (1000.0 / static_cast<G4double>(nLayers)) * km;
   G4double layerLocation;
   
   G4Tubs* atmosphereLayer = new G4Tubs(
@@ -314,7 +324,7 @@ void DetectorConstruction::readAtmosphereHeader(G4String path){
     
     token.erase(eraseFrom, toErase.length());
 
-    G4cout << token << G4endl;
+    //G4cout << token << G4endl;
   }
   //throw;
 
@@ -345,6 +355,31 @@ void DetectorConstruction::readAtmosphereData(G4double tableEntry[][11], G4Strin
     dim2Index = 0;
   }
   file.close();
+}
+
+void DetectorConstruction::parseChemicalSymbol(G4String chemSymbol){
+  // Regex search that pulls out atom name + number: [A-Z][a-z]*[0-9]*
+  // E.g.:
+  // H2O => H2, O
+  // NaCl2 => Na, Cl2
+  // NaCl => Na, Cl
+  // Etc.
+
+  std::smatch match;
+  std::regex expression("[A-Z][a-z]*[0-9]*");
+
+  std::regex_search(chemSymbol, match, expression);
+
+  G4cout << chemSymbol << G4endl;
+
+  G4cout << match[0] << G4endl;
+  G4cout << match[1] << G4endl;
+  
+
+
+  G4cout << "TODO DYNAMIC ATMOSPHERE STUFF" << G4endl;
+
+
 }
 
 G4int DetectorConstruction::getNumberOfAtmosphereLayers(G4String filename)

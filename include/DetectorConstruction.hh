@@ -53,7 +53,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void SetAtmosFilename(G4String name){atmospherePath = name;};
+    void parseChemicalSymbol(G4String chemSymbol);
+
+    void SetAtmosphereFilename(G4String name){atmospherePath = name;};
 
     G4int getNumberOfAtmosphereLayers(G4String);
     void readAtmosphereHeader(G4String path);

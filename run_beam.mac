@@ -7,7 +7,6 @@
 /material/nist/printElement
 /material/nist/listMaterials
 
-
 # Set global range cut
     /run/setCut 1 mm
 
