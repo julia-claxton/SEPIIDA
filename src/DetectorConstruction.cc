@@ -127,8 +127,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps     // overlaps checking
   );
 
-  // Parse header
-  readAtmosphereHeader(atmospherePath);
 
   // Instantiate atmosphere data array
   fNLayers = getNumberOfAtmosphereLayers(atmospherePath);
@@ -136,27 +134,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double atmosphereData[nLayers][11];
   readAtmosphereData(atmosphereData, atmospherePath, nLayers); // Populate array with atmosphere table data
 
+  /*
+  // Parse header
+  readAtmosphereHeader(atmospherePath);
 
-
-
-
-
-
-
-
-
+  TODO DYNAMIC ATMOSPHERE
   // MEOW
   G4NistManager* manager = G4NistManager::Instance();
   
   parseChemicalSymbol("CO2");
-
-
-
-
-
-  
-
-  
+  */
 
   // Atmospheric material definitions
   G4Element* O  = new G4Element("Oxygen",   "O",  8.0,  16.0   * g/mole);
@@ -190,7 +177,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Ideal gas law for atmospheric pressure
     // P [Pa] = R [J/kg-K air] * rho [kg/m^3] * T [K]
     pressure = R_gas_constant_air * atmosphereData[i][4] * atmosphereData[i][5];
-    // TODO: replace R gas constant with layer mean mass! 
 
     // Material definitions for non-elements
     G4Material* N2;
