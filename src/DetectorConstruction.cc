@@ -50,7 +50,7 @@
 #include "ANSIColors.h"
 
 #include <fstream>
-
+#include <regex>
 
 DetectorConstruction::DetectorConstruction():
   G4VUserDetectorConstruction(),
