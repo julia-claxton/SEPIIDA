@@ -70,7 +70,7 @@ alpha_energies = 1e6 .* [1.467029285016976, 1.7817875218749928, 2.14345807899022
 proton_energies = 1e6 .* [0.4919968561663142, 0.6202564919316679, 0.7632187244759833, 0.9246328837346689, 1.1043104921012188, 1.3019751267372308, 1.521935705828299, 1.7640765698686003, 2.032968417343461, 2.3285487124854978, 2.650701655257517, 3.0041418809864373, 3.388794404104349, 3.809461740784525, 4.271004102390247, 4.773387063190187, 5.316554218799155, 5.9053912772825905, 6.544811688653951, 7.234780943620419, 7.98022843236318, 8.78609801629206, 9.652363544291253, 11.097336568805867, 13.890406704078622, 18.78300886683073, 27.226294269353872, 40.07138487336281, 58.168090056375284, 83.9158247545856]
 
 for i in eachindex(alpha_energies)
-    write_job_script("preemptable", 1e5, "alpha", alpha_energies[i], 0, 
+    write_job_script("preemptable", 1e5, "alpha", alpha_energies[i], 0.0, 
         prefix = "GCR_muons",
         flags = "
             -magnetic_model igrf2025
@@ -82,7 +82,7 @@ for i in eachindex(alpha_energies)
 end
 
 for i in eachindex(proton_energies)
-    write_job_script("preemptable", 1e5, "proton", proton_energies[i], 0, 
+    write_job_script("preemptable", 1e5, "proton", proton_energies[i], 0.0, 
         prefix = "GCR_muons",
         flags = "
             -magnetic_model igrf2025
