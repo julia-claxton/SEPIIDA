@@ -191,6 +191,7 @@ std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_s
 
   // We arbitrarily define the world origin as being in the X-Z plane of planet frame for ease of calculation.
   // So at 0º LAT, Z of the G4 world is parallel to X of planetframe, and X of G4 world is anti-parallel to Z of planetframe.
+  // Y is constant between the two systems.
   // And at 90º LAT, the coordinate systems are aligned on all three axes.
   // So to rotate between planetframe to G4 world, we need a positive rotation (defined right-handedly) of planetframe about its Y-axis by 90º - LAT.
   // And rotating the frame by θ means rotating vectors by -θ, so we rotate the B-field output by -(90º - LAT) about the Y-axis
