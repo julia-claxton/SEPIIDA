@@ -61,7 +61,6 @@ public:
   G4FieldManager* GetGlobalFieldManager();
 
 protected:
-
   G4FieldManager*         fFieldManager;
   G4ChordFinder*          fChordFinder;
   G4Mag_UsualEqRhs*       fEquation;
