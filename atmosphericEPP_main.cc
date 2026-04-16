@@ -76,8 +76,7 @@ chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 extern void printHelpScreen();
 extern void println(G4String line);
 
-int main(int argc,char** argv)
-{
+int main(int argc, char** argv){
   // Check for help flag
   if((argc == 2) && (std::strcmp(argv[1], "-help") == 0)){
     printHelpScreen();
