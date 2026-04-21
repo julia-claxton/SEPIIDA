@@ -157,7 +157,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
   v0 = v0 / v0.mag();
 
-  /*
   // Randomize azimuth (gyrophase)
   // TODO CLI flag to control whether phase is randomized?
   G4double phaseAngleDeg = G4UniformRand() * 360.0;
@@ -173,7 +172,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
-  */
 
   // Safety check: Verify that pitch angle generation is correct
   G4double generatedPitchAngle_deg;
@@ -196,6 +194,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
+
+  G4cout << x0[0] << ", " << x0[1] << ", " << x0[2] << G4endl;
+  G4cout << v0[0] << ", " << v0[1] << ", " << v0[2] << G4endl;
 
   // Assign position & velocity
   r->xPos = x0[0];
