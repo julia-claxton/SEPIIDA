@@ -60,7 +60,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // My methods
     std::vector<G4double> randDowngoingDirection();
     G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngle);
-    void createParticle(ParticleSample* r, G4Event* anEvent, G4ThreeVector x0, G4ThreeVector v0);
 
     // Messenger methods
     void SetBeamEnergy(G4double energy){ fBeamEnergy = energy;};
