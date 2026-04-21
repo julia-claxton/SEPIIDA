@@ -115,6 +115,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Set particle energy
   r->energy = fBeamEnergy * keV;
+  fParticleGun->SetParticleEnergy(r->energy);
 
   // Initial position vector
   G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
@@ -130,6 +131,20 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
+
+  // Save some work if the input is field-aligned
+  if(fBeamPitchAngle_deg == 0.0){
+    G4ThreeVector v0(B[0]/normB, B[1]/normB, B[2]/normB);
+    createParticle(r, anEvent, x0, v0);
+    delete r; // Free memory from ParticleSample struct
+    return;
+  }
+  if(fBeamPitchAngle_deg == 180.0){
+    G4ThreeVector v0(-B[0]/normB, -B[1]/normB, -B[2]/normB);
+    createParticle(r, anEvent, x0, v0);
+    delete r; // Free memory from ParticleSample struct
+    return;
+  }
 
   // Rotate B vector by the desired input pitch angle to get input velocity vector.
   // We first need to find a vector that is orthogonal to B that we can rotate about.
@@ -198,6 +213,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4cout << x0[0] << ", " << x0[1] << ", " << x0[2] << G4endl;
   G4cout << v0[0] << ", " << v0[1] << ", " << v0[2] << G4endl;
 
+  createParticle(r, anEvent, x0, v0);
+  delete r; // Free memory from ParticleSample struct
+  return;
+}
+
+void PrimaryGeneratorAction::createParticle(ParticleSample* r, G4Event* anEvent, G4ThreeVector x0, G4ThreeVector v0){
   // Assign position & velocity
   r->xPos = x0[0];
   r->yPos = x0[1];
@@ -209,13 +230,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Communicate parameters to particle gun
   fParticleGun->SetParticlePosition(G4ThreeVector(r->xPos, r->yPos, r->zPos)); 
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(r->xDir, r->yDir, r->zDir));
-  fParticleGun->SetParticleEnergy(r->energy);
   
   // Geant method to create initial particle with the above properties 
   fParticleGun->GeneratePrimaryVertex(anEvent);
-
-  // Free memory from ParticleSample struct
-  delete r;
 }
 
 G4ThreeVector PrimaryGeneratorAction::rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngleDeg){
