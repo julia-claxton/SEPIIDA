@@ -63,10 +63,11 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
 end
 
 # Remove existing jobscripts
-rm.(glob("*keV*.sh", @__DIR__))
+rm.(glob("*.sh", @__DIR__))
 
-write_job_script("preemptable", 100000, "e-", 10000.0, 0.1, 
-    prefix = "earth_xray_for_bob",
+
+write_job_script("preemptable", 1e3, "e-", 10000.0, 0.0, 
+    prefix = "segfault_test",
     flags = "
         -magnetic_model igrf2025
         -atmosphere_filename msis_earth_atmosphere_profile.csv
@@ -75,35 +76,3 @@ write_job_script("preemptable", 100000, "e-", 10000.0, 0.1,
         -min_energy_eV 10
     "
 )
-
-
-
-#=
-# Write new scripts
-alpha_energies = 1e6 .* [1.467029285016976, 1.7817875218749928, 2.1434580789902244, 2.5531026851640726, 3.0195499666152683, 3.5436236292778935, 4.125627948346392, 4.774463797977579, 5.490273042738451, 6.282166640382038, 7.159519110086783, 8.122386626142525, 9.170597549523674, 10.313477444726429, 11.560505948882511, 12.911525353931168, 14.376071249205166, 15.963767866189537, 17.674457592576562, 20.53486106783365, 26.080040217819565, 35.821267113820014, 52.667749722531134, 78.32854513709988, 114.50220914157535, 165.98409421382254]
-proton_energies = 1e6 .* [0.4919968561663142, 0.6202564919316679, 0.7632187244759833, 0.9246328837346689, 1.1043104921012188, 1.3019751267372308, 1.521935705828299, 1.7640765698686003, 2.032968417343461, 2.3285487124854978, 2.650701655257517, 3.0041418809864373, 3.388794404104349, 3.809461740784525, 4.271004102390247, 4.773387063190187, 5.316554218799155, 5.9053912772825905, 6.544811688653951, 7.234780943620419, 7.98022843236318, 8.78609801629206, 9.652363544291253, 11.097336568805867, 13.890406704078622, 18.78300886683073, 27.226294269353872, 40.07138487336281, 58.168090056375284, 83.9158247545856]
-
-for i in eachindex(alpha_energies)
-    write_job_script("preemptable", 1e5, "alpha", alpha_energies[i], 0.1, 
-        prefix = "GCR_muons",
-        flags = "
-            -magnetic_model igrf2025
-            -atmosphere_filename msis_earth_atmosphere_profile.csv
-            -backscatter_altitude 451.0
-            -brem_splitting 1
-        "
-    )
-end
-
-for i in eachindex(proton_energies)
-    write_job_script("preemptable", 1e5, "proton", proton_energies[i], 0.1, 
-        prefix = "GCR_muons",
-        flags = "
-            -magnetic_model igrf2025
-            -atmosphere_filename msis_earth_atmosphere_profile.csv
-            -backscatter_altitude 451.0
-            -brem_splitting 1
-        "
-    )
-end
-=#
