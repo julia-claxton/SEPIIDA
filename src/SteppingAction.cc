@@ -190,7 +190,9 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     // Interpolate to get approximate pitch angle at time of crossing
     const G4ThreeVector interpolatedPosition = prePosition + (positionDiff * t);
     const G4ThreeVector interpolatedMomentum = preMomentum + (momentumDiff * t);
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     G4double interpolatedPitchAngleDeg = getPitchAngle(interpolatedPosition, interpolatedMomentum);
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
     // Find the energy bin this particle resides in utilizing regular spacing to directly calculate the index.
     int energyIndex = std::floor(logbase(fRunAction->energySpectrumHistogramFactor, (crossingEnergy/keV)/(fRunAction->fEnergyMinkeV)));
@@ -270,11 +272,15 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
 }
 
 G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection){
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4double spacetimePoint[4] = {position.x(), position.y(), position.z(), 0};
   G4double emComponents[6];
 
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
 
