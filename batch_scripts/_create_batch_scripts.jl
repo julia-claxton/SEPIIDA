@@ -65,7 +65,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-write_job_script("preemptable", 1e3, "e-", 10_000, 0.0, 
+write_job_script("preemptable", 1, "e-", 10_000, 0.0, 
     prefix = "segfault_test",
     flags = "
         -backscatter_altitude 451.0

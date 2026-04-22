@@ -195,13 +195,16 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
     // Find the energy bin this particle resides in utilizing regular spacing to directly calculate the index.
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     int energyIndex = std::floor(logbase(fRunAction->energySpectrumHistogramFactor, (crossingEnergy/keV)/(fRunAction->fEnergyMinkeV)));
     if( (energyIndex < 0) || (energyIndex > (fRunAction->fNumberOfEnergyBins-1)) ){continue;} // Don't record energy if particle energy is out of range of histogram
 
     // Find pitch angle bin
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
     
     // Add to histogram
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
   }
 }
