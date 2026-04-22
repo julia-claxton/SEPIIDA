@@ -114,7 +114,8 @@ int main(int argc, char** argv){
 
   // Construct the run manager in multithreaded mode
   G4MTRunManager* runManager = new G4MTRunManager;
-  runManager->SetNumberOfThreads(G4Threading::G4GetNumberOfCores()); // Use maximum number of possible cores
+  //runManager->SetNumberOfThreads(G4Threading::G4GetNumberOfCores()); // Use maximum number of possible cores
+  runManager->SetNumberOfThreads(1); // Use maximum number of possible cores
 
   // Physics list
   G4PhysListFactory factory;
