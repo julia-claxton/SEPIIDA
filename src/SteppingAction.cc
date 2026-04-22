@@ -278,8 +278,6 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
 
   G4double pitchAngleDeg;
   G4double for_acos = dotProd / (normMomentum * normB);
-
-  G4cout << "for_acos - 1.0 = " << for_acos - 1.0 << G4endl;
   
   if (std::abs(for_acos - 1.0) < 1e-10){pitchAngleDeg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
   else if(std::abs(for_acos) < 1e-10)  {pitchAngleDeg = 90;}
