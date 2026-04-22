@@ -84,21 +84,39 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // ===========================
   // Guard Block
   // ===========================
+  // Check for NaN momentum
+  if(std::isnan(momentumDirection[0]) || std::isnan(momentumDirection[1]) || std::isnan(momentumDirection[2])){
+    G4cout << ANSI_YELLOW <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "WARNING: Killed " << particleName << " found with NaN momentum." <<
+    ANSI_NOCOLOR << G4endl;
+    track->SetTrackStatus(fStopAndKill);
+  }
+
   // Check for NaN energy
-  if(std::isnan(postStepKineticEnergy))
-  {  
-    G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: NaN energy. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
+  if(std::isnan(postStepKineticEnergy)){  
+    G4cout << ANSI_YELLOW <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "WARNING: Killed " << particleName << " found with NaN energy." <<
+    ANSI_NOCOLOR << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
+
   // Check for exceeding 1 second of simulation time
-  if(track->GetProperTime()/second > 1)
-  {
-    G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Exceeded 1s simulation time. Process: " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << G4endl;
+  if(track->GetProperTime()/second > 1){
+    G4cout << ANSI_YELLOW <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV exceeding 1s simulation time." <<
+    ANSI_NOCOLOR << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
+
   // Check for stuck photons. Occassionally they seem to get 'wedged' between atmospheric layers and stop propagating without being automatically killed, hanging the program forever
   if((step->GetStepLength()/m < 1e-12) && particleName == "gamma"){
-    G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" << G4endl;
+    G4cout << ANSI_YELLOW <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" <<
+    ANSI_NOCOLOR << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
 
@@ -302,8 +320,7 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Pitch angle is nan. This should never happen." <<
     ANSI_NOCOLOR << G4endl;
-      
-    G4cout << G4endl <<
+    G4cout <<
       "Debug Info:" << G4endl <<
       "    pitchAngleDeg = " << pitchAngleDeg << G4endl <<
       "    for_acos = " << for_acos << G4endl <<
