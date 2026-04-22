@@ -85,6 +85,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // ===========================
   // Guard Block
   // ===========================
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // Check for NaN energy
   if(std::isnan(postStepKineticEnergy))
@@ -103,6 +104,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // ===========================
   // Data recording
@@ -117,11 +119,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     preStepAlt_km,
     postStepAlt_km
   );
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   logEnergyDeposition(step, fRunAction,
     trackWeight,
     preStepAltitudeIndex,
     postStepAltitudeIndex
   );
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   logBackscatter(step, fRunAction,
     particleName,
     trackWeight,
@@ -131,10 +135,12 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     momentumDirection,
     postStepKineticEnergy
   );
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   if((parentProcess != nullptr) && (particleName == "e-") && (ionizationTracks[trackID] == false)){
     ionizationTracks[trackID] = true;
     logIonProduction(fRunAction, preStepAltitudeIndex, trackWeight);
   }
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 }
 
 void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
