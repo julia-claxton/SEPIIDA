@@ -191,9 +191,6 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     // Find pitch angle bin
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
     
-    G4cout << "pa = " << interpolatedPitchAngleDeg << G4endl;
-    G4cout << "paidx = " << paIndex << G4endl;
-
     // Add to histogram
     fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
   }
