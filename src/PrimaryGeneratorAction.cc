@@ -160,7 +160,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
 
   // Rotate to correct pitch angle
-  fBeamPitchAngle_deg = fBeamPitchAngle_deg + pitchAngleOffset_deg;
+  //fBeamPitchAngle_deg = fBeamPitchAngle_deg + pitchAngleOffset_deg;
   G4cout << fBeamPitchAngle_deg << G4endl;
   G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
   v0 = v0 / v0.mag();
