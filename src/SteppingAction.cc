@@ -61,7 +61,6 @@ SteppingAction::~SteppingAction(){delete fSteppingMessenger;}
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {  
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   // Dividing by a unit outputs data in that unit, so divisions by keV result in outputs in keV
   // https://geant4-internal.web.cern.ch/sites/default/files/geant4/collaboration/working_groups/electromagnetic/gallery/units/SystemOfUnits.html
   G4Track* track = step->GetTrack();
@@ -85,8 +84,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // ===========================
   // Guard Block
   // ===========================
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-
   // Check for NaN energy
   if(std::isnan(postStepKineticEnergy))
   {  
@@ -104,7 +101,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4cout << "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" << G4endl;
     track->SetTrackStatus(fStopAndKill);
   }
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // ===========================
   // Data recording
@@ -119,13 +115,11 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     preStepAlt_km,
     postStepAlt_km
   );
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   logEnergyDeposition(step, fRunAction,
     trackWeight,
     preStepAltitudeIndex,
     postStepAltitudeIndex
   );
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   logBackscatter(step, fRunAction,
     particleName,
     trackWeight,
@@ -135,12 +129,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     momentumDirection,
     postStepKineticEnergy
   );
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   if((parentProcess != nullptr) && (particleName == "e-") && (ionizationTracks[trackID] == false)){
     ionizationTracks[trackID] = true;
     logIonProduction(fRunAction, preStepAltitudeIndex, trackWeight);
   }
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 }
 
 void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
@@ -190,24 +182,20 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     // Interpolate to get approximate pitch angle at time of crossing
     const G4ThreeVector interpolatedPosition = prePosition + (positionDiff * t);
     const G4ThreeVector interpolatedMomentum = preMomentum + (momentumDiff * t);
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     G4double interpolatedPitchAngleDeg = getPitchAngle(interpolatedPosition, interpolatedMomentum);
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
     // Find the energy bin this particle resides in utilizing regular spacing to directly calculate the index.
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     int energyIndex = std::floor(logbase(fRunAction->energySpectrumHistogramFactor, (crossingEnergy/keV)/(fRunAction->fEnergyMinkeV)));
     if( (energyIndex < 0) || (energyIndex > (fRunAction->fNumberOfEnergyBins-1)) ){continue;} // Don't record energy if particle energy is out of range of histogram
 
     // Find pitch angle bin
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
     
+    G4cout << "pa = " << interpolatedPitchAngleDeg << G4endl;
+    G4cout << "paidx = " << paIndex << G4endl;
+
     // Add to histogram
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-    G4cout << particleIdx << ", " << altitudeIndex << ", " << energyIndex << ", " << paIndex << G4endl;
     fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
-    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   }
 }
 
@@ -277,15 +265,11 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
 }
 
 G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection){
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4double spacetimePoint[4] = {position.x(), position.y(), position.z(), 0};
   G4double emComponents[6];
 
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
 

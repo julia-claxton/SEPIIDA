@@ -74,8 +74,6 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-  
   if(fInitialParticleAlt == -999.0){
     G4cout 
       << ANSI_RED << "\n"
