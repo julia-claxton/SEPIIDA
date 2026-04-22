@@ -132,8 +132,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
 
-  G4cout << "(" << B[0] << ", " << B[1] << ", " << B[2] << ")" << G4endl;
-
   // Rotate B vector by the desired input pitch angle to get input velocity vector.
   // We first need to find a vector that is orthogonal to B that we can rotate about.
   // We will do this by crossing B with a coordinate axis.

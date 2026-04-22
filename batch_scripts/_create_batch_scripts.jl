@@ -66,13 +66,24 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 
-write_job_script("preemptable", 1e3, "e-", 10000.0, 0.0, 
+write_job_script("preemptable", 500, "e-", 10000.0, 0.0, 
     prefix = "segfault_test",
     flags = "
         -magnetic_model igrf2025
         -atmosphere_filename msis_earth_atmosphere_profile.csv
         -backscatter_altitude 451.0
-        -brem_splitting 100
+        -brem_splitting 1
+        -min_energy_eV 10
+    "
+)
+
+write_job_script("preemptable", 500, "e-", 10000.0, 10.0, 
+    prefix = "segfault_test",
+    flags = "
+        -magnetic_model igrf2025
+        -atmosphere_filename msis_earth_atmosphere_profile.csv
+        -backscatter_altitude 451.0
+        -brem_splitting 1
         -min_energy_eV 10
     "
 )
