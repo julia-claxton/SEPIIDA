@@ -136,6 +136,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
+  G4ThreeVector v0 = unitB;
+  /*
   // If the simulation is unmagnetized, make "B" be vertical downward
   if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
@@ -196,6 +198,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
+  */
 
   // Assign position & velocity
   r->xPos = x0[0];
