@@ -277,21 +277,37 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
   G4double pitchAngleDeg;
   G4double for_acos = dotProd / (normMomentum * normB);
   
-  if (std::abs(for_acos - 1.0) < 1e-10){pitchAngleDeg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
-  else if(std::abs(for_acos) < 1e-10)  {pitchAngleDeg = 90;}
-  else                                 {pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;}
+  if(std::abs(for_acos) < 1.0 + 1e-10){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Value provided to std::acos() out of range. std::abs(for_acos) - 1.0 = " << std::abs(for_acos) - 1.0 <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
+
+  // Float precision near 0º and 180º can cause out-of-domain errors resulting in NaNs
+  if (for_acos > 1.0)      {pitchAngleDeg = 0.0;}
+  else if(for_acos < -1.0) {pitchAngleDeg = 180.0;}
+  else                     {pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;}
   
-  
-  
-  
+
+
+
   
   if(std::isnan(pitchAngleDeg)){
-    G4cout << 
-      "pa = " << pitchAngleDeg << G4endl <<
-      "for_acos = " << for_acos << G4endl <<
-      "B = " << B[0] << ", " << B[1] << ", " << B[2] << G4endl <<
-      "v = " << momentumDirection[0] << ", " << momentumDirection[1] << ", " << momentumDirection[2] <<
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Pitch angle is nan. This should never happen." <<
+    ANSI_NOCOLOR << G4endl;
+      
+    G4cout << G4endl <<
+      "Debug Info:" << G4endl <<
+      "    pitchAngleDeg = " << pitchAngleDeg << G4endl <<
+      "    for_acos = " << for_acos << G4endl <<
+      "    B = " << B[0] << ", " << B[1] << ", " << B[2] << G4endl <<
+      "    v = " << momentumDirection[0] << ", " << momentumDirection[1] << ", " << momentumDirection[2] <<
     G4endl;
+    throw;
   }
   
   
