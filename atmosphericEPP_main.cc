@@ -167,7 +167,8 @@ int main(int argc, char** argv){
   // ==========================================
   // Parse command line arguments
   // ==========================================
-  
+  // TODO longitude argument
+
   // Required args:
   // Set input particle number
   G4String nParticles = argv[1];
