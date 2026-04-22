@@ -277,7 +277,8 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
   G4double pitchAngleDeg;
   G4double for_acos = dotProd / (normMomentum * normB);
   
-  if(std::abs(for_acos) < 1.0 + 1e-10){
+  // Throw if for_acos is out-of-range by significantly more than float precision
+  if(std::abs(for_acos) > (1.0 + 1e-5)){
     G4cout << ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Value provided to std::acos() out of range. std::abs(for_acos) - 1.0 = " << std::abs(for_acos) - 1.0 <<
@@ -285,15 +286,11 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
     throw;
   }
 
-  // Float precision near 0º and 180º can cause out-of-domain errors resulting in NaNs
+  // Float precision near 0º and 180º can cause out-of-domain errors resulting in NaNs, clip values near the edges of the domain
   if (for_acos > 1.0)      {pitchAngleDeg = 0.0;}
   else if(for_acos < -1.0) {pitchAngleDeg = 180.0;}
   else                     {pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;}
-  
 
-
-
-  
   if(std::isnan(pitchAngleDeg)){
     G4cout << ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
