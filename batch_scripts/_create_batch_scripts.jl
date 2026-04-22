@@ -67,7 +67,7 @@ rm.(glob("*.sh", @__DIR__))
 
 for lat in -90:30:90
     for energy in [100, 1_000, 10_000]
-        for pitch_angle in [0, 45, 70, 90]
+        for pitch_angle in 180 .- [0, 30, 60, 80]
             write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
                 prefix = "gamma_variation_lat$(lat)",
                 flags = "
