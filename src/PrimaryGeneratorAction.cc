@@ -105,6 +105,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     throw;
   }
 
+  G4double pitchAngleOffset_deg = 0.0;
+  if((fBeamPitchAngle_deg == 0.0) || (fBeamPitchAngle_deg == 180.0)){
+    fBeamPitchAngle_deg = 1.0;
+    pitchAngleOffset_deg = -1.0;
+  }
+
   // Select input particle type
   fParticleGun  = new G4ParticleGun();
   G4ParticleDefinition* inputParticle = G4ParticleTable::GetParticleTable()->FindParticle(fSourceType); // Electron = "e-", proton = "proton", photon = "gamma"
@@ -125,28 +131,27 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // rotation vector.
 
   // Get B field vector
+  // It sucks that we have to do this for every particle rather than pre-calculating the velocity
+  // direction, but GetFieldValue() isn't alive when the beginning of this file runs, so whatever. 
+  // Oh well, too bad, etc.
   G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};
   G4double emComponents[6];
   G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
   G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
-
-  // Rotate B vector by the desired input pitch angle to get input velocity vector.
-  // We first need to find a vector that is orthogonal to B that we can rotate about.
-  // We will do this by crossing B with a coordinate axis.
-
-  // It sucks that we have to do this for every particle rather than pre-calculating the velocity
-  // direction, but GetFieldValue() isn't alive when the beginning of this file runs, so whatever. 
-  // Oh well, too bad, etc.
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
   // If the simulation is unmagnetized, make "B" be vertical downward
   if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
   }
+
   // TODO CLI flag to switch between pitch angle specification and angle from vertical incidence
 
+  // Rotate B vector by the desired input pitch angle to get input velocity vector.
+  // We first need to find a vector that is orthogonal to B that we can rotate about.
+  // We will do this by crossing B with a coordinate axis.
   G4ThreeVector referenceVector(1.0, 0.0, 0.0);
   if(std::abs(1 - unitB.dot(referenceVector)) < 1e-10){
     referenceVector = {0.0, 1.0, 0.0};
@@ -155,6 +160,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
 
   // Rotate to correct pitch angle
+  fBeamPitchAngle_deg = fBeamPitchAngle_deg + pitchAngleOffset_deg;
+  G4cout << fBeamPitchAngle_deg << G4endl;
   G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
   v0 = v0 / v0.mag();
 
