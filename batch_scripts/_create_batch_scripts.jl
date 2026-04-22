@@ -65,18 +65,15 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-for pitch_angle in [0.1, 45, 70]
-    write_job_script("preemptable", 1e4, "e-", 10_000, pitch_angle, 
-        prefix = "wtf",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename jupiter_atmosphere_profile.csv
-            -backscatter_altitude 451.0
-            -brem_splitting 100
-            -min_energy_eV 10
-        "
-    )
-end
+write_job_script("preemptable", 1e3, "e-", 10_000, 0.0, 
+    prefix = "segfault_test",
+    flags = "
+        -backscatter_altitude 451.0
+        -brem_splitting 100
+        -min_energy_eV 10
+    "
+)
+
 
 
 #=
