@@ -205,7 +205,9 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     
     // Add to histogram
     G4cout << __FILE__ << ": " << __LINE__ << G4endl;
+    G4cout << particleIdx << ", " << altitudeIndex << ", " << energyIndex << ", " << paIndex << G4endl;
     fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
+    G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   }
 }
 
