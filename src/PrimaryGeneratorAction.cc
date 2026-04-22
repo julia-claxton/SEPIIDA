@@ -105,12 +105,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     throw;
   }
 
-  G4double pitchAngleOffset_deg = 0.0;
-  if((fBeamPitchAngle_deg == 0.0) || (fBeamPitchAngle_deg == 180.0)){
-    fBeamPitchAngle_deg = 1.0;
-    pitchAngleOffset_deg = -1.0;
-  }
-
   // Select input particle type
   fParticleGun  = new G4ParticleGun();
   G4ParticleDefinition* inputParticle = G4ParticleTable::GetParticleTable()->FindParticle(fSourceType); // Electron = "e-", proton = "proton", photon = "gamma"
@@ -160,8 +154,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
 
   // Rotate to correct pitch angle
-  //fBeamPitchAngle_deg = fBeamPitchAngle_deg + pitchAngleOffset_deg;
-  G4cout << fBeamPitchAngle_deg << G4endl;
   G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
   v0 = v0 / v0.mag();
 
@@ -184,6 +176,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Safety check: Verify that pitch angle generation is correct
   G4double generatedPitchAngle_deg;
   G4double for_acos = unitB.dot(v0) / (unitB.mag() * v0.mag());
+
+
+  G4cout << std::abs(for_acos - 1.0) << G4endl;
+
+
   if(std::abs(for_acos - 1.0) < 1e-10){generatedPitchAngle_deg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
   else if(std::abs(for_acos) < 1e-10){generatedPitchAngle_deg = 90;}
   else {generatedPitchAngle_deg = std::acos(for_acos) * 180/fPI;}
