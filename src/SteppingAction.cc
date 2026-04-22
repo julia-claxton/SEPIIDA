@@ -193,6 +193,10 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     
     // Add to histogram
     //fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
+    if((paIndex > 36) || (paIndex < 0) || (std::isnan(paIndex))){
+      G4cout << "pa = " << interpolatedPitchAngleDeg << G4endl;
+      G4cout << "paIdx = " << paIndex << G4endl;
+    }
     fRunAction->mainSpectrum.at(particleIdx).at(altitudeIndex).at(energyIndex).at(paIndex) += 1 * trackWeight;
   }
 }
