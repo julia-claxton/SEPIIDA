@@ -74,6 +74,8 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
+  
   if(fInitialParticleAlt == -999.0){
     G4cout 
       << ANSI_RED << "\n"
@@ -127,7 +129,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     v0_prePhaseRandomization[1] << ", " <<
     v0_prePhaseRandomization[2] <<
   G4endl;
-  
+
   // Get initial velocity vector only on the first iteration. Save the value, then do phase randomization for every particle.
   if((v0_prePhaseRandomization[0] == 0.0) && (v0_prePhaseRandomization[1] == 0.0) && (v0_prePhaseRandomization[2] == 0.0)){
     G4cout << "Getting v0" << G4endl;

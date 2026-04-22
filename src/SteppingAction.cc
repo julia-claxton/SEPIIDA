@@ -61,6 +61,7 @@ SteppingAction::~SteppingAction(){delete fSteppingMessenger;}
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {  
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   // Dividing by a unit outputs data in that unit, so divisions by keV result in outputs in keV
   // https://geant4-internal.web.cern.ch/sites/default/files/geant4/collaboration/working_groups/electromagnetic/gallery/units/SystemOfUnits.html
   G4Track* track = step->GetTrack();
