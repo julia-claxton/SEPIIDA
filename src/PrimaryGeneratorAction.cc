@@ -46,6 +46,7 @@
 #include "G4FieldManager.hh"
 #include "G4MagneticField.hh"
 #include "ANSIColors.h"
+#include "GlobalFunctions.h"
 #include <math.h>
 
 
@@ -105,6 +106,25 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     throw;
   }
 
+
+
+  G4double pitchAngleOffset_deg = 0;
+  if(fBeamPitchAngle_deg == 0){
+    fBeamPitchAngle_deg = 1;
+    pitchAngleOffset_deg = -1;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
   // Select input particle type
   fParticleGun  = new G4ParticleGun();
   G4ParticleDefinition* inputParticle = G4ParticleTable::GetParticleTable()->FindParticle(fSourceType); // Electron = "e-", proton = "proton", photon = "gamma"
@@ -136,8 +156,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
   G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
 
-  G4ThreeVector v0 = unitB;
-  /*
   // If the simulation is unmagnetized, make "B" be vertical downward
   if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
     unitB = {0.0, 0.0, -1.0};
@@ -158,6 +176,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Rotate to correct pitch angle
   G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
   v0 = v0 / v0.mag();
+
+  if(pitchAngleOffset_deg != 0){
+    v0 = rotateVector(v0, rotationAxis, pitchAngleOffset_deg);
+  }
 
   // Randomize azimuth (gyrophase)
   // TODO CLI flag to control whether phase is randomized?
@@ -182,15 +204,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   else if(std::abs(for_acos) < 1e-10){generatedPitchAngle_deg = 90;}
   else {generatedPitchAngle_deg = std::acos(for_acos) * 180/fPI;}
 
-  G4cout << generatedPitchAngle_deg << G4endl;
-
-  if(std::abs(generatedPitchAngle_deg - fBeamPitchAngle_deg) > 1e-5){
+  if(std::abs(generatedPitchAngle_deg - (fBeamPitchAngle_deg + pitchAngleOffset_deg)) > 1e-5){
     G4cout << "\n" <<
       ANSI_RED <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Primary generated with incorrect pitch angle.\n" <<
       "You should never see this. Please email julia.claxton@colorado.edu with this error and the conditions that produced it.\n" <<
-      "\tDesired pitch angle: " << fBeamPitchAngle_deg << "º\n" <<
+      "\tDesired pitch angle: " << fBeamPitchAngle_deg + pitchAngleOffset_deg << "º\n" <<
       "\tGenerated pitch angle: " << generatedPitchAngle_deg << "º\n" <<
       "\tv0 = (" << v0[0] << ", " << v0[1] << ", " << v0[2] << ")\n" << 
       "\tB = (" << unitB[0] << ", " << unitB[1] << ", " << unitB[2] << ")" << 
@@ -198,7 +218,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
-  */
 
   // Assign position & velocity
   r->xPos = x0[0];
@@ -214,6 +233,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   fParticleGun->GeneratePrimaryVertex(anEvent); // Geant method to create initial particle with the above properties 
   delete r; // Free memory from ParticleSample struct
+
+  //
+  fBeamPitchAngle_deg = fBeamPitchAngle_deg + pitchAngleOffset_deg;
+
   return;
 }
 

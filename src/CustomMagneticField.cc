@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <unistd.h>
+#include "GlobalFunctions.h"
 
 /* The following class calculates the magnetic field strength 
  * and direction according to a model of user's choice. This class inherits
@@ -216,15 +217,6 @@ std::vector<G4double> CustomMagneticField::G4world_to_planetCentric(G4double x_g
   G4double z_siii = (-x_g4world * std::sin(rotation_angle_rad)) + (z_g4world * std::cos(rotation_angle_rad));
 
   return std::vector<G4double> {x_siii, y_siii, z_siii};
-}
-
-void CustomMagneticField::printVector(std::vector<G4double> toPrint) const {
-  G4cout
-    << "("  << toPrint[0]
-    << ", " << toPrint[1]
-    << ", " << toPrint[2]
-    << ")"
-  << G4endl;
 }
 
 G4double CustomMagneticField::vectorMagnitude(std::vector<G4double> v) const {

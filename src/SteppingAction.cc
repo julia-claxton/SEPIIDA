@@ -45,6 +45,7 @@
 #include "G4MagneticField.hh"
 #include <chrono>
 #include "ANSIColors.h"
+#include "GlobalFunctions.h"
 
 SteppingAction::SteppingAction(EventAction* eventAction, RunAction* RuAct)
 : G4UserSteppingAction(),
@@ -300,8 +301,4 @@ G4double SteppingAction::overlap(G4double a1, G4double a2, G4double b1, G4double
   }
 
   return std::min(a2, b2) - std::max(a1, b1);
-}
-
-void SteppingAction::printVector(G4ThreeVector v, G4double unit){
-  G4cout << "(" << v.x()/unit << ", " << v.y()/unit << ", " << v.z()/unit << ")";
 }

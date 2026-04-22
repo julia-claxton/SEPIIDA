@@ -48,6 +48,7 @@
 
 #include "DetectorMessenger.hh"
 #include "ANSIColors.h"
+#include "GlobalFunctions.h"
 
 #include <fstream>
 #include <regex>

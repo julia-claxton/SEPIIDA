@@ -87,7 +87,6 @@ class SteppingAction : public G4UserSteppingAction
     G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection);
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);
-    void printVector(G4ThreeVector v, G4double unit);
   
     std::map<int, bool> ionizationTracks;
 

@@ -71,6 +71,7 @@ chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 #include "G4CoupledTransportation.hh"
 
 #include "ANSIColors.h"
+#include "GlobalFunctions.h"
 
 // These function declarations feel like bad practice... Oh well.
 extern void printHelpScreen();

@@ -35,7 +35,6 @@
 #include "G4Accumulable.hh"
 #include "globals.hh"
 #include <vector>
-#include "myHistogram.hh"
 
 class G4ParticleDefinition;
 class G4Transportation;

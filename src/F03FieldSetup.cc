@@ -70,6 +70,8 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "GlobalFunctions.h"
+#include "ANSIColors.h"
 
 F03FieldSetup::F03FieldSetup()
  : fFieldManager(0),
