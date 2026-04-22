@@ -190,8 +190,12 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
 
     // Find pitch angle bin
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
+    if(interpolatedPitchAngleDeg == 180.0){
+      paIndex = fRunAction->fNumberOfPitchAngleBins - 1; // Technically should be the start of the first out-of-range bin, but that obviously causes problems, so we make the last bin inclusive on both sides of its range
+    }
     
     // Add to histogram
+    // TODO change back to [] once you're sure out-of-bounds errors won't happen
     //fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
     fRunAction->mainSpectrum.at(particleIdx).at(altitudeIndex).at(energyIndex).at(paIndex) += 1 * trackWeight;
   }
