@@ -193,10 +193,6 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     
     // Add to histogram
     //fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
-    if((paIndex > 36) || (paIndex < 0) || (std::isnan(paIndex))){
-      G4cout << "pa = " << interpolatedPitchAngleDeg << G4endl;
-      G4cout << "paIdx = " << paIndex << G4endl;
-    }
     fRunAction->mainSpectrum.at(particleIdx).at(altitudeIndex).at(energyIndex).at(paIndex) += 1 * trackWeight;
   }
 }
@@ -284,6 +280,25 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
   if (std::abs(for_acos - 1.0) < 1e-10){pitchAngleDeg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
   else if(std::abs(for_acos) < 1e-10)  {pitchAngleDeg = 90;}
   else                                 {pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;}
+  
+  
+  
+  
+  
+  if(std::isnan(pitchAngleDeg)){
+    G4cout << 
+      "pa = " << pitchAngleDeg << G4endl <<
+      "for_acos = " << for_acos << G4endl <<
+      "B = " << B[0] << ", " << B[1] << ", " << B[2] << G4endl <<
+      "v = " << momentumDirection[0] << ", " << momentumDirection[1] << ", " << momentumDirection[2] <<
+    G4endl;
+  }
+  
+  
+  
+  
+  
+  
   return pitchAngleDeg;
 }
 
