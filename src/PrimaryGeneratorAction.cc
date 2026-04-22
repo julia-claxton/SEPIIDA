@@ -122,15 +122,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Initial position vector
   G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
 
-  G4cout << "meow1 v0 = " <<
-    v0_prePhaseRandomization[0] << ", " <<
-    v0_prePhaseRandomization[1] << ", " <<
-    v0_prePhaseRandomization[2] <<
-  G4endl;
-
   // Get initial velocity vector only on the first iteration. Save the value, then do phase randomization for every particle.
   if((v0_prePhaseRandomization[0] == 0.0) && (v0_prePhaseRandomization[1] == 0.0) && (v0_prePhaseRandomization[2] == 0.0)){
-    G4cout << "Getting v0" << G4endl;
     setv0PrePhaseRandomization(x0);
   }
 
