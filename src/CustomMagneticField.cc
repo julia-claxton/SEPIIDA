@@ -19,7 +19,6 @@
 CustomMagneticField::CustomMagneticField()
 : G4MagneticField(),
   fMagneticFieldMessenger(0),
-  fDipoleMoment(6.4e22), // Earth magnetic moment, A * m^2. Value source: https://sciencedemonstrations.fas.harvard.edu/presentations/earths-magnetic-field
   fLAT_degrees(-999.0),  // Units: deg
   fFieldModel("throw an error"), 
   fRe(6371e3),           // Units: m
@@ -47,8 +46,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // Guard
   std::vector<G4String> availableModels = {
     "igrf2025",
-    "jrm33",
-    "none"
+    "jrm33"
   };
   if(std::find(availableModels.begin(), availableModels.end(), fFieldModel) == availableModels.end()){
     G4cout << "\n" <<
@@ -58,11 +56,6 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
       ANSI_NOCOLOR <<
     G4endl;
     throw;
-  }
-
-  if(fFieldModel == "none"){
-    Bfield[0] = Bfield[1] = Bfield[2] = 0.0;
-    return;
   }
 
   // Set planetary radius based on B-field model
@@ -141,47 +134,6 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   Bfield[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
   Bfield[1] = B_worldFrame[1] * 1e-9 * tesla; // By
   Bfield[2] = B_worldFrame[2] * 1e-9 * tesla; // Bz
-  Bfield[3] = 0; // Ex
-  Bfield[4] = 0; // Ey
-  Bfield[5] = 0; // Ez
-}
-
-void CustomMagneticField::earthFieldDipole(const G4double Point[4], G4double *Bfield) const {
-  // TODO delete this eventually once you are sure you'll be fine without it
-  
-  // Calculate field components using centered dipole model
-  G4double LAT_radians = fLAT_degrees * fpi / 180.0;
-  G4double magMoment[3] = {0, -1 * fDipoleMoment * std::cos(LAT_radians), -1 * fDipoleMoment * std::sin(LAT_radians)}; // Magnetic moment of Earth in world coordinates
-  G4double r_earthCenter_to_origin[3] = {0, 0, fRe + 500e3}; // Units: m. Add 500 due to origin of simulation being 500 km above sea level.
-  G4double r_origin_to_particle[3] = {Point[0]/m, Point[1]/m, Point[2]/m}; // Position vector between world origin and particle in world coordinates. Units: m
-  G4double r[3] = {
-    r_earthCenter_to_origin[0] + r_origin_to_particle[0],
-    r_earthCenter_to_origin[1] + r_origin_to_particle[1],
-    r_earthCenter_to_origin[2] + r_origin_to_particle[2]
-  }; // Units: m
-
-  // Get dot product of m and r
-  G4double dotProd = 0;
-  for(int i = 0; i < 3; i++){
-    dotProd += magMoment[i] * r[i];
-  }
-
-  // Get magnitude of r
-  G4double rMag = std::sqrt((r[0]*r[0]) + (r[1]*r[1]) + (r[2]*r[2]));
-
-  // Get each component of field strength
-  G4double B[3];
-  for(int i = 0; i < 3; i++){
-    B[i] = (fu0/(4*fpi)) * ( ((3*dotProd*r[i])/pow(rMag, 5)) - (magMoment[i]/pow(rMag, 3)) );
-  }
-
-  // Assign values
-  // x = East direction
-  // y = North direction
-  // z = Up direction, radially out from Earth 
-  Bfield[0] = B[0] * tesla; // Bx
-  Bfield[1] = B[1] * tesla; // By
-  Bfield[2] = B[2] * tesla; // Bz
   Bfield[3] = 0; // Ex
   Bfield[4] = 0; // Ey
   Bfield[5] = 0; // Ez

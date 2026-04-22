@@ -49,7 +49,6 @@
 #include "GlobalFunctions.h"
 #include <math.h>
 
-
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0),
@@ -59,7 +58,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fInitialParticleAlt(-999.0),
   fPI(3.14159265359),
   fRad2Deg(180.0 / 3.14159265359),
-  fSourceType("unset")
+  fSourceType("unset"),
+  v0_prePhaseRandomization({0.0, 0.0, 0.0}),
+  unitB({0.0, 0.0, 0.0})
 {
   fPrimaryMessenger = new PrimaryGeneratorMessenger(this);
 }
@@ -121,47 +122,18 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Initial position vector
   G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
 
-  // Get initial velocity vector. We do this by getting the B field vector, finding an
-  // orthogonal vector to it, then rotating by the desired pitch angle about the orthogonal
-  // rotation vector.
-
-  // Get B field vector
-  // It sucks that we have to do this for every particle rather than pre-calculating the velocity
-  // direction, but GetFieldValue() isn't alive when the beginning of this file runs, so whatever. 
-  // Oh well, too bad, etc.
-  G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};
-  G4double emComponents[6];
-  G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
-  G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
-  G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
-  G4ThreeVector unitB(B[0]/normB, B[1]/normB, B[2]/normB);
-
-  // If the simulation is unmagnetized, make "B" be vertical downward
-  if((B[0] == 0.0) && (B[1] == 0.0) && (B[2] == 0.0)){
-    unitB = {0.0, 0.0, -1.0};
+  // Get initial velocity vector only on the first iteration. Save the value, then do phase randomization for every particle.
+  if((v0_prePhaseRandomization[0] == 0.0) && (v0_prePhaseRandomization[1] == 0.0) && (v0_prePhaseRandomization[2] == 0.0)){
+    G4cout << "Getting v0" << G4endl;
+    setv0PrePhaseRandomization(x0);
   }
 
   // TODO CLI flag to switch between pitch angle specification and angle from vertical incidence
 
-  // Rotate B vector by the desired input pitch angle to get input velocity vector.
-  // We first need to find a vector that is orthogonal to B that we can rotate about.
-  // We will do this by crossing B with a coordinate axis.
-  G4ThreeVector referenceVector(1.0, 0.0, 0.0);
-  if(std::abs(1 - unitB.dot(referenceVector)) < 1e-10){
-    referenceVector = {0.0, 1.0, 0.0};
-  }
-  G4ThreeVector rotationAxis = unitB.cross(referenceVector);
-  rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
-
-  // Rotate to correct pitch angle
-  G4ThreeVector v0 = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
-  v0 = v0 / v0.mag();
-
   // Randomize azimuth (gyrophase)
   // TODO CLI flag to control whether phase is randomized?
   G4double phaseAngleDeg = G4UniformRand() * 360.0;
-  v0 = rotateVector(v0, unitB, phaseAngleDeg);
+  G4ThreeVector v0 = rotateVector(v0_prePhaseRandomization, unitB, phaseAngleDeg);
 
   // Safety check: Magnitude of v0 == 1 (to float precision)
   if(std::abs(v0.mag() - 1.0) > 1e-12){
@@ -253,4 +225,37 @@ std::vector<G4double> PrimaryGeneratorAction::randDowngoingDirection(){
       return std::vector<G4double> {x, y, z};
     }
   }
+}
+
+G4ThreeVector PrimaryGeneratorAction::getUnitB(G4ThreeVector x0){
+  G4double spacetimePoint[4] = {x0[0], x0[1], x0[2], 0};
+  G4double emComponents[6];
+  G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+  fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
+  G4double B[3] = {emComponents[0], emComponents[1], emComponents[2]};
+  G4double normB = std::sqrt(B[0]*B[0] + B[1]*B[1] + B[2]*B[2]);
+
+  G4ThreeVector result(B[0]/normB, B[1]/normB, B[2]/normB);
+  return result;
+}
+
+void PrimaryGeneratorAction::setv0PrePhaseRandomization(G4ThreeVector x0){
+  // Get B-field direction
+  unitB = getUnitB(x0);
+
+  // Rotate B vector by the desired input pitch angle to get input velocity vector.
+  // We first need to find a vector that is orthogonal to B that we can rotate about.
+  // We will do this by crossing B with a coordinate axis. (Y-axis chosen arbitrarily)
+  G4ThreeVector referenceVector(1.0, 0.0, 0.0);
+  if(std::abs(1 - unitB.dot(referenceVector)) < 1e-10){
+    referenceVector = {0.0, 1.0, 0.0};
+  }
+  G4ThreeVector rotationAxis = unitB.cross(referenceVector);
+  rotationAxis = rotationAxis / rotationAxis.mag(); // Convert to unit vector
+
+  // Rotate to correct pitch angle
+  v0_prePhaseRandomization = rotateVector(unitB, rotationAxis, fBeamPitchAngle_deg);
+  v0_prePhaseRandomization = v0_prePhaseRandomization / v0_prePhaseRandomization.mag();
+
+  return;
 }

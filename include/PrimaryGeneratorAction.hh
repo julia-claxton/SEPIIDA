@@ -60,6 +60,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // My methods
     std::vector<G4double> randDowngoingDirection();
     G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngle);
+    G4ThreeVector getUnitB(G4ThreeVector x0);
+    void setv0PrePhaseRandomization(G4ThreeVector x0);
 
     // Messenger methods
     void SetBeamEnergy(G4double energy){ fBeamEnergy = energy;};
@@ -68,6 +70,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetInputParticleType(G4String particle){fSourceType = particle;};
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; } // method to access particle gun
   
+    G4ThreeVector unitB;
+    G4ThreeVector v0_prePhaseRandomization;
+
   private:
     G4ParticleGun*  fParticleGun;
     PrimaryGeneratorMessenger* fPrimaryMessenger;

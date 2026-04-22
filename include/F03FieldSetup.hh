@@ -59,6 +59,8 @@ public:
   void SetStepper();
   void SetMinStep(G4double se) { fMinStep = se; }
   G4FieldManager* GetGlobalFieldManager();
+  G4MagneticField* nonCachedMagneticField;
+  G4MagneticField* cachedMagneticField;
 
 protected:
   G4FieldManager*         fFieldManager;

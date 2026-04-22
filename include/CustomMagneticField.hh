@@ -17,7 +17,6 @@ public:
   virtual ~CustomMagneticField() override;
 
   virtual void GetFieldValue(const G4double Point[4], G4double *Bfield) const override;
-  void earthFieldDipole(const G4double Point[4],G4double *Bfield) const;
 
   std::vector<G4double> planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const;
   std::vector<G4double> G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
@@ -27,12 +26,10 @@ public:
   void SetFieldModel(G4String fieldModel){fFieldModel = fieldModel;};
 
   // Misc
-  void printVector(std::vector<G4double> toPrint) const;
   G4double vectorMagnitude(std::vector<G4double> v) const;
-
-private:
+  
+  private:
   CustomMagneticFieldMessenger* fMagneticFieldMessenger;
-  G4double fDipoleMoment;
   G4double fLAT_degrees;
   G4String fFieldModel;
   G4double fRe;
