@@ -65,14 +65,20 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-
-write_job_script("preemptable", 500, "e-", 10000.0, 0.0, 
-    prefix = "segfault_test",
-    flags = "
-        -magnetic_model igrf2025
-        -atmosphere_filename msis_earth_atmosphere_profile.csv
-        -backscatter_altitude 451.0
-        -brem_splitting 1
-        -min_energy_eV 10
-    "
-)
+for lat in -90:30:90
+    for energy in [100.0, 1_000.0, 10_000.0]
+        for pitch_angle in [0.1, 45, 70, 90]
+            write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
+                prefix = "gamma_variation_lat$(lat)",
+                flags = "
+                    -magnetic_model igrf2025
+                    -atmosphere_filename msis_earth_atmosphere_profile.csv
+                    -backscatter_altitude 451.0
+                    -brem_splitting 100
+                    -min_energy_eV 10
+                    -latitude $(lat)
+                "
+            )
+        end
+    end
+end
