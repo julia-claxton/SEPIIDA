@@ -192,7 +192,8 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
     
     // Add to histogram
-    fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
+    //fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
+    fRunAction->mainSpectrum.at(particleIdx).at(altitudeIndex).at(energyIndex).at(paIndex) += 1 * trackWeight;
   }
 }
 
