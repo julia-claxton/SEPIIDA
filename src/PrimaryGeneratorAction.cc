@@ -176,14 +176,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Safety check: Verify that pitch angle generation is correct
   G4double generatedPitchAngle_deg;
   G4double for_acos = unitB.dot(v0) / (unitB.mag() * v0.mag());
-
-
-  G4cout << std::abs(for_acos - 1.0) << G4endl;
-
-
   if(std::abs(for_acos - 1.0) < 1e-10){generatedPitchAngle_deg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
   else if(std::abs(for_acos) < 1e-10){generatedPitchAngle_deg = 90;}
   else {generatedPitchAngle_deg = std::acos(for_acos) * 180/fPI;}
+
+  G4cout << generatedPitchAngle_deg << G4endl;
 
   if(std::abs(generatedPitchAngle_deg - fBeamPitchAngle_deg) > 1e-5){
     G4cout << "\n" <<
