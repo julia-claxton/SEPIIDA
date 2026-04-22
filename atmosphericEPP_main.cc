@@ -428,7 +428,3 @@ void printHelpScreen(){
   println("");
   println("Exiting...");
 }
-
-void println(G4String line){
-  G4cout << line << G4endl;
-}

@@ -11,4 +11,8 @@ inline void printVector(G4ThreeVector v){
   G4cout << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
 }
 
+inline void println(G4String line){
+  G4cout << line << G4endl;
+}
+
 #endif
