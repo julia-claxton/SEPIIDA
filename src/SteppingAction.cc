@@ -276,7 +276,14 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
   G4double normMomentum = std::sqrt(pow(momentumDirection.x(), 2) + pow(momentumDirection.y(), 2) + pow(momentumDirection.z(), 2));
   G4double dotProd = (momentumDirection.x() * B[0]) + (momentumDirection.y() * B[1]) + (momentumDirection.z() * B[2]);
 
-  const G4double pitchAngleDeg = std::acos(dotProd / (normMomentum * normB)) * 180/3.14159265358979;
+  G4double pitchAngleDeg;
+  G4double for_acos = dotProd / (normMomentum * normB);
+  
+  if (std::abs(for_acos - 1.0) < 1e-10){pitchAngleDeg = 0;} // Float precision near 0º and 90º can cause out-of-domain errors resulting in NaNs
+  else if(std::abs(for_acos) < 1e-10)  {pitchAngleDeg = 90;}
+  else                                 {pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;}
+
+  pitchAngleDeg = std::acos(for_acos) * 180/3.14159265358979;
   return pitchAngleDeg;
 }
 
