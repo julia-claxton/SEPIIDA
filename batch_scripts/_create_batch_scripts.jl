@@ -76,7 +76,7 @@ for lat in -90:30:90
                     -backscatter_altitude 451.0
                     -brem_splitting 100
                     -min_energy_eV 10
-                    -latitude $(lat)
+                    -lat $(lat)
                 "
             )
         end

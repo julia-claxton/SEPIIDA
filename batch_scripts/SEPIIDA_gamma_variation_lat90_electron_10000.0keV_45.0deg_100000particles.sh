@@ -24,7 +24,7 @@ module load gcc/14.2.0
 
 # Run simulation
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 100000 e- 10000.0 45.0 -magnetic_model igrf2025 -atmosphere_filename msis_earth_atmosphere_profile.csv -backscatter_altitude 451.0 -brem_splitting 100 -min_energy_eV 10 -latitude 90 -prefix gamma_variation_lat90
+./SEPIIDA 100000 e- 10000.0 45.0 -magnetic_model igrf2025 -atmosphere_filename msis_earth_atmosphere_profile.csv -backscatter_altitude 451.0 -brem_splitting 100 -min_energy_eV 10 -lat 90 -prefix gamma_variation_lat90
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/gamma_variation_lat90*electron_input*10000.0keV_45.0deg_100000particles* /projects/jucl6426/SEPIIDA/results
