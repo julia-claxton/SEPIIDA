@@ -194,10 +194,13 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     if( (altitudeIndex < 0) || (altitudeIndex > (fRunAction->fNumberOfSamplePlanes-1)) ){continue;}
 
     // Do an interpolation to get approximate energy at the plane crossing
-    G4double t = (fRunAction->sampleAltitudes_km[altitudeIndex] - preStepAlt_km) / (postStepAlt_km - preStepAlt_km);
-    G4double crossingEnergy = preStepKineticEnergy + (t * (postStepKineticEnergy - preStepKineticEnergy)); // Linear interpolation
+    G4double t = (fRunAction->sampleAltitudes_km[altitudeIndex] - preStepAlt_km) / (postStepAlt_km - preStepAlt_km); // Interpolant, not time
+    if(std::isnan(t)){t = 0;} // If we didn't travel in altitude, avoid killing the whole program with a NaN value of t
 
-    // Interpolate to get approximate pitch angle at time of crossing
+    // Perform linear interpolation for energy
+    G4double crossingEnergy = preStepKineticEnergy + ((postStepKineticEnergy - preStepKineticEnergy) * t); 
+
+    // Perform linear interpolation for pitch angle
     const G4ThreeVector interpolatedPosition = prePosition + (positionDiff * t);
     const G4ThreeVector interpolatedMomentum = preMomentum + (momentumDiff * t);
     G4double interpolatedPitchAngleDeg = getPitchAngle(interpolatedPosition, interpolatedMomentum);
@@ -322,18 +325,14 @@ G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector mom
     ANSI_NOCOLOR << G4endl;
     G4cout <<
       "Debug Info:" << G4endl <<
-      "    pitchAngleDeg = " << pitchAngleDeg << G4endl <<
-      "    for_acos = " << for_acos << G4endl <<
+      "    x = " << position[0] << ", "  << position[1] << ", " << position[2] << G4endl <<
+      "    v = " << momentumDirection[0] << ", " << momentumDirection[1] << ", " << momentumDirection[2] << G4endl <<
       "    B = " << B[0] << ", " << B[1] << ", " << B[2] << G4endl <<
-      "    v = " << momentumDirection[0] << ", " << momentumDirection[1] << ", " << momentumDirection[2] <<
+      "    pitchAngleDeg = " << pitchAngleDeg << G4endl <<
+      "    for_acos = " << for_acos <<
     G4endl;
     throw;
   }
-  
-  
-  
-  
-  
   
   return pitchAngleDeg;
 }
