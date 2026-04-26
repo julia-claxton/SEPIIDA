@@ -65,23 +65,39 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-for lat in -90:30:90
-    for energy in [100, 1_000, 10_000]
-        for pitch_angle in [[0, 30, 60, 80]..., 180 .- [0, 30, 60, 80]...]
-            downgoing = ((pitch_angle - 90) * (lat)) ≥ 0
-            if downgoing == false; continue; end
+energy_list = collect(logrange(10, 100e3, 21))
 
-            write_job_script("preemptable", 1e5, "e-", energy, pitch_angle, 
-                prefix = "gamma_variation_lat$(lat)",
-                flags = "
-                    -magnetic_model jrm33
-                    -atmosphere_filename jupiter_atmosphere_profile.csv
-                    -backscatter_altitude 451.0
-                    -brem_splitting 100
-                    -min_energy_eV 10
-                    -lat $(lat)
-                "
-            )
-        end
+
+for energy in energy_list
+    if energy < 3e3
+        split_factor = 1000
+    elseif energy < 9e3
+        split_factor = 100
+    else
+        split_factor = 1
     end
+
+    write_job_script("preemptable", 1e5, "e-", energy, 180, 
+        prefix = "NH",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename jupiter_atmosphere_profile.csv
+            -backscatter_altitude 451.0
+            -brem_splitting $(split_factor)
+            -min_energy_eV 10
+            -lat 85
+        "
+    )
+
+    write_job_script("preemptable", 1e5, "e-", energy, 0, 
+        prefix = "SH",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename jupiter_atmosphere_profile.csv
+            -backscatter_altitude 451.0
+            -brem_splitting $(split_factor)
+            -min_energy_eV 10
+            -lat -72.5
+        "
+    )
 end
