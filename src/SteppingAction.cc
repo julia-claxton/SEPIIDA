@@ -218,9 +218,7 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
     }
     
     // Add to histogram
-    // TODO change back to [] once you're sure out-of-bounds errors won't happen
-    //fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
-    fRunAction->mainSpectrum.at(particleIdx).at(altitudeIndex).at(energyIndex).at(paIndex) += 1 * trackWeight;
+    fRunAction->mainSpectrum[particleIdx][altitudeIndex][energyIndex][paIndex] += 1 * trackWeight;
   }
 }
 

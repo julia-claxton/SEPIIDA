@@ -69,16 +69,10 @@ energy_list = collect(logrange(10, 100e3, 21))
 
 
 for energy in energy_list
-    if energy < 3e3
-        split_factor = 1000
-    elseif energy < 9e3
-        split_factor = 100
-    else
-        split_factor = 1
-    end
+    split_factor = 1000
 
-    write_job_script("preemptable", 1e5, "e-", energy, 180, 
-        prefix = "NH",
+    write_job_script("preemptable", 1e6, "e-", energy, 180, 
+        prefix = "brem1_NH",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv
@@ -89,8 +83,8 @@ for energy in energy_list
         "
     )
 
-    write_job_script("preemptable", 1e5, "e-", energy, 0, 
-        prefix = "SH",
+    write_job_script("preemptable", 1e6, "e-", energy, 0, 
+        prefix = "brem1_SH",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv

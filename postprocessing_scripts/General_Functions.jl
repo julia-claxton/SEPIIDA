@@ -5,7 +5,7 @@ using Statistics, LinearAlgebra
 # Written by Julia Claxton. Contact: julia.claxton@colorado.edu
 # Released under MIT License.
 
-function print_progress_bar(fraction; bar_length = 30)
+function print_progress_bar(fraction; bar_length = 20)
 # Prints a progress bar to terminal filled to user-specified percentage.
     character_length = 1/bar_length
     number_of_filled_characters = Int(floor(fraction/character_length))
@@ -14,6 +14,11 @@ function print_progress_bar(fraction; bar_length = 30)
     print(repeat("░", bar_length - number_of_filled_characters))
     print(" [$(round(fraction*100, digits = 1))%]")
     if fraction == 1; println(); end
+end
+
+function print_progress_bar(iterator, list; bar_length = 20)
+# Prints a progress bar to terminal filled to user-specified percentage.
+    print_progress_bar(iterator/length(list), bar_length = bar_length)
 end
 
 function edges_to_means(edges)
