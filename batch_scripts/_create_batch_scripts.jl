@@ -65,33 +65,16 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-energy_list = collect(logrange(10, 100e3, 21))
-
-
-for energy in energy_list
-    split_factor = 1000
-
-    write_job_script("preemptable", 1e6, "e-", energy, 180, 
-        prefix = "brem1_NH",
+for pa in LinRange(100, 180, 50)
+    write_job_script("preemptable", 1e5, "e-", 10_000, pa, 
+        prefix = "pa_brem_variation",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv
             -backscatter_altitude 451.0
-            -brem_splitting $(split_factor)
+            -brem_splitting 1000
             -min_energy_eV 10
             -lat 85
-        "
-    )
-
-    write_job_script("preemptable", 1e6, "e-", energy, 0, 
-        prefix = "brem1_SH",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename jupiter_atmosphere_profile.csv
-            -backscatter_altitude 451.0
-            -brem_splitting $(split_factor)
-            -min_energy_eV 10
-            -lat -72.5
         "
     )
 end
