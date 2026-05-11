@@ -15,7 +15,6 @@ using Plots
         linecolor = :black,
         linewidth = 1.2
     )        
-
 include("$(@__DIR__)/General_Functions.jl")
 
 """
