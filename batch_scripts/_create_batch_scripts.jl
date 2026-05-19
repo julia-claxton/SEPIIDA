@@ -7,7 +7,8 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     input_particle_longname = input_particle == "e-" ? "electron" : input_particle
     energy_string = @sprintf "%.1f" energy
     n_particles_string = @sprintf "%i" n_particles
-    if (prefix != "") && (!contains(flags, "-result_prefix"))
+    if (prefix != "")
+        prefix = "$(prefix)_"
         flags = "$(flags) -prefix $(prefix)"
     end
     flags = replace(flags, "\n" => " ")
@@ -22,7 +23,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     end
 
     # Write file
-    job_name = "SEPIIDA_$(prefix)_$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles_string)particles"
+    job_name = "SEPIIDA_$(prefix)$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles_string)particles"
     file = open("$(@__DIR__)/$(job_name).sh", "w")
     print(file,
     """
@@ -63,23 +64,19 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
 end
 
 
-
-elfin_energies = [63.245540618896484, 97.97958374023438, 138.5640869140625, 183.30308532714844, 238.11758422851562, 305.20489501953125, 385.16229248046875, 520.48046875, 752.9939575195312, 1081.665283203125, 1529.7060546875, 2121.3203125, 2893.960205078125, 3728.6064453125, 4906.12060546875, 6500.0]
-
-
-
-
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-for pa in LinRange(100, 180, 50)
-    write_job_script("preemptable", 1e5, "e-", 10_000, pa, 
-        prefix = "pa_brem_variation",
+# Write desired jobs
+for pa in 100:2.5:130
+    write_job_script("preemptable", 1e5, "e-", 1000, pa, 
+        prefix = "",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv
-            -backscatter_altitude 451.0
-            -brem_splitting 1000
+            -injection_altitude 990.0
+            -backscatter_altitude 999.0
+            -brem_splitting 1
             -min_energy_eV 10
             -lat 85
         "
