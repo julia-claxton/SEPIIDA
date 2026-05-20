@@ -88,7 +88,8 @@ function load_dir(dir;
     particle = nothing,
     energy = nothing,
     pitch_angle = nothing,
-    sort_by = "energy"
+    sort_by = "energy",
+    load_backscatter = true
     )
 
     return load_beam(get_beamlist(dir,
@@ -97,7 +98,9 @@ function load_dir(dir;
         energy = energy,
         pitch_angle = pitch_angle,
         sort_by = sort_by
-    ))
+        ),
+        load_backscatter = load_backscatter
+    )
 end
 
 function get_beamlist(dir_to_search;
@@ -242,7 +245,7 @@ function load_beam(beaminfo::BeamInfo;
     )
 end
 
-function load_beam(beaminfo::Vector{BeamInfo},
+function load_beam(beaminfo::Vector{BeamInfo};
     load_backscatter = true
 )
     return [load_beam(el, load_backscatter = load_backscatter) for el in beaminfo]
