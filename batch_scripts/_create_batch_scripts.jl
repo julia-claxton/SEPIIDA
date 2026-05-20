@@ -68,8 +68,8 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 # Write desired jobs
-for pa in 100:2.5:130
-    write_job_script("preemptable", 1e5, "e-", 1000, pa, 
+for pa in 90:1:100
+    write_job_script("preemptable", 1e3, "e-", 1000, pa, 
         prefix = "",
         flags = "
             -magnetic_model jrm33
