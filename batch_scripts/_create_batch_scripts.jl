@@ -60,7 +60,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     """
     )
     close(file)
-    println("Wrote batch_scripts/$(job_name).sh.")
+    println("Wrote batch_scripts/$(job_name).sh")
 end
 
 
@@ -70,12 +70,12 @@ rm.(glob("*.sh", @__DIR__))
 # Write desired jobs
 for pa in 90:1:100
     write_job_script("preemptable", 1e3, "e-", 1000, pa, 
-        prefix = "",
+        prefix = "meow",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_atmosphere_profile.csv
             -injection_altitude 990.0
-            -backscatter_altitude 999.0
+            -backscatter_altitude 991.0
             -brem_splitting 1
             -min_energy_eV 10
             -lat 85
