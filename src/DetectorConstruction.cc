@@ -72,11 +72,13 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+  // TODO someday blow this up and start again (rewrite from scratch)
+
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
   G4double layerGap = 1.0 * um; // Gap between air layers
 
-  G4GeometryManager::GetInstance()->SetWorldMaximumExtent(1000*km); // TODO do we need this?
+  //G4GeometryManager::GetInstance()->SetWorldMaximumExtent(1000*km); // TODO do we need this?
 
   // Material: Vacuum
   G4Material* vacuum_material = new G4Material(
@@ -87,15 +89,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     kStateGas,
     2.73*kelvin,
     3.0E-18*pascal
-  );
-
-  G4Material* low_density_material = new G4Material(
-    "Low_dens",
-    1.0,
-    1.01*g/mole,
-    1.0E-10*g/cm3,
-    kStateGas, 2.73*kelvin,
-    3.0E-12*pascal
   );
 
   // World
@@ -128,7 +121,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps     // overlaps checking
   );
 
-
   // Instantiate atmosphere data array
   fNLayers = getNumberOfAtmosphereLayers(atmospherePath);
   unsigned const int nLayers = fNLayers;
@@ -138,22 +130,37 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   /*
   // Parse header
   readAtmosphereHeader(atmospherePath);
+  */
+  // TODO DYNAMIC CHEMICAL COMPOSITION
+  chemicalSymbolToMaterial("CO2");
 
-  TODO DYNAMIC ATMOSPHERE
-  // MEOW
-  G4NistManager* manager = G4NistManager::Instance();
+
+
+
+
+  // Get NIST material database for most accurate material definitions
+  G4NistManager* nistManager = G4NistManager::Instance();
   
-  parseChemicalSymbol("CO2");
+  /*
+  G4Material* turble = nistManager->BuildMaterialWithNewDensity(
+    "meow",        // Name attached to the material
+    "G4_O",        // Name of base material to modify. See all materials with manager->ListMaterials("all");
+    0.1 * kg/m3,   // Density
+    700 * kelvin,  // Temperature
+    101e3 * pascal // Pressure
+  );
+  G4cout << turble << G4endl;
   */
 
   // Atmospheric material definitions
-  G4Element* O  = new G4Element("Oxygen",   "O",  8.0,  16.0   * g/mole);
-  G4Element* N  = new G4Element("Nitrogen", "N",  7.0,  14.0   * g/mole);
-  G4Element* Ar = new G4Element("Argon",    "Ar", 18.0, 39.948 * g/mole);
-  G4Element* He = new G4Element("Helium",   "He", 2.0,  4.0    * g/mole);
-  G4Element* H  = new G4Element("Hydrogen", "H",  1.0,  1.0078 * g/mole);
+  G4Element* O  = nistManager->FindOrBuildElement("O");
+  G4Element* N  = nistManager->FindOrBuildElement("N");
+  G4Element* Ar = nistManager->FindOrBuildElement("Ar");
+  G4Element* He = nistManager->FindOrBuildElement("He");
+  G4Element* H  = nistManager->FindOrBuildElement("H");
 
   // Layers are the size needed to fill the 1000 km column
+  // TODO change for dynamic simulation space size
   G4double layerThickness = (1000.0 / static_cast<G4double>(nLayers)) * km;
   G4double layerLocation;
   
@@ -168,52 +175,69 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4Material*      layerMaterial;
   G4LogicalVolume* logicLayer;
-  G4double         pressure;
-  G4double         R_gas_constant_air = 287.0;  // J/kg-K air
-  G4double         totalLayerMassDensity;
-  G4double         zeroThreshold = 1e-21; // approximate minimum number density [cm^-3] that Geant will tolerate
-  G4int            nComponents;
+  G4double pressure;
+  G4double R = 8.31446261815324; // Universal gas constant. J /(kg mol)
+  G4double R_gas_constant_air = 287.0;  // J/kg-K air <- TODO update this for / mol
+  G4double totalLayerMassDensity;
+  G4double zeroThreshold = 1e-21; // approximate minimum number density [cm^-3] that Geant will tolerate
+  G4int    nComponents;
 
+  // Iterate over every layer in the atmosphere table
   for(int i = 0; i < fNLayers; i++){
+    // Read out table columns into variables
+    // TODO this column ordering is horrible
+    // TODO dynamic composition. Read through columns, parse a chemical symbol, and assign for each
+    G4double altitude      = atmosphereData[i][0];
+    G4double density_O     = atmosphereData[i][1];
+    G4double density_N2    = atmosphereData[i][2];
+    G4double density_O2    = atmosphereData[i][3];
+    G4double density_total = atmosphereData[i][4];
+    G4double temperature   = atmosphereData[i][5];
+    G4double density_He    = atmosphereData[i][6];
+    G4double density_Ar    = atmosphereData[i][7];
+    G4double density_H     = atmosphereData[i][8];
+    G4double density_N     = atmosphereData[i][9];
+    G4double density_H2    = atmosphereData[i][10];
+
     // Ideal gas law for atmospheric pressure
     // P [Pa] = R [J/kg-K air] * rho [kg/m^3] * T [K]
-    pressure = R_gas_constant_air * atmosphereData[i][4] * atmosphereData[i][5];
+    pressure = R_gas_constant_air * density_total * temperature; // TODO specific gas constant https://en.wikipedia.org/wiki/Gas_constant#Specific_gas_constant
 
     // Material definitions for non-elements
     G4Material* N2;
     G4Material* O2;
     G4Material* H2;
 
-    if(atmosphereData[i][2] > zeroThreshold){
+    if(density_N2 > zeroThreshold){
       N2 = new G4Material(
-        "N2-Layer"+std::to_string(i),
-        atmosphereData[i][2]*kg/m3,
-        1,
-        kStateGas,
-        atmosphereData[i][5]*kelvin,
-        pressure*pascal
+        "N2-Layer"+std::to_string(i), // Name attached to the material. Must be unique.
+        density_N2 * kg/m3,           // Density
+        1,                            // Number of components in the material
+        kStateGas,                    // State (solid, gas, etc)
+        temperature * kelvin,         // Temperature
+        pressure * pascal             // Pressure
       );
       N2->AddElement(N, 2);
     }
-    if(atmosphereData[i][3] > zeroThreshold){
+    if(density_O2 > zeroThreshold){
       O2 = new G4Material(
-        "O2-Layer"+std::to_string(i),
-        atmosphereData[i][3]*kg/m3,
-        1,
-        kStateGas,
-        atmosphereData[i][4]*kelvin,
-        pressure*pascal
+        "O2-Layer"+std::to_string(i), // Name attached to the material. Must be unique.
+        density_O2*kg/m3,             // Density
+        1,                            // Number of components in the material
+        kStateGas,                    // State (solid, gas, etc)
+        temperature * kelvin,         // Temperature
+        pressure * pascal             // Pressure
       );
       O2->AddElement(O, 2);
     }
-    if(atmosphereData[i][10] > zeroThreshold){
+    if(density_H2 > zeroThreshold){
       H2 = new G4Material(
-        "H2-Layer"+std::to_string(i),
-        atmosphereData[i][10]*kg/m3,
-        1,
-        kStateGas,
-        atmosphereData[i][10]*kelvin,
-        pressure*pascal
+        "H2-Layer"+std::to_string(i), // Name attached to the material. Must be unique.
+        density_H2 * kg/m3,           // Density
+        1,                            // Number of components in the material
+        kStateGas,                    // State (solid, gas, etc)
+        temperature * kelvin,         // Temperature
+        pressure * pascal             // Pressure
       );
       H2->AddElement(H, 2);
     }
@@ -236,39 +260,43 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
       totalLayerMassDensity*kg/m3,  // density
       nComponents,                  // number of components
       kStateGas,                    // state
-      atmosphereData[i][4]*kelvin,  // temperature
-      pressure*pascal   	          // pressure
+      temperature * kelvin,         // temperature
+      pressure * pascal   	        // pressure
     );
 
     // I'd love to replace this with a for loop but it doesn't seem worth trying to figure out how
     // to put both G4Element and G4Material in the same vector. Too bad!
-    if(atmosphereData[i][1] > zeroThreshold)  // O
-      layerMaterial->AddElement(O, atmosphereData[i][1]/totalLayerMassDensity);
+    if(density_O > zeroThreshold)  // O
+      layerMaterial->AddElement(O, density_O/totalLayerMassDensity);
    
-    if(atmosphereData[i][2] > zeroThreshold) // N2
-      layerMaterial->AddMaterial(N2, atmosphereData[i][2]/totalLayerMassDensity);
+    if(density_N2 > zeroThreshold) // N2
+      layerMaterial->AddMaterial(N2, density_N2/totalLayerMassDensity);
    
-    if(atmosphereData[i][3] > zeroThreshold) // O2
-      layerMaterial->AddMaterial(O2, atmosphereData[i][3]/totalLayerMassDensity);
+    if(density_O2 > zeroThreshold) // O2
+      layerMaterial->AddMaterial(O2, density_O2/totalLayerMassDensity);
     
-    if(atmosphereData[i][6] > zeroThreshold) // He 
-      layerMaterial->AddElement(He, atmosphereData[i][6]/totalLayerMassDensity);
+    if(density_He > zeroThreshold) // He 
+      layerMaterial->AddElement(He, density_He/totalLayerMassDensity);
     
-    if(atmosphereData[i][7] > zeroThreshold) // Ar 
-      layerMaterial->AddElement(Ar, atmosphereData[i][7]/totalLayerMassDensity);
+    if(density_Ar > zeroThreshold) // Ar 
+      layerMaterial->AddElement(Ar, density_Ar/totalLayerMassDensity);
    
-    if(atmosphereData[i][8] > zeroThreshold) // H 
-      layerMaterial->AddElement(H, atmosphereData[i][8]/totalLayerMassDensity);
+    if(density_H > zeroThreshold) // H 
+      layerMaterial->AddElement(H, density_H/totalLayerMassDensity);
   
-    if(atmosphereData[i][9] > zeroThreshold) // N
-      layerMaterial->AddElement(N, atmosphereData[i][9]/totalLayerMassDensity);
+    if(density_N > zeroThreshold) // N
+      layerMaterial->AddElement(N, density_N/totalLayerMassDensity);
 
-    if(atmosphereData[i][10] > zeroThreshold) // H2
-      layerMaterial->AddMaterial(H2, atmosphereData[i][10]/totalLayerMassDensity);
+    if(density_H2 > zeroThreshold) // H2
+      layerMaterial->AddMaterial(H2, density_H2/totalLayerMassDensity);
 
     // Create layer
-    logicLayer = new G4LogicalVolume(atmosphereLayer, layerMaterial, "AtmosphereLayer"+std::to_string(i));
     layerLocation = (i-fNLayers/2)*layerThickness + layerThickness/2.0;
+    logicLayer = new G4LogicalVolume(
+      atmosphereLayer, 
+      layerMaterial, 
+      "AtmosphereLayer"+std::to_string(i)
+    );
     new G4PVPlacement(
       0,                                     // rotation
 		  G4ThreeVector(0., 0., layerLocation),  // location
@@ -344,7 +372,12 @@ void DetectorConstruction::readAtmosphereData(G4double tableEntry[][11], G4Strin
   file.close();
 }
 
-void DetectorConstruction::parseChemicalSymbol(G4String chemSymbol){
+void DetectorConstruction::chemicalSymbolToMaterial(G4String chemSymbol){
+  // NOTE: build these for each column outside of the loop, then use nistManager->BuildMaterialWithNewDensity 
+  // (example in this script) at each layer to alter properties
+
+  // Returns material at STP
+
   // Regex search that pulls out atom name + number: [A-Z][a-z]*[0-9]*
   // E.g.:
   // H2O => H2, O
@@ -352,21 +385,48 @@ void DetectorConstruction::parseChemicalSymbol(G4String chemSymbol){
   // NaCl => Na, Cl
   // Etc.
 
-  std::smatch match;
-  std::regex expression("[A-Z][a-z]*[0-9]*");
-
-  std::regex_search(chemSymbol, match, expression);
-
   G4cout << chemSymbol << G4endl;
 
-  G4cout << match[0] << G4endl;
-  G4cout << match[1] << G4endl;
-  
+  std::regex regexSplitAtoms("[A-Z][a-z]*[0-9]*");
+  std::vector<G4String> atoms = regexParse(chemSymbol, regexSplitAtoms);
 
 
-  G4cout << "TODO DYNAMIC ATMOSPHERE STUFF" << G4endl;
+
+  // Loop through atoms
+  std::vector<G4Element> elements;
+
+  for(int i = 0; i < atoms.size(); i++){
+    std::regex captureAtom("[A-Z][a-z]*");
+    G4String atomName = regexParse(atoms[i], captureAtom)[0];
+
+    std::regex captureAtomNumber("[0-9]+");
+    std::vector<G4String> nAtomsResult = regexParse(atoms[i], captureAtomNumber);
+    G4int nAtoms = nAtomsResult.size() == 0 ? 1 : std::stoi(nAtomsResult[0]);
 
 
+
+    G4cout << "Found " << nAtoms << " of " << atomName << G4endl;
+  }
+
+  // TODO test with a bunch of chemical names
+  // Create composite material
+
+
+
+  throw;
+}
+
+std::vector<G4String> DetectorConstruction::regexParse(G4String s, std::regex r){
+  std::vector<G4String> result;
+  for(
+    std::sregex_iterator i = std::sregex_iterator(s.begin(), s.end(), r);
+    i != std::sregex_iterator();
+    ++i
+  ){
+    std::smatch match = *i;
+    result.push_back(match.str());
+  }
+  return result;
 }
 
 G4int DetectorConstruction::getNumberOfAtmosphereLayers(G4String filename)

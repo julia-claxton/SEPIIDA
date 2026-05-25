@@ -34,6 +34,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4Cache.hh"
 #include "globals.hh"
+#include <regex>
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -53,7 +54,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void parseChemicalSymbol(G4String chemSymbol);
+    void chemicalSymbolToMaterial(G4String chemSymbol);
+    std::vector<G4String> regexParse(G4String s, std::regex r);
 
     void SetAtmosphereFilename(G4String name){atmospherePath = name;};
 

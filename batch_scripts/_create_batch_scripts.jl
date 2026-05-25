@@ -8,7 +8,6 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     energy_string = @sprintf "%.1f" energy
     n_particles_string = @sprintf "%i" n_particles
     if (prefix != "")
-        prefix = "$(prefix)_"
         flags = "$(flags) -prefix $(prefix)"
     end
     flags = replace(flags, "\n" => " ")
@@ -23,7 +22,8 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     end
 
     # Write file
-    job_name = "SEPIIDA_$(prefix)$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles_string)particles"
+    job_prefix = prefix == "" ? "" : "$(prefix)_"
+    job_name = "SEPIIDA_$(job_prefix)$(input_particle_longname)_$(energy_string)keV_$(pa)deg_$(n_particles_string)particles"
     file = open("$(@__DIR__)/$(job_name).sh", "w")
     print(file,
     """
