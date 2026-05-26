@@ -152,9 +152,6 @@ int main(int argc, char** argv){
     ANSI_NOCOLOR << G4endl;
     throw;
   #endif
-  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
-  std::filesystem::path pathToBuildDir = buildDir;
-  std::filesystem::current_path(pathToBuildDir); // Set cwd to build directory
   UImanager->ApplyCommand("/control/alias SEPIIDA_BUILD_DIR " + buildDir);
 
   // Verbosity off

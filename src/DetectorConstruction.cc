@@ -361,7 +361,7 @@ G4int DetectorConstruction::getNumberOfAtmosphereLayers(G4String filename)
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "ERROR: Atmosphere file \"" <<
       filename <<
-      "\" could not be opened."
+      "\" could not be opened. Are you running the executable from the build directory? This function uses relative paths for platform agnosticity."
     ANSI_NOCOLOR << G4endl;
     throw;
   }
