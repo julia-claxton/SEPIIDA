@@ -65,6 +65,7 @@ class SteppingAction : public G4UserSteppingAction
       const G4double postStepAlt_km
     );
     void logIonProduction(RunAction* fRunAction,
+      const G4String particleIdentifier,
       const G4double preStepAltitudeIndex, 
       const G4double trackWeight
     );
@@ -74,6 +75,7 @@ class SteppingAction : public G4UserSteppingAction
       const G4double postStepAltitudeIndex
     );
     void logBackscatter(const G4Step* step, RunAction* fRunAction,
+      const G4String particleIdentifier,
       const G4String particleName,
       const G4double trackWeight,
       const G4double preStepAlt_km,
@@ -88,7 +90,8 @@ class SteppingAction : public G4UserSteppingAction
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);
   
-    std::map<int, bool> ionizationTracks;
+    std::map<G4String, G4bool> loggedIonizationTracks;
+    std::map<G4String, G4bool> loggedBackscatterTracks;
 
     private:
     EventAction*             fEventAction;

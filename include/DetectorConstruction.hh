@@ -32,6 +32,7 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "G4NistManager.hh"
 #include "G4Cache.hh"
 #include "globals.hh"
 #include <regex>
@@ -54,21 +55,20 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void chemicalSymbolToMaterial(G4String chemSymbol);
+    G4Material* createMaterialFromChemicalSymbol(G4NistManager* nistManager, G4String chemSymbol);
     std::vector<G4String> regexParse(G4String s, std::regex r);
 
-    void SetAtmosphereFilename(G4String name){atmospherePath = name;};
+    void SetAtmosphereFilename(G4String name){atmosphereRelPath = "./atmospheres/" + name;};
 
     G4int getNumberOfAtmosphereLayers(G4String);
-    void readAtmosphereHeader(G4String path);
-    void readAtmosphereData(G4double(*)[11], G4String, unsigned int);
+    std::vector<G4String> readAtmosphereHeader(G4String path);
+    void readAtmosphereData(std::vector<std::vector<G4double>> &atmosphereData, G4String, unsigned int);
 
   public:
-    G4String atmospherePath;
+    G4String atmosphereRelPath;
 
   private:
     DetectorMessenger* fDetectorMessenger;
-    G4int fNLayers;
     G4LogicalVolume* fLogicWorld;
     G4Cache<F03FieldSetup*> fEmFieldSetup;
 

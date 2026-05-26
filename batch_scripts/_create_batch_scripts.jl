@@ -43,6 +43,9 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     # Terminate on any non-zero exit status
     set -e
 
+    # Echo commands to log
+    set -x
+
     # Print job ID
     echo "Job ID: \$SLURM_JOB_ID"
     echo "Node ID: \$SLURMD_NODENAME"

@@ -283,8 +283,6 @@ function pitch_angle_list(beaminfo::BeamInfo)
     return beaminfo.pitch_angle
 end
 
-
-
 # =====================================
 # Visualization (frontend)
 # =====================================
@@ -345,7 +343,7 @@ function plot_energy_spectrum(beam::Beam; species = "e-", show_title = true, sho
     ymin = beam.altitude_bin_edges[begin]
     ymax = beam.altitude_bin_edges[end]
 
-    cmin = log10(minimum(to_plot))
+    cmin = minimum(replace([log10(minimum(to_plot)), 0-log10(beam.info.n_particles)], -Inf => Inf))
     cmax = max(log10(maximum(to_plot)), 0)
     
     heatmap(beam.energy_bin_means, beam.altitude_bin_edges, log10.(to_plot),
@@ -358,7 +356,7 @@ function plot_energy_spectrum(beam::Beam; species = "e-", show_title = true, sho
         
         ylabel = "Altitude (km)",
         ylims = (ymin, ymax),
-        yticks = ymin:50:ymax,
+        yticks = ymin:100:ymax,
 
         colorbar_title = "Log10 $(species)/Input Particle",
         clims = (cmin, cmax),
@@ -381,7 +379,7 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
     ymin = beam.altitude_bin_edges[begin]
     ymax = beam.altitude_bin_edges[end]
 
-    cmin = log10(minimum(to_plot))
+    cmin = minimum(replace([log10(minimum(to_plot)), 0-log10(beam.info.n_particles)], -Inf => Inf))
     cmax = max(log10(maximum(to_plot)), 0)
     
     heatmap(beam.pitch_angle_bin_means, beam.altitude_bin_edges, log10.(to_plot),
@@ -393,7 +391,7 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
         
         ylabel = "Altitude (km)",
         ylims = (ymin, ymax),
-        yticks = ymin:50:ymax,
+        yticks = ymin:100:ymax,
 
         colorbar_title = "Log10 $(species)/Input Particle",
         clims = (cmin, cmax),
@@ -417,7 +415,6 @@ function plot_pitch_angle_spectrum(beaminfo::BeamInfo; species = "e-", show_titl
     return plot_pitch_angle_spectrum(load_beam(beaminfo, load_backscatter = false), species = species, show_title = show_title, show_plot = show_plot)
 end
 
-
 function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
     show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
     
@@ -440,7 +437,7 @@ function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
         
         ylabel = "Altitude (km)",
         ylims = (ymin, ymax),
-        yticks = ymin:50:ymax,
+        yticks = ymin:100:ymax,
     )
     box_aspect!(2)
     if show_plot; display(plot!()); end

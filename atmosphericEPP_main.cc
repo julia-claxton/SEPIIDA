@@ -138,10 +138,10 @@ int main(int argc, char** argv){
 
   // Set build directory (machine-dependent)
   // This is hardcoded for my purposes. If you need to change this, do so.
-  G4String linuxBuildDir = "/projects/jucl6426/SEPIIDA/build";
-  G4String macosBuildDir = "/Users/luna/Research/geant4/SEPIIDA/build";
+  std::string linuxBuildDir = "/projects/jucl6426/SEPIIDA/build";
+  std::string macosBuildDir = "/Users/luna/Research/geant4/SEPIIDA/build";
   
-  G4String buildDir;
+  std::string buildDir;
   #ifdef __APPLE__
     buildDir = macosBuildDir;
   #elif __linux__
@@ -152,6 +152,8 @@ int main(int argc, char** argv){
     ANSI_NOCOLOR << G4endl;
     throw;
   #endif
+  std::filesystem::path pathToBuildDir = buildDir;
+  std::filesystem::current_path(pathToBuildDir); // Set cwd to build directory
   UImanager->ApplyCommand("/control/alias SEPIIDA_BUILD_DIR " + buildDir);
 
   // Verbosity off
@@ -202,7 +204,7 @@ int main(int argc, char** argv){
   std::map<G4String, G4String> optionalFlags = {
     {"-magnetic_model",         "igrf2025"},
     {"-lat",                    "67.0"},
-    {"-atmosphere_filename",    "msis_earth_atmosphere_profile.csv"},
+    {"-atmosphere_filename",    "msis_earth.csv"},
     {"-brem_splitting",         "1"},
     {"-altitude_offset",        "0.0"},
     {"-injection_altitude",     "450.0"},
@@ -395,7 +397,7 @@ void printHelpScreen(){
   println("");
   println("  -atmosphere_filename");
   println("      Atmosphere profile filename");
-  println("      Default: msis_earth_atmosphere_profile.csv");
+  println("      Default: msis_earth.csv");
   println("");
   println("  -brem_splitting");
   println("      Bremsstrahlung photon splitting");

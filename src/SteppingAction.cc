@@ -65,6 +65,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // https://geant4-internal.web.cern.ch/sites/default/files/geant4/collaboration/working_groups/electromagnetic/gallery/units/SystemOfUnits.html
   G4Track* track = step->GetTrack();
   const G4int trackID = track->GetTrackID();
+  const G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
   const G4VProcess* parentProcess = step->GetTrack()->GetCreatorProcess();
   const G4ThreeVector position = track->GetPosition();
   const G4ThreeVector momentumDirection = track->GetMomentumDirection();
@@ -72,6 +73,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   const G4double preStepKineticEnergy = step->GetPreStepPoint()->GetKineticEnergy();
   const G4double postStepKineticEnergy = step->GetPostStepPoint()->GetKineticEnergy();
   const G4double trackWeight = track->GetWeight();
+  const G4String particleIdentifier = std::to_string(eventID) + ":" + std::to_string(trackID);
   
   // Altitude information
   const G4double preStepAlt_km  = (step->GetPreStepPoint()->GetPosition().z()/km) + 500.0; // Add 500 because the coordinate origin is in center of the 1000 km atmospheric column
@@ -139,6 +141,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     postStepAltitudeIndex
   );
   logBackscatter(step, fRunAction,
+    particleIdentifier,
     particleName,
     trackWeight,
     preStepAlt_km,
@@ -147,9 +150,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     momentumDirection,
     postStepKineticEnergy
   );
-  if((parentProcess != nullptr) && (particleName == "e-") && (ionizationTracks[trackID] == false)){
-    ionizationTracks[trackID] = true;
-    logIonProduction(fRunAction, preStepAltitudeIndex, trackWeight);
+  if((parentProcess != nullptr) && (particleName == "e-")){
+    logIonProduction(fRunAction, particleIdentifier, preStepAltitudeIndex, trackWeight);
   }
 }
 
@@ -223,10 +225,14 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
 }
 
 void SteppingAction::logIonProduction(RunAction* fRunAction,
+  const G4String particleIdentifier,
   const G4double preStepAltitudeIndex, 
   const G4double trackWeight
 ){
+  if(loggedIonizationTracks[particleIdentifier] == true){return;}
   if(std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()){return;}
+  
+  loggedIonizationTracks[particleIdentifier] = true;
   fRunAction->ionCounts.at(std::floor(preStepAltitudeIndex)) += 1 * trackWeight;
 }
 
@@ -264,6 +270,7 @@ void SteppingAction::logEnergyDeposition(const G4Step* step, RunAction* fRunActi
 }
 
 void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
+  const G4String particleIdentifier,
   const G4String particleName,
   const G4double trackWeight,
   const G4double preStepAlt_km,
@@ -272,10 +279,13 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
   const G4ThreeVector momentumDirection,
   const G4double postStepKineticEnergy
 ){
-  // Kick out non-backscattering particles
+  // Kick out non-backscattering particles and particles that have already been recorded
+  if(loggedBackscatterTracks[particleIdentifier] == true){return;}
   bool backscattering = (preStepAlt_km < fRunAction->fCollectionAltitude) && (postStepAlt_km > fRunAction->fCollectionAltitude);
   if(backscattering == false){return;}
 
+  // If we've reached here, the particle is backscattering and should be logged
+  loggedBackscatterTracks[particleIdentifier] = true;
   G4double pitchAngleDeg = getPitchAngle(position, momentumDirection);
 
   // Write particle parameters to memory

@@ -38,9 +38,9 @@ add_executable(SEPIIDA atmosphericEPP_main.cc ${sources} ${headers})
 target_link_libraries(SEPIIDA ${Geant4_LIBRARIES})
 
 IF(LINUX)
-  target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.so)
+  target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/lib/libjupitermag.so)
 ELSE()
-  target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/libjupitermag.dylib)
+  target_link_libraries(SEPIIDA ${PROJECT_SOURCE_DIR}/lib/libjupitermag.dylib)
 ENDIF()
 
 #----------------------------------------------------------------------------
@@ -48,19 +48,38 @@ ENDIF()
 # build the executable. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-file(GLOB_RECURSE atmosphereProfiles RELATIVE "${PROJECT_SOURCE_DIR}/" "*_profile.csv")
+file(GLOB_RECURSE atmosphereProfiles RELATIVE "${PROJECT_SOURCE_DIR}/atmospheres" "*.csv")
+set(SEPIIDA_ATMOSPHERES
+  ${atmosphereProfiles}
+)
 set(SEPIIDA_FILES
   run_beam.mac
-  ${atmosphereProfiles}
-  libjupitermag.dylib
-  libjupitermag.so  
+)
+set(SEPIIDA_LIBRARIES
+  lib/libjupitermag.dylib
+  lib/libjupitermag.so  
 )
 
+foreach(_atmo ${SEPIIDA_ATMOSPHERES})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/atmospheres/${_atmo}
+    ${PROJECT_BINARY_DIR}/atmospheres/${_atmo}
+    COPYONLY
+  )
+endforeach()
 
 foreach(_script ${SEPIIDA_FILES})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
+    COPYONLY
+  )
+endforeach()
+
+foreach(_lib ${SEPIIDA_LIBRARIES})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${_lib}
+    ${PROJECT_BINARY_DIR}/${_lib}
     COPYONLY
   )
 endforeach()

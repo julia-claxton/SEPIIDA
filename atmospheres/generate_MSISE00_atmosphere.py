@@ -103,13 +103,46 @@ if len(sys.argv) > 1:
     plt.suptitle('MSISe-00 Results: %s , %.1f$^\circ$N %.1f$^\circ$W' % (time, g_lat_lon[0], g_lat_lon[1]))
     plt.show();     
 
-# Write order defined in src/DetectorConstruction.cc
-write_order = ['alt_km','O','N2','O2','Total','Tn','He','Ar','H','N']
-header = ["Altitude (km)", "O (kg/m3)", "N2 (kg/m3)","O2 (kg/m3)","Total (kg/m3)","Neutral Temp. (K)","He (kg/m3)","Ar (kg/m3)","H (kg/m3)","N (kg/m3)","H2 (kg/m3)"]
-mass_mult   = [1, mOxygen, mNitrogen2, mOxygen2, 1, 1, mHelium, mArgon, mHydrogen, mNitrogen];
+
+write_order = [
+    'alt_km',
+    'Total',
+    'Tn',
+    'O2',
+    'N2',
+    'He',
+    'Ar',
+    'O',
+    'H',
+    'N'
+]
+header = [
+    "Altitude (km)",
+    "Total (kg/m3)", 
+    "Neutral Temp. (K)",
+    "O2 (kg/m3)",
+    "N2 (kg/m3)",
+    "He (kg/m3)",
+    "Ar (kg/m3)",
+    "O (kg/m3)", 
+    "H (kg/m3)",
+    "N (kg/m3)"
+]
+mass_mult = [
+    1, 
+    1, 
+    1, 
+    mOxygen2, 
+    mNitrogen2, 
+    mHelium, 
+    mArgon, 
+    mOxygen, 
+    mHydrogen, 
+    mNitrogen
+]
 
 # Write to atmosphere file
-with open('msis_earth_atmosphere_profile.csv', 'w') as f:
+with open('msis_earth.csv', 'w') as f:
     for i in range(len(header)):
         f.write(header[i])
         f.write(',') if i != len(header)-1 else f.write('\n')
@@ -117,15 +150,14 @@ with open('msis_earth_atmosphere_profile.csv', 'w') as f:
     for alt in altitudeArr:
         # Query all variables at an altitude slice
         # Outputs are in number per cubic meter
-        line = atmos.sel(
+        msis_sample = atmos.sel(
             time = time,
             alt_km = alt,
             lat = g_lat_lon[0],
             lon = g_lat_lon[1]
         )
 
-        for index, item in enumerate(write_order):
-            f.write(str(line[item].data * mass_mult[index]))
-            f.write(',') if item != write_order[-1] else f.write(',0.0\n') # The 0 is for the H2 column, which this MSIS library doesn't output
+        for index, key in enumerate(write_order):
+            f.write(str(msis_sample[key].data * mass_mult[index])) # Write data
+            f.write(',') if key != write_order[-1] else f.write('\n') # Write delimiter
     # file closes when scope is left
-
