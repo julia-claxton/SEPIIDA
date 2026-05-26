@@ -69,6 +69,7 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
   G4double layerGap = 1.0 * um; // Gap between air layers
@@ -114,6 +115,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps     // overlaps checking
   );
 
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   // Get atmosphere data array size
   const int nLayers = getNumberOfAtmosphereLayers(atmosphereRelPath);
   std::vector<G4String> tableColNames = readAtmosphereHeader(atmosphereRelPath);
@@ -141,6 +143,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Create material
     createMaterialFromChemicalSymbol(nistManager, tableColNames[i]);
   }
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
 
   // Layers are the size needed to fill the 1000 km column
   // TODO dynamic simulation space size
@@ -239,6 +242,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 		  checkOverlaps                          // overlaps checking
     );
   }
+  G4cout << __FILE__ << ": " << __LINE__ << G4endl;
   return physWorld;
 }
 

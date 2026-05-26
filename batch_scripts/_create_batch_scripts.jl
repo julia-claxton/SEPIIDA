@@ -43,8 +43,6 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     # Terminate on any non-zero exit status
     set -e
 
-    # Echo commands to log
-    set -x
 
     # Print job ID
     echo "Job ID: \$SLURM_JOB_ID"
@@ -55,11 +53,13 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     module load gcc/14.2.0
 
     # Run simulation
+    set -x
     cd /projects/jucl6426/SEPIIDA/build/
     ./SEPIIDA $(n_particles_string) $(input_particle) $(energy_string) $(pa) $(flags)
 
     # Copy results to safe folder
     cp /projects/jucl6426/SEPIIDA/build/results/$(prefix)*$(input_particle_longname)_input*$(energy_string)keV_$(pa)deg_$(n_particles_string)particles* /projects/jucl6426/SEPIIDA/results
+    set +x
     """
     )
     close(file)

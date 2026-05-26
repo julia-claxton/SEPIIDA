@@ -14,8 +14,6 @@
 # Terminate on any non-zero exit status
 set -e
 
-# Echo commands to log
-set -x
 
 # Print job ID
 echo "Job ID: $SLURM_JOB_ID"
@@ -26,8 +24,10 @@ module purge
 module load gcc/14.2.0
 
 # Run simulation
+set -x
 cd /projects/jucl6426/SEPIIDA/build/
 ./SEPIIDA 1000 e- 1000.0 103 -magnetic_model jrm33 -atmosphere_filename jupiter_gram.csv -injection_altitude 990.0 -backscatter_altitude 991.0 -brem_splitting 1 -min_energy_eV 10 -lat 85 -prefix jlc
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/jlc*electron_input*1000.0keV_103deg_1000particles* /projects/jucl6426/SEPIIDA/results
+set +x
