@@ -71,12 +71,12 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 # Write desired jobs
-for pa in 90:1:100
+for pa in 90:1:120
     write_job_script("preemptable", 1e3, "e-", 1000, pa, 
-        prefix = "meow",
+        prefix = "jlc",
         flags = "
             -magnetic_model jrm33
-            -atmosphere_filename jupiter_atmosphere_profile.csv
+            -atmosphere_filename jupiter_gram.csv
             -injection_altitude 990.0
             -backscatter_altitude 991.0
             -brem_splitting 1
