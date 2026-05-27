@@ -73,7 +73,7 @@ rm.(glob("*.sh", @__DIR__))
 # Write desired jobs
 
 for E in logrange(10, 1e5, 40)
-    write_job_script("preemptable", 1e6, "e-", E, 180, 
+    write_job_script("preemptable", 1e5, "e-", E, 180, 
         prefix = "brem10x_nomirroring_isotropicdown",
         flags = "
             -magnetic_model jrm33
