@@ -83,6 +83,33 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   const G4double preStepAltitudeIndex = (preStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
   const G4double postStepAltitudeIndex = (postStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
 
+
+
+
+
+  /*
+
+  G4cout <<
+    track->GetProperTime()/millisecond << ", " <<
+    position[0] / km << ", " <<
+    position[1] / km << ", " <<
+    position[2] / km << "" <<
+  G4endl;
+
+
+  G4cout <<
+    "v = (" <<
+    momentumDirection[0] << ", " <<
+    momentumDirection[1] << ", " <<
+    momentumDirection[2] << ")" <<
+  G4endl;
+  */
+
+
+
+
+
+
   // ===========================
   // Guard Block
   // ===========================

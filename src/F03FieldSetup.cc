@@ -82,7 +82,7 @@ F03FieldSetup::F03FieldSetup()
    fFieldMessenger(0)
 {
   // Constants
-  fStepperType = "G4DormandPrince745"; // Set the stepper here
+  fStepperType = "G4HelixMixedStepper"; //"G4DormandPrince745"; // Set the stepper here
   G4double cacheRadius = 0.1 * km;
   fMinStep = 0.01 * km;
 
@@ -90,14 +90,12 @@ F03FieldSetup::F03FieldSetup()
   G4MagneticField* nonCachedMagneticField = new CustomMagneticField(); 
   G4MagneticField* cachedMagneticField = new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius);
 
-  G4MagneticField* fieldToUse = cachedMagneticField;
-
+  G4MagneticField* fieldToUse = nonCachedMagneticField;
 
   // Field setup stuff
   fFieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fFieldMessenger = new F03FieldMessenger(this);
   fEquation = new G4Mag_UsualEqRhs(fieldToUse);
-
 
   // 1. Clean up previous state
   delete fChordFinder;

@@ -71,9 +71,9 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 # Write desired jobs
-for pa in 90:1:120
-    write_job_script("preemptable", 1e3, "e-", 1000, pa, 
-        prefix = "jlc",
+for pa in 90:2:100
+    write_job_script("preemptable", 100, "e-", 1000, pa, 
+        prefix = "nocache_helicalstepper",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_gram.csv
