@@ -113,7 +113,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     0,                // copy number
     checkOverlaps     // overlaps checking
   );
-  /*
+
   // Get atmosphere data array size
   const int nLayers = getNumberOfAtmosphereLayers(atmosphereRelPath);
   std::vector<G4String> tableColNames = readAtmosphereHeader(atmosphereRelPath);
@@ -239,7 +239,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 		  checkOverlaps                          // overlaps checking
     );
   }
-  */
   return physWorld;
 }
 
