@@ -208,7 +208,9 @@ int main(int argc, char** argv){
     {"-injection_altitude",     "450.0"},
     {"-backscatter_altitude",   "451.0"},
     {"-prefix",                 ""},
-    {"-min_energy_eV",          "10"}
+    {"-min_energy_eV",          "10"},
+    //{"-isotropic_down",         "false"},
+    //{"-pitch_angle_lim",        "infinity"}
   };
 
   // Get length of longest flag for printing purposes later on

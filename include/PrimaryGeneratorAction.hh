@@ -56,9 +56,12 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     // method from the base class
     virtual void GeneratePrimaries(G4Event*);         
+
+    // Initial velocity generators
+    G4ThreeVector generatePhaseRandomizedMonoPitchAngleVelocity(G4ThreeVector x0);
+    G4ThreeVector randDowngoingDirection();
     
     // My methods
-    std::vector<G4double> randDowngoingDirection();
     G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngle);
     G4ThreeVector getUnitB(G4ThreeVector x0);
     void setv0PrePhaseRandomization(G4ThreeVector x0);

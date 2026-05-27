@@ -36,7 +36,6 @@
 #include "G4Box.hh"
 #include "G4RunManager.hh"
 #include "G4ParticleGun.hh"
-//#include "G4GeneralParticleSource.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
@@ -122,6 +121,79 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Initial position vector
   G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
 
+  // Get initial velocity
+  //G4ThreeVector v0 = generatePhaseRandomizedMonoPitchAngleVelocity(x0);
+  G4ThreeVector v0 = randDowngoingDirection();
+
+  // TODO have multiple v0 generator functions based on command line
+  //             | monodirectional | random within range |
+  //             |---------------------------------------|
+  // pitch angle |      TODO       |        TODO         |
+  //             |---------------------------------------|
+  //   dip angle |      TODO       |        TODO         |
+  //             |---------------------------------------|
+
+  // Assign position & velocity
+  r->xPos = x0[0];
+  r->yPos = x0[1];
+  r->zPos = x0[2];
+  r->xDir = v0[0];
+  r->yDir = v0[1];
+  r->zDir = v0[2];
+
+  // Communicate parameters to particle gun
+  fParticleGun->SetParticlePosition(G4ThreeVector(r->xPos, r->yPos, r->zPos)); 
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(r->xDir, r->yDir, r->zDir));
+  
+  fParticleGun->GeneratePrimaryVertex(anEvent); // Geant method to create initial particle with the above properties 
+  delete r; // Free memory from ParticleSample struct
+  return;
+}
+
+G4ThreeVector PrimaryGeneratorAction::rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngleDeg){
+  G4ThreeVector v = startingVector; // To match nomenclature on wikipedia to reduce chances of a typo
+  G4ThreeVector k = rotateAbout / rotateAbout.mag(); // Unit vector for axis of rotation
+  G4double rotationAngleRad = rotationAngleDeg * fPI / 180.0;
+
+  // Euler/Rodrigues's finite rotation formula
+  // https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula#Statement
+  G4ThreeVector rotatedVector = 
+    (v * std::cos(rotationAngleRad))
+    + (k.cross(v) * std::sin(rotationAngleRad))
+    + (k * k.dot(v) * (1 - std::cos(rotationAngleRad)))
+  ;
+  return rotatedVector;
+}
+
+G4ThreeVector PrimaryGeneratorAction::randDowngoingDirection(){
+  // Use rejection sampling to generate point on the downgoing unit hemisphere
+  while(true){
+    G4double x = (2 * G4UniformRand()) - 1; // [-1, 1]
+    G4double y = (2 * G4UniformRand()) - 1; // [-1, 1]
+    G4double z = (1 * G4UniformRand()) - 1; // [-1, 0] Only look in the downgoing hemisphere
+
+    G4double radius = std::sqrt( (x*x) + (y*y) + (z*z) );
+
+    if( (radius <= 1) && (radius > 0) ){
+      x /= radius;
+      y /= radius;
+      z /= radius;
+
+      // Safety check
+      if( std::abs(1 - std::sqrt((x*x) + (y*y) + (z*z))) > 1e-12 ){
+        G4cout << "You should never ever ever ever see this." << G4endl;
+        G4cout << "(x, y, z) = (" << x << ", " << y << ", " << z << ")" << G4endl;
+        throw;
+      }
+
+      // Return breaks the while(true) loop
+      G4ThreeVector v0(x, y, z);
+      return v0;
+    }
+  }
+}
+
+G4ThreeVector PrimaryGeneratorAction::generatePhaseRandomizedMonoPitchAngleVelocity(G4ThreeVector x0){
   // Get initial velocity vector only on the first iteration. Save the value, then do phase randomization for every particle.
   if((v0_prePhaseRandomization[0] == 0.0) && (v0_prePhaseRandomization[1] == 0.0) && (v0_prePhaseRandomization[2] == 0.0)){
     setv0PrePhaseRandomization(x0);
@@ -158,7 +230,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     throw;
   }
 
-  // Float precision near 0º and 180º can cause out-of-domain errors resulting in NaNs, clip values near the edges of the domain
+  // Float precision near 0º and 180º can cause out-of-domain errors resulting in NaNs, so we clip values past the edges of the domain
   if (for_acos > 1.0)      {generatedPitchAngle_deg = 0.0;}
   else if(for_acos < -1.0) {generatedPitchAngle_deg = 180.0;}
   else                     {generatedPitchAngle_deg = std::acos(for_acos) * 180/3.14159265358979;}
@@ -177,64 +249,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4endl;
     throw;
   }
-
-  // Assign position & velocity
-  r->xPos = x0[0];
-  r->yPos = x0[1];
-  r->zPos = x0[2];
-  r->xDir = v0[0];
-  r->yDir = v0[1];
-  r->zDir = v0[2];
-
-  // Communicate parameters to particle gun
-  fParticleGun->SetParticlePosition(G4ThreeVector(r->xPos, r->yPos, r->zPos)); 
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(r->xDir, r->yDir, r->zDir));
-  
-  fParticleGun->GeneratePrimaryVertex(anEvent); // Geant method to create initial particle with the above properties 
-  delete r; // Free memory from ParticleSample struct
-  return;
-}
-
-G4ThreeVector PrimaryGeneratorAction::rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngleDeg){
-  G4ThreeVector v = startingVector; // To match nomenclature on wikipedia to reduce chances of a typo
-  G4ThreeVector k = rotateAbout / rotateAbout.mag(); // Unit vector for axis of rotation
-  G4double rotationAngleRad = rotationAngleDeg * fPI / 180.0;
-
-  // Euler/Rodrigues's finite rotation formula
-  // https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula#Statement
-  G4ThreeVector rotatedVector = 
-    (v * std::cos(rotationAngleRad))
-    + (k.cross(v) * std::sin(rotationAngleRad))
-    + (k * k.dot(v) * (1 - std::cos(rotationAngleRad)))
-  ;
-  return rotatedVector;
-}
-
-std::vector<G4double> PrimaryGeneratorAction::randDowngoingDirection(){
-  // Use rejection sampling to generate point on the downgoing unit hemisphere
-  while(true){
-    G4double x = (2 * G4UniformRand()) - 1; // [-1, 1]
-    G4double y = (2 * G4UniformRand()) - 1; // [-1, 1]
-    G4double z = (1 * G4UniformRand()) - 1; // [-1, 0] Only look in the downgoing hemisphere
-
-    G4double radius = std::sqrt( (x*x) + (y*y) + (z*z) );
-
-    if( (radius <= 1) && (radius > 0) ){
-      x /= radius;
-      y /= radius;
-      z /= radius;
-
-      // Safety check
-      if( std::abs(1 - std::sqrt((x*x) + (y*y) + (z*z))) > 1e-12 ){
-        G4cout << "You should never ever ever ever see this." << G4endl;
-        G4cout << "(x, y, z) = (" << x << ", " << y << ", " << z << ")" << G4endl;
-        throw;
-      }
-
-      // Return breaks the while(true) loop
-      return std::vector<G4double> {x, y, z};
-    }
-  }
+  return v0;
 }
 
 G4ThreeVector PrimaryGeneratorAction::getUnitB(G4ThreeVector x0){

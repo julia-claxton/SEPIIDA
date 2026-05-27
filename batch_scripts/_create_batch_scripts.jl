@@ -71,15 +71,16 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 # Write desired jobs
-for pa in 90:2:100
-    write_job_script("preemptable", 100, "e-", 1000, pa, 
-        prefix = "nocache_helicalstepper",
+
+for E in logrange(10, 1e5, 40)
+    write_job_script("preemptable", 1e6, "e-", E, 180, 
+        prefix = "brem10x_nomirroring_isotropicdown",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_gram.csv
             -injection_altitude 990.0
             -backscatter_altitude 991.0
-            -brem_splitting 1
+            -brem_splitting 10
             -min_energy_eV 10
             -lat 85
         "
