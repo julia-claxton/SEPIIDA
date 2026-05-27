@@ -122,8 +122,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector x0(0.0, 0.0, (fInitialParticleAlt - 500.0)*km); // Subtract 500 from z due to coordinate axis location in middle of world volume
 
   // Get initial velocity
-  //G4ThreeVector v0 = generatePhaseRandomizedMonoPitchAngleVelocity(x0);
-  G4ThreeVector v0 = randDowngoingDirection();
+  G4ThreeVector v0 = generatePhaseRandomizedMonoPitchAngleVelocity(x0);
+  //G4ThreeVector v0 = randDowngoingDirection();
 
   // TODO have multiple v0 generator functions based on command line
   //             | monodirectional | random within range |
