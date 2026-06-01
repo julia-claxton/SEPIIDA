@@ -141,11 +141,11 @@ void RunAction::ChangeLooperParameters(const G4ParticleDefinition* particleDef)
   { 
     // Change the values of the looping particle parameters of Transportation 
     if(fWarningEnergy >= 0.0)
-      transport->SetThresholdWarningEnergy(  fWarningEnergy ); 
+      transport->SetThresholdWarningEnergy(fWarningEnergy); 
     if(fImportantEnergy >= 0.0)
-      transport->SetThresholdImportantEnergy(  fImportantEnergy ); 
+      transport->SetThresholdImportantEnergy(fImportantEnergy); 
     if(fNumberOfTrials > 0)
-      transport->SetThresholdTrials( fNumberOfTrials );
+      transport->SetThresholdTrials(fNumberOfTrials);
   }
   else if(coupledTransport != nullptr)
   { 

@@ -3,6 +3,7 @@
 
 #include "G4MagneticField.hh"
 #include "G4SystemOfUnits.hh"
+#include "GlobalFunctions.h"
 #include "globals.hh"
 
 #include "jupitermag.h" // Jupiter magnetic field model. Source: https://github.com/mattkjames7/libjupitermag
@@ -22,16 +23,20 @@ public:
   std::vector<G4double> G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
 
   // Messenger methods
-  void SetLAT(G4double LAT_deg){fLAT_degrees = LAT_deg;};
-  void SetFieldModel(G4String fieldModel){fFieldModel = fieldModel;};
+  void SetLAT(G4double LAT_deg);
+  void SetFieldModel(G4String fieldModel);
+
+  G4double GetLAT();
+  G4String GetFieldModel();
 
   // Misc
   G4double vectorMagnitude(std::vector<G4double> v) const;
   
+  G4double fLAT_degrees = -999.0;
+  G4String fFieldModel = "throw an error";
+
   private:
   CustomMagneticFieldMessenger* fMagneticFieldMessenger;
-  G4double fLAT_degrees;
-  G4String fFieldModel;
   G4double fRe;
   G4double fu0;
   G4double fpi;

@@ -125,10 +125,6 @@ int main(int argc, char** argv){
   runManager->SetUserInitialization(physicsList);
   runManager->SetUserInitialization(new ActionInitialization());
 
-  G4double lowLimit = 250.0 * eV;
-  G4double highLimit = 100.0 * GeV;
-  G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowLimit, highLimit);
-
   // Suppress large verbosity from EM & hadronic processes
   G4EmParameters::Instance()->SetVerbose(-1);
   G4HadronicProcessStore::Instance()->SetVerbose(0);
@@ -270,22 +266,36 @@ int main(int argc, char** argv){
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
-  // B field mode
-  UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
-
   // Initialize run
+  println("Initializing run");
   UImanager->ApplyCommand("/run/initialize");
-  // For some horrible reason I cannot comprehend, the atmosphere filename setting must happen
-  // before initialization or else it doesn't work. Meanwhile the fieldParameters must be set
-  // *after* initialization or else they don't work. All commands are set to accept pre-init,
-  // init, and idle states so I have no clue what could possibly be happening here. Whatever.
+  println("Initialized run");
+  // The atmosphere filename setting must happen before initialization or else it doesn't work. 
+  // Meanwhile the fieldParameters must be set after initialization or else they don't work. 
 
   // Latitude
-  UImanager->ApplyCommand("/fieldParameters/setLAT " + optionalFlags["-lat"]);
   UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
-
+  UImanager->ApplyCommand("/fieldParameters/setLAT {LAT_DEGREES}");
+  
   // B field mode
   UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
 
   // Brem splitting
   if(std::stod(optionalFlags["-brem_splitting"]) < 1.0){
@@ -307,9 +317,13 @@ int main(int argc, char** argv){
   // Apply prefix
   UImanager->ApplyCommand("/control/alias RESULT_PREFIX " + prefixToSet);
 
-  // Kill energy
+  // Low energy particle tracking limit
   UImanager->ApplyCommand("/process/em/lowestElectronEnergy " + optionalFlags["-min_energy_eV"] + " eV");
   UImanager->ApplyCommand("/process/em/lowestMuHadEnergy " + optionalFlags["-min_energy_eV"] + " eV");
+
+  G4double lowLimit = std::stod(optionalFlags["-min_energy_eV"]) * eV;
+  G4double highLimit = 100.0 * GeV;
+  G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowLimit, highLimit);
 
   // Beam parameters
   UImanager->ApplyCommand("/beamParameters/setBeamParticle {BEAM_PARTICLE}");

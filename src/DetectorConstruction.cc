@@ -67,8 +67,7 @@ DetectorConstruction::~DetectorConstruction()
   delete fDetectorMessenger;
 }
 
-G4VPhysicalVolume* DetectorConstruction::Construct()
-{
+G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
   G4double layerGap = 1.0 * um; // Gap between air layers
@@ -239,19 +238,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 		  checkOverlaps                          // overlaps checking
     );
   }
+  __DEBUG_PING__;
   return physWorld;
 }
 
 void DetectorConstruction::ConstructSDandField()
 {
-  if(!fEmFieldSetup.Get())
-  {    
-    F03FieldSetup* emFieldSetup = new F03FieldSetup();    
+  if(!fEmFieldSetup.Get()){    
+    F03FieldSetup* emFieldSetup = new F03FieldSetup();
     fEmFieldSetup.Put(emFieldSetup);
-      
+
     G4AutoDelete::Register(emFieldSetup);
   }
+  __DEBUG_PING__;
   fLogicWorld->SetFieldManager(fEmFieldSetup.Get()->GetGlobalFieldManager(), true); 
+  __DEBUG_PING__;
 }
 
 std::vector<G4String> DetectorConstruction::readAtmosphereHeader(G4String path){

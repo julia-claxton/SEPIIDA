@@ -32,6 +32,7 @@
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "F03FieldSetup.hh"
 #include "G4NistManager.hh"
 #include "G4Cache.hh"
 #include "globals.hh"

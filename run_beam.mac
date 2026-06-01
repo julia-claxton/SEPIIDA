@@ -4,8 +4,10 @@
 # with this file! I mean it!!
 # ====================================================
 
+
+
 # Set global range cut
-    /run/setCut 1 mm
+    /run/setCut 1 mm # TODO could be larger?
 
 # Dump particle list for reference
     #/run/particle/dumpList

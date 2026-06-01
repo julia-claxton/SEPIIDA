@@ -125,32 +125,10 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // Frame: G4 world
   std::vector<G4double> B_worldFrame = 
     planetCentric_to_G4world(
-      Bx_nT_planetCentered, 
-      By_nT_planetCentered, 
+      Bx_nT_planetCentered,
+      By_nT_planetCentered,
       Bz_nT_planetCentered
   );
-
-
-
-
-
-
-
-  /*
-  G4cout <<
-    "B = (" <<
-    B_worldFrame[0] * 1e-9 * tesla << ", " <<
-    B_worldFrame[1] * 1e-9 * tesla << ", " <<
-    B_worldFrame[2] * 1e-9 * tesla << ")" <<
-  G4endl;
-  */
-
-
-
-
-
-
-
 
   // Assign values
   Bfield[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
@@ -195,4 +173,27 @@ std::vector<G4double> CustomMagneticField::G4world_to_planetCentric(G4double x_g
 
 G4double CustomMagneticField::vectorMagnitude(std::vector<G4double> v) const {
   return sqrt( (v[0]*v[0]) + (v[1]*v[1]) + (v[2]*v[2]) );
+}
+
+void CustomMagneticField::SetLAT(G4double LAT_deg){
+  fLAT_degrees = LAT_deg;
+  HACKY_LATITUDE = LAT_deg;
+};
+void CustomMagneticField::SetFieldModel(G4String fieldModel){
+__DEBUG_PING__;
+  G4cout << "fFieldModel = " << fFieldModel << G4endl;
+  fFieldModel = fieldModel;
+  G4cout << "fFieldModel = " << fFieldModel << G4endl;
+__DEBUG_PING__;
+  HACKY_FIELDMODEL = fieldModel;
+__DEBUG_PING__;
+};
+
+
+G4double CustomMagneticField::GetLAT(){
+  return fLAT_degrees;
+}
+
+G4String CustomMagneticField::GetFieldModel(){
+  return fFieldModel;
 }

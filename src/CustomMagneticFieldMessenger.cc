@@ -61,7 +61,7 @@ CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()
 
 void CustomMagneticFieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 {
-  if(command == fLatCmd ){fMagneticField->SetLAT(std::stod(newValue));}
-  if(command == fModelCmd ){fMagneticField->SetFieldModel(newValue);}
+  if(command == fLatCmd){fMagneticField->SetLAT(std::stod(newValue));}
+  if(command == fModelCmd){fMagneticField->SetFieldModel(newValue);}
 }
 

@@ -146,9 +146,9 @@ class RunAction : public G4UserRunAction
     G4String fEnergyDepositionFileName;
 
     // Values for initialising 'loopers' parameters of Transport process
-    G4int    fNumberOfTrials  =  0;    // Default will not overwrite
-    G4double fWarningEnergy   = -1.0;  // Default values - non operational 
-    G4double fImportantEnergy = -1.0;  // Default - will not overwrite
+    G4int    fNumberOfTrials;
+    G4double fWarningEnergy;
+    G4double fImportantEnergy;
 
     int theVerboseLevel = 0;
 };

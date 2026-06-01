@@ -32,6 +32,7 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
+#include "F03FieldSetup.hh"
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
@@ -90,6 +91,8 @@ class SteppingAction : public G4UserSteppingAction
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);
   
+    CustomMagneticField* uncachedField;
+
     std::map<G4String, G4bool> loggedIonizationTracks;
     std::map<G4String, G4bool> loggedBackscatterTracks;
 

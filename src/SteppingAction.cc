@@ -36,6 +36,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "RunAction.hh"
+#include "F03FieldSetup.hh"
 #include "G4LogicalVolume.hh"
 #include "G4SystemOfUnits.hh"
 #include "SteppingActionMessenger.hh"
@@ -55,6 +56,12 @@ SteppingAction::SteppingAction(EventAction* eventAction, RunAction* RuAct)
   fSteppingMessenger()
 {
   fSteppingMessenger = new SteppingActionMessenger(this);
+
+  //__DEBUG_PING__;
+  //uncachedField = new CustomMagneticField;
+  //uncachedField->SetLAT(HACKY_LATITUDE);
+  //uncachedField->SetFieldModel(HACKY_FIELDMODEL);
+  //__DEBUG_PING__;
 }
 
 SteppingAction::~SteppingAction(){delete fSteppingMessenger;}
@@ -66,8 +73,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4Track* track = step->GetTrack();
   const G4int trackID = track->GetTrackID();
   const G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-  const G4VProcess* parentProcess = step->GetTrack()->GetCreatorProcess();
+  const G4VProcess* parentProcess = track->GetCreatorProcess();
   const G4ThreeVector position = track->GetPosition();
+  const G4ThreeVector prePosition = step->GetPreStepPoint()->GetPosition();
+  const G4ThreeVector postPosition = step->GetPostStepPoint()->GetPosition();
   const G4ThreeVector momentumDirection = track->GetMomentumDirection();
   const G4String particleName = track->GetDynamicParticle()->GetDefinition()->GetParticleName();
   const G4double preStepKineticEnergy = step->GetPreStepPoint()->GetKineticEnergy();
@@ -76,34 +85,97 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   const G4String particleIdentifier = std::to_string(eventID) + ":" + std::to_string(trackID);
   
   // Altitude information
-  const G4double preStepAlt_km  = (step->GetPreStepPoint()->GetPosition().z()/km) + 500.0; // Add 500 because the coordinate origin is in center of the 1000 km atmospheric column
-  const G4double postStepAlt_km = (step->GetPostStepPoint()->GetPosition().z()/km) + 500.0;
+  const G4double preStepAlt_km  = (prePosition.z()/km) + 500.0; // Add 500 because the coordinate origin is in center of the 1000 km atmospheric column
+  const G4double postStepAlt_km = (postPosition.z()/km) + 500.0;
 
   // Get altitude indices (float) of start and stop point
   const G4double preStepAltitudeIndex = (preStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
   const G4double postStepAltitudeIndex = (postStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
 
+  __DEBUG_PING__;
+  uncachedField->SetFieldModel("MEOW");
+  __DEBUG_PING__;
+  G4cout << "model " << uncachedField->GetFieldModel() << G4endl;
+  __DEBUG_PING__;
 
 
 
 
-  /*
+  const G4VProcess* pre = step->GetPreStepPoint()->GetProcessDefinedStep();
+  const G4VProcess* post = step->GetPostStepPoint()->GetProcessDefinedStep();
 
-  G4cout <<
-    track->GetProperTime()/millisecond << ", " <<
-    position[0] / km << ", " <<
-    position[1] / km << ", " <<
-    position[2] / km << "" <<
-  G4endl;
+  if(pre && post && (trackID == 1)){
 
 
-  G4cout <<
-    "v = (" <<
-    momentumDirection[0] << ", " <<
-    momentumDirection[1] << ", " <<
-    momentumDirection[2] << ")" <<
-  G4endl;
-  */
+
+    
+    G4double spacetimePoint[4] = {prePosition.x(), prePosition.y(), prePosition.z(), 0};
+    G4double emComponents[6];
+    /*
+    uncachedField->GetFieldValue(spacetimePoint, emComponents);
+    G4ThreeVector B(emComponents[0], emComponents[1], emComponents[2]);
+    G4cout << "My field is ";
+    printVector(B);
+*/
+
+
+    G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+    fieldManager->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
+    G4ThreeVector realB(emComponents[0], emComponents[1], emComponents[2]);
+    G4cout << "Mn field is ";
+    printVector(realB * 1e9 / tesla);
+    G4cout << G4endl;
+    G4cout << G4endl;
+    G4cout << G4endl;
+
+    //throw;
+
+
+
+    
+
+
+    /*
+    G4double spacetimePoint[4] = {prePosition.x(), prePosition.y(), prePosition.z(), 0};
+    G4double emComponents[6];
+    fieldSetup->nonCachedMagneticField->GetFieldValue(spacetimePoint, emComponents);
+    G4ThreeVector B(emComponents[0], emComponents[1], emComponents[2]);
+
+    G4TransportationManager::GetTransportationManager()->GetFieldManager()->GetDetectorField()->GetFieldValue(spacetimePoint, emComponents);
+    G4ThreeVector Bcache(emComponents[0], emComponents[1], emComponents[2]);
+
+    G4cout << "\t Pre: " << pre->GetProcessName();
+    printVector(step->GetPreStepPoint()->GetMomentumDirection());
+    println("");
+    printVector(B);
+    printVector(Bcache);
+    
+
+    println("");
+    println("");
+
+
+    G4double postspacetimePoint[4] = {postPosition.x(), postPosition.y(), postPosition.z(), 0};
+    G4double postemComponents[6];
+    fieldSetup->nonCachedMagneticField->GetFieldValue(postspacetimePoint, postemComponents);
+    G4ThreeVector postB(postemComponents[0], postemComponents[1], postemComponents[2]);
+
+    G4TransportationManager::GetTransportationManager()->GetFieldManager()->GetDetectorField()->GetFieldValue(postspacetimePoint, postemComponents);
+    G4ThreeVector postBcache(postemComponents[0], postemComponents[1], postemComponents[2]);
+
+
+    G4cout << "\t Post: " << post->GetProcessName();
+    printVector(step->GetPostStepPoint()->GetMomentumDirection());
+    println("");
+    printVector(postB);
+    printVector(postBcache);
+
+
+    println("");
+    println("");
+    */
+
+  }
 
 
 
