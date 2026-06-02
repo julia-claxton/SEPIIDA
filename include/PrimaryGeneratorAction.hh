@@ -62,7 +62,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ThreeVector randDowngoingDirection();
     
     // My methods
-    G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngle);
     G4ThreeVector getUnitB(G4ThreeVector x0);
     void setv0PrePhaseRandomization(G4ThreeVector x0);
 

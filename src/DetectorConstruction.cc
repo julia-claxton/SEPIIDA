@@ -238,7 +238,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 		  checkOverlaps                          // overlaps checking
     );
   }
-  __DEBUG_PING__;
   return physWorld;
 }
 

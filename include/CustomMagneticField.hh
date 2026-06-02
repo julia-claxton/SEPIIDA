@@ -23,8 +23,8 @@ public:
   std::vector<G4double> G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
 
   // Messenger methods
-  void SetLAT(G4double LAT_deg);
-  void SetFieldModel(G4String fieldModel);
+  void SetLAT(G4double newLat_degrees);
+  void SetFieldModel(G4String newFieldModell);
 
   G4double GetLAT();
   G4String GetFieldModel();
@@ -32,14 +32,15 @@ public:
   // Misc
   G4double vectorMagnitude(std::vector<G4double> v) const;
   
-  G4double fLAT_degrees = -999.0;
-  G4String fFieldModel = "throw an error";
+  mutable G4double lat_degrees = -999.0;
+  mutable G4String fieldModel = "throw an error";
 
   private:
   CustomMagneticFieldMessenger* fMagneticFieldMessenger;
   G4double fRe;
   G4double fu0;
   G4double fpi;
+  void Guard() const;
 };
 
 #endif

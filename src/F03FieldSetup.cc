@@ -94,6 +94,7 @@ F03FieldSetup::F03FieldSetup()
   G4MagneticField* fieldToUse = cachedMagneticField;
 
   // Field setup stuff
+  CACHED_MAGNETIC_FIELD = fieldToUse == cachedMagneticField;
   fFieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fFieldMessenger = new F03FieldMessenger(this);
   fEquation = new G4Mag_UsualEqRhs(fieldToUse);

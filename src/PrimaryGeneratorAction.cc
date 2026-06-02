@@ -150,21 +150,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   return;
 }
 
-G4ThreeVector PrimaryGeneratorAction::rotateVector(G4ThreeVector startingVector, G4ThreeVector rotateAbout, G4double rotationAngleDeg){
-  G4ThreeVector v = startingVector; // To match nomenclature on wikipedia to reduce chances of a typo
-  G4ThreeVector k = rotateAbout / rotateAbout.mag(); // Unit vector for axis of rotation
-  G4double rotationAngleRad = rotationAngleDeg * fPI / 180.0;
-
-  // Euler/Rodrigues's finite rotation formula
-  // https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula#Statement
-  G4ThreeVector rotatedVector = 
-    (v * std::cos(rotationAngleRad))
-    + (k.cross(v) * std::sin(rotationAngleRad))
-    + (k * k.dot(v) * (1 - std::cos(rotationAngleRad)))
-  ;
-  return rotatedVector;
-}
-
 G4ThreeVector PrimaryGeneratorAction::randDowngoingDirection(){
   // Use rejection sampling to generate point on the downgoing unit hemisphere
   while(true){

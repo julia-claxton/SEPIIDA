@@ -19,8 +19,8 @@
 CustomMagneticField::CustomMagneticField()
 : G4MagneticField(),
   fMagneticFieldMessenger(0),
-  fLAT_degrees(-999.0),  // Units: deg
-  fFieldModel("throw an error"), 
+  lat_degrees(-999.0),  // Units: deg
+  fieldModel("throw an error"), 
   fRe(6371e3),           // Units: m
   fu0(1.257e-6),         // Units: N * A^-2
   fpi(3.14159265358979)
@@ -30,43 +30,19 @@ CustomMagneticField::CustomMagneticField()
 
 CustomMagneticField::~CustomMagneticField(){}
 
-void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const
-{
+void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const{
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
-  
-  // Guard
-  if(fLAT_degrees == -999.0){
-    G4cout << ANSI_RED <<
-      __FILE__ << ": " << __FUNCTION__ << "\n" <<
-      "ERROR: Magnetic latitude not set. You should not see this." <<
-    ANSI_NOCOLOR << G4endl;
-    throw;
-  }
-
-  // Guard
-  std::vector<G4String> availableModels = {
-    "igrf2025",
-    "jrm33"
-  };
-  if(std::find(availableModels.begin(), availableModels.end(), fFieldModel) == availableModels.end()){
-    G4cout << "\n" <<
-      ANSI_RED <<
-      __FILE__ << ": " << __FUNCTION__ << "\n" <<
-      "ERROR: Magnetic field mode \"" << fFieldModel << "\" not recognized" <<
-      ANSI_NOCOLOR <<
-    G4endl;
-    throw;
-  }
+  Guard();
 
   // Set planetary radius based on B-field model
   G4double Rplanet;
   G4double Re = 6371200.0; // Earth radius, m
   G4double Rj = 71492000.0;	// Jupiter equatorial radius. Units: m
 
-  if(fFieldModel == "igrf2025"){
+  if(fieldModel == "igrf2025"){
     Rplanet = Re;
   }
-  else if(fFieldModel == "jrm33"){
+  else if(fieldModel == "jrm33"){
     Rplanet = Rj;
   }
 
@@ -75,7 +51,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // Position vector from planet center to world origin. Add 500 due to origin of simulation being 500 km above the bottom of the simulation.
   // Units: m
   // Frame: Planet-centered (Z parallel to spin axis, X/Y in equatorial plane
-  G4double LAT_radians = fLAT_degrees * fpi / 180.0;
+  G4double LAT_radians = lat_degrees * fpi / 180.0;
   G4double r_planetCenter_to_origin[3] = {
     (Rplanet) * std::cos(LAT_radians),
     0,
@@ -106,13 +82,13 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // where Z is parallel to the axis from which latitude is measured (usually the spin axis).
   // Output is in nanotesla.
   G4double Bx_nT_planetCentered, By_nT_planetCentered, Bz_nT_planetCentered;
-  if(fFieldModel == "igrf2025"){
+  if(fieldModel == "igrf2025"){
     igrf2025Field(
       r[0]/Re, r[1]/Re, r[2]/Re, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
     );
   }
-  else if(fFieldModel == "jrm33"){
+  else if(fieldModel == "jrm33"){
     jrm33Field(
       r[0]/Rj, r[1]/Rj, r[2]/Rj, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
@@ -148,7 +124,7 @@ std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_s
   // And at 90º LAT, the coordinate systems are aligned on all three axes.
   // So to rotate between planetframe to G4 world, we need a positive rotation (defined right-handedly) of planetframe about its Y-axis by 90º - LAT.
   // And rotating the frame by θ means rotating vectors by -θ, so we rotate the B-field output by -(90º - LAT) about the Y-axis
-  G4double rotation_angle_deg = -(90 - fLAT_degrees); // Units: deg
+  G4double rotation_angle_deg = -(90 - lat_degrees); // Units: deg
   G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
 
   G4double x_g4world = (x_siii * std::cos(rotation_angle_rad)) + (z_siii * std::sin(rotation_angle_rad));
@@ -161,7 +137,7 @@ std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_s
 std::vector<G4double> CustomMagneticField::G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const {
   // This is the reverse process of planetframe -> G4world, so we simply need to rotate vectors by the same amount defined there,
   // just in the opposite direction.
-  G4double rotation_angle_deg = 90 - fLAT_degrees; // Units: deg
+  G4double rotation_angle_deg = 90 - lat_degrees; // Units: deg
   G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
 
   G4double x_siii = (x_g4world * std::cos(rotation_angle_rad)) + (z_g4world * std::sin(rotation_angle_rad));
@@ -175,25 +151,53 @@ G4double CustomMagneticField::vectorMagnitude(std::vector<G4double> v) const {
   return sqrt( (v[0]*v[0]) + (v[1]*v[1]) + (v[2]*v[2]) );
 }
 
-void CustomMagneticField::SetLAT(G4double LAT_deg){
-  fLAT_degrees = LAT_deg;
-  HACKY_LATITUDE = LAT_deg;
-};
-void CustomMagneticField::SetFieldModel(G4String fieldModel){
-__DEBUG_PING__;
-  G4cout << "fFieldModel = " << fFieldModel << G4endl;
-  fFieldModel = fieldModel;
-  G4cout << "fFieldModel = " << fFieldModel << G4endl;
-__DEBUG_PING__;
-  HACKY_FIELDMODEL = fieldModel;
-__DEBUG_PING__;
+void CustomMagneticField::SetLAT(G4double newLat_degrees){
+  lat_degrees = newLat_degrees;
+  HACKY_LATITUDE = newLat_degrees;
 };
 
+void CustomMagneticField::SetFieldModel(G4String newFieldModell){
+  fieldModel = newFieldModell;
+  HACKY_FIELDMODEL = newFieldModell;
+};
 
 G4double CustomMagneticField::GetLAT(){
-  return fLAT_degrees;
+  return lat_degrees;
 }
 
 G4String CustomMagneticField::GetFieldModel(){
-  return fFieldModel;
+  return fieldModel;
+}
+
+void CustomMagneticField::Guard() const{
+  // Guard against unset values if they've been set elsewhere
+  if((fieldModel == "throw an error") && (HACKY_FIELDMODEL != "throw an error")){
+    fieldModel = HACKY_FIELDMODEL;
+    lat_degrees = HACKY_LATITUDE;
+  }
+
+  // Guard against unset latitude
+  if(lat_degrees == -999.0){
+    G4cout << ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Magnetic latitude not set. You should not see this." <<
+    ANSI_NOCOLOR << G4endl;
+    throw;
+  }
+
+  // Guard against unset model
+  std::vector<G4String> availableModels = {
+    "igrf2025",
+    "jrm33"
+  };
+  if(std::find(availableModels.begin(), availableModels.end(), fieldModel) == availableModels.end()){
+    G4cout << "\n" <<
+      ANSI_RED <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "ERROR: Magnetic field mode \"" << fieldModel << "\" not recognized" <<
+      ANSI_NOCOLOR <<
+    G4endl;
+    throw;
+  }
+  return;
 }
