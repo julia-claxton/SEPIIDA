@@ -78,26 +78,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   const G4ThreeVector preMomentumDirection = step->GetPreStepPoint()->GetMomentumDirection();
   const G4double preStepKineticEnergy = step->GetPreStepPoint()->GetKineticEnergy();
 
-
-
-
-
-
-
-
-
-  // TODO change PA histogramming to use uncached field!
-
-
-
-
-
-
-
-
-
-
-
   const G4ThreeVector postPosition = step->GetPostStepPoint()->GetPosition();
   const G4ThreeVector postMomentumDirection = step->GetPostStepPoint()->GetMomentumDirection();
   const G4double postStepKineticEnergy = step->GetPostStepPoint()->GetKineticEnergy();
@@ -162,26 +142,43 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // exact (with minor inaccuracy from CSDA/continuous processes, but I don't think that will cause any
   // problems).
   if(CACHED_MAGNETIC_FIELD){
-    applyAdiabaticPitchAngleChange(step, prePosition, postPosition, preMomentumDirection, postMomentumDirection);
+    G4bool applyNudge = 
+      !step->GetPreStepPoint()->GetProcessDefinedStep() // If this doesn't exist, we are on the first step of particle's life, so we apply the nudge
+      || ((step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")  // ┬> If the step did not have any non-adiabatic processes occur
+      && (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")) // ┘
+      // Using a short-circuiting trick with the || to make sure we don't access nonexistent process names
+    ;
 
-    // If the pitch angle is 90º, the sin2(alpha1)/sin2(alpha2) = B1/B2 expression does not produce
-    // any upward force. Thus, if we are at 90º, we need to calculate the Lorentz force directly and find the
-    // field-aligned component to knock us out of this equilibrium point.
-    if(std::abs(90 - getPitchAngle(preMomentumDirection, getB(uncachedField, prePosition), true)) < 1e-10){
-      // FIXME Special behavior for 90º
+    if(applyNudge){
+      applyAdiabaticPitchAngleChange(track, step, prePosition, postPosition, preMomentumDirection, postMomentumDirection);
     }
-
-
-
-
-
+    
     /*
-    G4cout 
-      << postStepAlt_km << ": "
-      << getPitchAngle(step->GetPostStepPoint()->GetMomentumDirection(), getB(uncachedField, postPosition), true)
-    << G4endl;
+    G4String prename = step->GetPreStepPoint()->GetProcessDefinedStep() ? step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() : "None";
+    if((trackID == 1)){
+      G4cout
+        << std::setprecision(8)
+        << postStepAlt_km 
+        << "\t"
+        << getPitchAngle(prePosition, step->GetPreStepPoint()->GetMomentumDirection())
+        << " " << prename
+        << "\t"
+        << getPitchAngle(postPosition, step->GetPostStepPoint()->GetMomentumDirection())
+        << " " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
+        << "\t"
+        << postStepKineticEnergy/keV
+        << G4endl
+      ;
+    }
     */
+
   }
+
+
+
+
+
+
 
 
 
@@ -259,11 +256,13 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
   // Precalculations for efficiency in the next loop
   const G4ThreeVector prePosition = step->GetPreStepPoint()->GetPosition();
   const G4ThreeVector postPosition = step->GetPostStepPoint()->GetPosition();
-  const G4ThreeVector positionDiff = postPosition - prePosition;
 
   const G4ThreeVector preMomentum = step->GetPreStepPoint()->GetMomentumDirection();
   const G4ThreeVector postMomentum = step->GetPostStepPoint()->GetMomentumDirection();
-  const G4ThreeVector momentumDiff = postMomentum - preMomentum;
+  
+  const G4double prePitchAngle = getPitchAngle(prePosition, preMomentum);
+  const G4double postPitchAngle = getPitchAngle(postPosition, postMomentum);
+  const G4double pitchAngleDiff = postPitchAngle - prePitchAngle;
 
   // Loop over crossed planes and add to energy spectra
   for(int altitudeIndex = startIdx; altitudeIndex <= stopIdx; altitudeIndex++){
@@ -276,15 +275,14 @@ void SteppingAction::logEnergySpectra(const G4Step* step, RunAction* fRunAction,
 
     // Perform linear interpolation for energy
     G4double crossingEnergy = preStepKineticEnergy + ((postStepKineticEnergy - preStepKineticEnergy) * t); 
+    if( ((crossingEnergy/keV) < fRunAction->fEnergyMinkeV) || ((crossingEnergy/keV) > (fRunAction->fEnergyMaxkeV)) ){continue;} // Don't record energy if particle energy is out of range of histogram
 
     // Perform linear interpolation for pitch angle
-    const G4ThreeVector interpolatedPosition = prePosition + (positionDiff * t);
-    const G4ThreeVector interpolatedMomentum = preMomentum + (momentumDiff * t);
-    G4double interpolatedPitchAngleDeg = getPitchAngle(interpolatedPosition, interpolatedMomentum);
+    const G4double interpolatedPitchAngleDeg = prePitchAngle + (pitchAngleDiff * t);
+    if( (interpolatedPitchAngleDeg < fRunAction->fPitchAngleMin) || (interpolatedPitchAngleDeg > (fRunAction->fPitchAngleMax)) ){continue;} // Don't record pitch angle if it's out of range
 
     // Find the energy bin this particle resides in utilizing regular spacing to directly calculate the index.
     int energyIndex = std::floor(logbase(fRunAction->energySpectrumHistogramFactor, (crossingEnergy/keV)/(fRunAction->fEnergyMinkeV)));
-    if( (energyIndex < 0) || (energyIndex > (fRunAction->fNumberOfEnergyBins-1)) ){continue;} // Don't record energy if particle energy is out of range of histogram
 
     // Find pitch angle bin
     int paIndex = std::floor((interpolatedPitchAngleDeg - fRunAction->fPitchAngleMin) / fRunAction->pitchAngleBinSize_deg);
@@ -373,6 +371,7 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
 }
 
 void SteppingAction::applyAdiabaticPitchAngleChange(
+  G4Track*      track,
   const G4Step* step,
   G4ThreeVector prePosition,
   G4ThreeVector postPosition,
@@ -382,8 +381,8 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   // Calculate pitch angle at the end of this step under adiabatic theory
   G4double Bpre = getBMagnitude(uncachedField, prePosition);
   G4double Bpost = getBMagnitude(uncachedField, postPosition);
-  G4double paPre_rad = getPitchAngle(preMomentumDirection, getB(uncachedField, prePosition), true) * (M_PI/180); // Units: Radian
-  G4double paPost_rad_uncached = getPitchAngle(postMomentumDirection, getB(uncachedField, postPosition), true) * (M_PI/180); // Units: Radian
+  G4double paPre_rad = getPitchAngle(prePosition, preMomentumDirection) * (M_PI/180); // Units: Radian
+  G4double paPost_rad = getPitchAngle(postPosition, postMomentumDirection) * (M_PI/180); // Units: Radian
   
   // Calculate desired pitch angle
   G4double for_asin = std::sqrt(Bpost/Bpre) * std::sin(paPre_rad);    
@@ -392,7 +391,7 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   
   // Resolve quadrant ambiguity
   if(paPre_rad > (M_PI/2)){desiredPaPost_rad = M_PI - desiredPaPost_rad;} 
-  G4double dPa_deg = (desiredPaPost_rad - paPost_rad_uncached) * (180/M_PI);
+  G4double dPa_deg = (desiredPaPost_rad - paPost_rad) * (180/M_PI);
 
   // Get new momentum vector
   G4ThreeVector BVectorPost = getB(uncachedField, postPosition);
@@ -402,48 +401,45 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   if(std::abs(rotateAbout.mag()) > 1e-10){ 
     G4ThreeVector newMomentumDirection = rotateVector(postMomentumDirection, rotateAbout, dPa_deg);
     step->GetPostStepPoint()->SetMomentumDirection(newMomentumDirection);
+    track->SetMomentumDirection(newMomentumDirection);
   }
   return;
 }
 
-G4ThreeVector SteppingAction::getB(G4MagneticField* field, G4ThreeVector location){
-  G4double _location[4] = {location[0], location[1], location[2], 0};
+G4ThreeVector SteppingAction::getB(G4MagneticField* field, G4ThreeVector position){
+  G4double _position[4] = {position[0], position[1], position[2], 0};
   G4double EMField[6];
-  field->GetFieldValue(_location, EMField);
+  field->GetFieldValue(_position, EMField);
   G4ThreeVector B(EMField[0], EMField[1], EMField[2]);
 
   return B;
 }
 
-G4ThreeVector SteppingAction::getB(G4ThreeVector location){
+G4ThreeVector SteppingAction::getB(G4ThreeVector position){
   // Uses global detector field if no field is specified
-  G4double _location[4] = {location[0], location[1], location[2], 0};
+  G4double _position[4] = {position[0], position[1], position[2], 0};
   G4double EMField[6];
   
   G4FieldManager* fieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  fieldManager->GetDetectorField()->GetFieldValue(_location, EMField);
+  fieldManager->GetDetectorField()->GetFieldValue(_position, EMField);
   G4ThreeVector B(EMField[0], EMField[1], EMField[2]);
 
   return B;
 }
 
-G4double SteppingAction::getBMagnitude(G4MagneticField* field, G4ThreeVector location){
-  G4ThreeVector B = getB(field, location);
+G4double SteppingAction::getBMagnitude(G4MagneticField* field, G4ThreeVector position){
+  G4ThreeVector B = getB(field, position);
   return B.mag();
 }
 
-G4double SteppingAction::getBMagnitude(G4ThreeVector location){
-  G4ThreeVector B = getB(location);
-  return B.mag();
-}
-
-G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection){
+G4double SteppingAction::getBMagnitude(G4ThreeVector position){
   G4ThreeVector B = getB(position);
-  return getPitchAngle(momentumDirection, B, true);
+  return B.mag();
 }
 
-G4double SteppingAction::getPitchAngle(G4ThreeVector momentumDirection, G4ThreeVector B, G4bool usingBVector){
-  // usingBVector just exists to make the function definition different than when you are using momentum
+G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field){
+  G4ThreeVector B = getB(field, position);
+
   G4double pitchAngleDeg;
   G4double for_acos = momentumDirection.dot(B) / (momentumDirection.mag() * B.mag());
   

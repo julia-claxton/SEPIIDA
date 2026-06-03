@@ -68,22 +68,15 @@ DetectorConstruction::~DetectorConstruction()
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
+  // Get NIST material database for most accurate material definitions
+  // Dump all materials with nistManager->ListMaterials("all");
+  G4NistManager* nistManager = G4NistManager::Instance();
+
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = false; // Set to true if you need to debug. Set false as there are no issues right now and it's very verbose.
   G4double layerGap = 1.0 * um; // Gap between air layers
 
-  // Material: Vacuum
-  G4Material* vacuum_material = new G4Material(
-    "Vacuum",
-    1.0,
-    1.01*g/mole,
-    1.0E-25*g/cm3,
-    kStateGas,
-    2.73*kelvin,
-    3.0E-18*pascal
-  );
-
-  // World
+  // Construct world
   G4double world_sizeXY = 1000.0*km;
   G4double world_sizeZ  = 1000.0*km;
 
@@ -95,10 +88,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
     0.0,	             // starting phi
     360.0 *deg  	     // segment angle
   );
-
   fLogicWorld = new G4LogicalVolume(
     solidWorld,       // its solid
-    vacuum_material,  // its material
+    nistManager->FindOrBuildMaterial("G4_Galactic"),  // its material
     "World"           // its name
   );            
 
@@ -122,9 +114,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   std::vector<std::vector<G4double>> atmosphereData(nLayers, std::vector<G4double>(nCols, -999.0));
   readAtmosphereData(atmosphereData, atmosphereRelPath, nLayers); // Populate array with atmosphere table data
 
-  // Get NIST material database for most accurate material definitions
-  G4NistManager* nistManager = G4NistManager::Instance();
-  
   // Create all the materials we will need. This also strips the units from the density values in the header vector for easier lookup later
   std::vector<G4bool> columnHasDensity(nCols, false);
   for(int i = 0; i < nCols; i++){
@@ -249,9 +238,7 @@ void DetectorConstruction::ConstructSDandField()
 
     G4AutoDelete::Register(emFieldSetup);
   }
-  __DEBUG_PING__;
   fLogicWorld->SetFieldManager(fEmFieldSetup.Get()->GetGlobalFieldManager(), true); 
-  __DEBUG_PING__;
 }
 
 std::vector<G4String> DetectorConstruction::readAtmosphereHeader(G4String path){

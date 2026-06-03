@@ -81,7 +81,6 @@ F03FieldSetup::F03FieldSetup()
    fStepperType("unset"),
    fFieldMessenger(0)
 {
-  __DEBUG_PING__;
   // Constants
   fStepperType = "G4DormandPrince745"; // Set the stepper here
   G4double cacheRadius = 0.1 * km;
@@ -112,7 +111,6 @@ F03FieldSetup::F03FieldSetup()
 
   // 4. Ensure that the field is updated (in Field manager & equation)
   fFieldManager->SetDetectorField(fieldToUse);
-  __DEBUG_PING__;
 }
 
 F03FieldSetup::~F03FieldSetup()

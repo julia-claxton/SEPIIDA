@@ -54,7 +54,10 @@ class SteppingAction : public G4UserSteppingAction
     virtual ~SteppingAction();
     virtual void UserSteppingAction(const G4Step*);
 
+    G4bool test = false;
+
     void applyAdiabaticPitchAngleChange(
+      G4Track*      track,
       const G4Step* step,
       G4ThreeVector prePosition,
       G4ThreeVector postPosition,
@@ -101,14 +104,12 @@ class SteppingAction : public G4UserSteppingAction
     G4double getBMagnitude(G4MagneticField* field, G4ThreeVector location);
     G4double getBMagnitude(G4ThreeVector location);
 
-    G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection);
-    G4double getPitchAngle(G4ThreeVector momentumDirection, G4ThreeVector B, G4bool usingBVector);
+    G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field = uncachedField);
     
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);
     
-
-    CustomMagneticField* uncachedField;
+    inline static CustomMagneticField* uncachedField;
 
     std::map<G4String, G4bool> loggedIonizationTracks;
     std::map<G4String, G4bool> loggedBackscatterTracks;

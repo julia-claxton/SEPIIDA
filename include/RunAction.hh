@@ -56,9 +56,9 @@ class RunAction : public G4UserRunAction
     static constexpr G4double fEnergyMaxkeV = 1e8; // 100 GeV
     static constexpr G4int fNumberOfEnergyBins = 200; // 20 bins per decade
 
-    static constexpr G4double fPitchAngleMin = 0.0;
-    static constexpr G4double fPitchAngleMax = 180.0;
-    static constexpr G4int fNumberOfPitchAngleBins = 36; // 5º per bin
+    static constexpr G4double fPitchAngleMin = 70.0; //0.0;
+    static constexpr G4double fPitchAngleMax = 110.0; //180.0;
+    static constexpr G4int fNumberOfPitchAngleBins = 40; //36; // 5º per bin
 
     // Axis labels
     std::vector<G4double> sampleAltitudes_km;

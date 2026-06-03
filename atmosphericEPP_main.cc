@@ -280,23 +280,6 @@ int main(int argc, char** argv){
   // B field mode
   UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
 
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
   // Brem splitting
   if(std::stod(optionalFlags["-brem_splitting"]) < 1.0){
     optionalFlags["-brem_splitting"] = "1";

@@ -387,7 +387,7 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
         
         xlabel = "Pitch Angle (deg)",
         xlims = (xmin, xmax),
-        xticks = xmin:30:xmax,
+        xticks = round.(LinRange(xmin, xmax, 7)),
         
         ylabel = "Altitude (km)",
         ylims = (ymin, ymax),
