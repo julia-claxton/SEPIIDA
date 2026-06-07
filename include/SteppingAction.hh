@@ -66,7 +66,7 @@ class SteppingAction : public G4UserSteppingAction
     );
 
     // Data recording methods
-    void logEnergySpectra(const G4Step* step, RunAction* fRunAction,
+    void logSpectra(const G4Step* step, RunAction* fRunAction,
       const G4String particleName,
       const G4double trackWeight,
       const G4double preStepKineticEnergy,
@@ -104,7 +104,7 @@ class SteppingAction : public G4UserSteppingAction
     G4double getBMagnitude(G4MagneticField* field, G4ThreeVector location);
     G4double getBMagnitude(G4ThreeVector location);
 
-    G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field = uncachedField);
+    G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field);
     
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);

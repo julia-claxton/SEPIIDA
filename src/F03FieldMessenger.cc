@@ -36,6 +36,7 @@
 #include "F03FieldSetup.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
 
@@ -70,6 +71,11 @@ F03FieldMessenger::F03FieldMessenger(F03FieldSetup* fieldSetup)
   fMinStepCmd->SetParameterName("min step",false,false);
   fMinStepCmd->SetDefaultUnit("mm");
   fMinStepCmd->AvailableForStates(G4State_Idle);
+
+  fCacheCmd = new G4UIcmdWithADouble("/fieldParameters/setCacheRadius", this);
+  fCacheCmd->SetParameterName("Field cache radius",true);
+  fCacheCmd->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
+
 }
 
 
@@ -88,5 +94,7 @@ void F03FieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
     fEMfieldSetup->SetStepperType(newValue);
   if(command == fMinStepCmd)
     fEMfieldSetup->SetMinStep(fMinStepCmd->GetNewDoubleValue(newValue));
+  if(command == fCacheCmd)
+    fEMfieldSetup->SetCacheRadius(std::stod(newValue));
 }
 

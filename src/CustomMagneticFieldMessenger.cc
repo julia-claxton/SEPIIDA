@@ -50,6 +50,8 @@ CustomMagneticFieldMessenger::CustomMagneticFieldMessenger(CustomMagneticField* 
   fModelCmd = new G4UIcmdWithAString("/fieldParameters/setFieldModel", this);
   fModelCmd->SetParameterName("Magnetic field model",true);
   fModelCmd->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
+
+
 }
 
 CustomMagneticFieldMessenger::~CustomMagneticFieldMessenger()

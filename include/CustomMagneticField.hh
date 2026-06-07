@@ -17,17 +17,14 @@ public:
   CustomMagneticField();
   virtual ~CustomMagneticField() override;
 
-  virtual void GetFieldValue(const G4double Point[4], G4double *Bfield) const override;
+  virtual void GetFieldValue(const G4double Point[4], G4double *result) const override;
 
   std::vector<G4double> planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const;
   std::vector<G4double> G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
 
   // Messenger methods
   void SetLAT(G4double newLat_degrees);
-  void SetFieldModel(G4String newFieldModell);
-
-  G4double GetLAT();
-  G4String GetFieldModel();
+  void SetFieldModel(G4String newFieldmodel);
 
   // Misc
   G4double vectorMagnitude(std::vector<G4double> v) const;
@@ -39,7 +36,6 @@ public:
   CustomMagneticFieldMessenger* fMagneticFieldMessenger;
   G4double fRe;
   G4double fu0;
-  G4double fpi;
   void Guard() const;
 };
 

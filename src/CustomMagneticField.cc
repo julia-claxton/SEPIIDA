@@ -16,21 +16,20 @@
  * propagation purposes.
  */
 
+namespace{G4Mutex mutex = G4MUTEX_INITIALIZER;} // Threadlock
+
 CustomMagneticField::CustomMagneticField()
 : G4MagneticField(),
   fMagneticFieldMessenger(0),
   lat_degrees(-999.0),  // Units: deg
-  fieldModel("throw an error"), 
-  fRe(6371e3),           // Units: m
-  fu0(1.257e-6),         // Units: N * A^-2
-  fpi(3.14159265358979)
+  fieldModel("throw an error")
 {
   fMagneticFieldMessenger = new CustomMagneticFieldMessenger(this);
 }
 
 CustomMagneticField::~CustomMagneticField(){}
 
-void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield) const{
+void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *result) const{
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   Guard();
 
@@ -51,7 +50,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // Position vector from planet center to world origin. Add 500 due to origin of simulation being 500 km above the bottom of the simulation.
   // Units: m
   // Frame: Planet-centered (Z parallel to spin axis, X/Y in equatorial plane
-  G4double LAT_radians = lat_degrees * fpi / 180.0;
+  G4double LAT_radians = lat_degrees * M_PI / 180.0;
   G4double r_planetCenter_to_origin[3] = {
     (Rplanet) * std::cos(LAT_radians),
     0,
@@ -83,12 +82,18 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   // Output is in nanotesla.
   G4double Bx_nT_planetCentered, By_nT_planetCentered, Bz_nT_planetCentered;
   if(fieldModel == "igrf2025"){
+    // Only allow one thread to access here at a time as libjupitermag appears to be thread-unsafe
+    G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
+
     igrf2025Field(
       r[0]/Re, r[1]/Re, r[2]/Re, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
     );
   }
   else if(fieldModel == "jrm33"){
+    // Only allow one thread to access here at a time as libjupitermag appears to be thread-unsafe
+    G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
+
     jrm33Field(
       r[0]/Rj, r[1]/Rj, r[2]/Rj, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
@@ -107,12 +112,12 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4],G4double *Bfield
   );
 
   // Assign values
-  Bfield[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
-  Bfield[1] = B_worldFrame[1] * 1e-9 * tesla; // By
-  Bfield[2] = B_worldFrame[2] * 1e-9 * tesla; // Bz
-  Bfield[3] = 0; // Ex
-  Bfield[4] = 0; // Ey
-  Bfield[5] = 0; // Ez
+  result[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
+  result[1] = B_worldFrame[1] * 1e-9 * tesla; // By
+  result[2] = B_worldFrame[2] * 1e-9 * tesla; // Bz
+  result[3] = 0; // Ex
+  result[4] = 0; // Ey
+  result[5] = 0; // Ez
 }
 
 std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const {
@@ -125,7 +130,7 @@ std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_s
   // So to rotate between planetframe to G4 world, we need a positive rotation (defined right-handedly) of planetframe about its Y-axis by 90º - LAT.
   // And rotating the frame by θ means rotating vectors by -θ, so we rotate the B-field output by -(90º - LAT) about the Y-axis
   G4double rotation_angle_deg = -(90 - lat_degrees); // Units: deg
-  G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
+  G4double rotation_angle_rad = rotation_angle_deg * M_PI / 180.0; // Units: rad
 
   G4double x_g4world = (x_siii * std::cos(rotation_angle_rad)) + (z_siii * std::sin(rotation_angle_rad));
   G4double y_g4world = y_siii;
@@ -138,7 +143,7 @@ std::vector<G4double> CustomMagneticField::G4world_to_planetCentric(G4double x_g
   // This is the reverse process of planetframe -> G4world, so we simply need to rotate vectors by the same amount defined there,
   // just in the opposite direction.
   G4double rotation_angle_deg = 90 - lat_degrees; // Units: deg
-  G4double rotation_angle_rad = rotation_angle_deg * fpi / 180.0; // Units: rad
+  G4double rotation_angle_rad = rotation_angle_deg * M_PI / 180.0; // Units: rad
 
   G4double x_siii = (x_g4world * std::cos(rotation_angle_rad)) + (z_g4world * std::sin(rotation_angle_rad));
   G4double y_siii = y_g4world;
@@ -156,18 +161,10 @@ void CustomMagneticField::SetLAT(G4double newLat_degrees){
   HACKY_LATITUDE = newLat_degrees;
 };
 
-void CustomMagneticField::SetFieldModel(G4String newFieldModell){
-  fieldModel = newFieldModell;
-  HACKY_FIELDMODEL = newFieldModell;
+void CustomMagneticField::SetFieldModel(G4String newFieldmodel){
+  fieldModel = newFieldmodel;
+  HACKY_FIELDMODEL = newFieldmodel;
 };
-
-G4double CustomMagneticField::GetLAT(){
-  return lat_degrees;
-}
-
-G4String CustomMagneticField::GetFieldModel(){
-  return fieldModel;
-}
 
 void CustomMagneticField::Guard() const{
   // Guard against unset values if they've been set elsewhere
@@ -201,3 +198,6 @@ void CustomMagneticField::Guard() const{
   }
   return;
 }
+
+
+

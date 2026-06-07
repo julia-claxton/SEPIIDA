@@ -55,9 +55,11 @@ class F03FieldSetup
 public:
   F03FieldSetup();           //  A zero field
   virtual ~F03FieldSetup();
+  void Guard();
   void SetStepperType( G4String i ) { fStepperType = i; }
   void SetStepper();
-  void SetMinStep(G4double se) { fMinStep = se; }
+  void SetMinStep(G4double se){fMinStep = se;}
+  void SetCacheRadius(G4double newCacheRadius);
   G4FieldManager* GetGlobalFieldManager();
   CustomMagneticField* nonCachedMagneticField;
   G4MagneticField* cachedMagneticField;
@@ -71,6 +73,7 @@ protected:
   G4String                fStepperType;
 
   G4double                fMinStep;
+  G4double                cacheRadius;
  
   F03FieldMessenger*      fFieldMessenger;
 

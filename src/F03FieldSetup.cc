@@ -79,21 +79,26 @@ F03FieldSetup::F03FieldSetup()
    fEquation(0),
    fStepper(0),
    fStepperType("unset"),
-   fFieldMessenger(0)
+   fFieldMessenger(0),
+   cacheRadius(HACKY_CACHE_RADIUS * km)
 {
+  Guard();
+
   // Constants
   fStepperType = "G4DormandPrince745"; // Set the stepper here
-  G4double cacheRadius = 0.1 * km;
   fMinStep = 0.01 * km;
 
   // Field options
   nonCachedMagneticField = new CustomMagneticField(); 
-  cachedMagneticField = new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius);
-
-  G4MagneticField* fieldToUse = cachedMagneticField;
+  G4MagneticField* fieldToUse = nonCachedMagneticField;
+  CACHED_MAGNETIC_FIELD = false;
+  if(cacheRadius > 0.0){
+    cachedMagneticField = new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius * km);
+    fieldToUse = cachedMagneticField;
+    CACHED_MAGNETIC_FIELD = true;
+  }
 
   // Field setup stuff
-  CACHED_MAGNETIC_FIELD = fieldToUse == cachedMagneticField;
   fFieldManager = G4TransportationManager::GetTransportationManager()->GetFieldManager();
   fFieldMessenger = new F03FieldMessenger(this);
   fEquation = new G4Mag_UsualEqRhs(fieldToUse);
@@ -184,4 +189,20 @@ void F03FieldSetup::SetStepper()
 
 G4FieldManager* F03FieldSetup::GetGlobalFieldManager(){
   return G4TransportationManager::GetTransportationManager()->GetFieldManager();
+}
+
+void F03FieldSetup::SetCacheRadius(G4double newCacheRadius){
+  println("Setting radius");
+  cacheRadius = newCacheRadius;
+}
+
+void F03FieldSetup::Guard(){
+  if(cacheRadius == -999.0){
+    G4cout 
+      << ANSI_RED << "\n"
+      << __FILE__ << ": " << __FUNCTION__ << "\n"
+      << "Cache radius unset. You should never see this."
+    << G4endl;
+    throw;
+  }
 }

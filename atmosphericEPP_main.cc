@@ -88,8 +88,8 @@ int main(int argc, char** argv){
   // Error out if we don't get those.
   if(argc < 5){
     G4cout << 
-      "Incorrect number of command line arguments provided. " << argc-1 << " given, at least 4 required. Format: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle> <optional arguments>\n" << 
-      "Call `/path/to/SEPIIDA -help` for help." <<
+      "Usage: ./SEPIIDA <number of particles> <particle name> <particle energy> <particle pitch angle> <optional arguments>\n" << 
+      "More: ./SEPIIDA -help" <<
     G4endl;
     throw;
   }
@@ -205,6 +205,7 @@ int main(int argc, char** argv){
     {"-backscatter_altitude",   "451.0"},
     {"-prefix",                 ""},
     {"-min_energy_eV",          "10"},
+    {"-cache_radius_km",        "0.1"}
     //{"-isotropic_down",         "false"},
     //{"-pitch_angle_lim",        "infinity"}
   };
@@ -266,20 +267,20 @@ int main(int argc, char** argv){
   // Atmosphere filename
   UImanager->ApplyCommand("/atmosphere/setFilename " + optionalFlags["-atmosphere_filename"]);
 
+  // Magnetic field caching
+  UImanager->ApplyCommand("/fieldParameters/setCacheRadius " + optionalFlags["-cache_radius_km"]);
+  HACKY_CACHE_RADIUS = std::stod(optionalFlags["-cache_radius_km"]);
+
   // Initialize run
-  println("Initializing run");
   UImanager->ApplyCommand("/run/initialize");
-  println("Initialized run");
-  // The atmosphere filename setting must happen before initialization or else it doesn't work. 
-  // Meanwhile the fieldParameters must be set after initialization or else they don't work. 
 
   // Latitude
   UImanager->ApplyCommand("/control/alias LAT_DEGREES " + optionalFlags["-lat"]);
   UImanager->ApplyCommand("/fieldParameters/setLAT {LAT_DEGREES}");
   
-  // B field mode
+  // Magnetic model
   UImanager->ApplyCommand("/fieldParameters/setFieldModel " + optionalFlags["-magnetic_model"]);
-
+  
   // Brem splitting
   if(std::stod(optionalFlags["-brem_splitting"]) < 1.0){
     optionalFlags["-brem_splitting"] = "1";
@@ -418,6 +419,10 @@ void printHelpScreen(){
   println("  -min_energy_eV");
   println("      Energy (in eV) for muons, hadrons, and electrons/positrons below which they are no longer tracked.");
   println("      Default: 10");
+  println("");
+  println("  -cache_radius_km");
+  println("      Every time the magnetic field is sampled, store its value for a sphere with this radius for all future particles who sample the magnetic field. Adiabatic correction is applied when this option != 0. If this option == 0, an uncached field is used.");
+  println("      Default: 0.1");
   println("");
   println("  -help");
   println("      Print help screen if value is 1");

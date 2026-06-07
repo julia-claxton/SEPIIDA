@@ -35,6 +35,7 @@
 #define F03FieldMessenger_h 1
 
 #include "G4UImessenger.hh"
+#include "G4UIcmdWithADouble.hh"
 
 class F03FieldSetup;
 class G4UIdirectory;
@@ -61,6 +62,7 @@ class F03FieldMessenger: public G4UImessenger
     G4UIcmdWithAString*        fStepperCmd;
     G4UIcmdWithADoubleAndUnit* fMagFieldCmd;
     G4UIcmdWithADoubleAndUnit* fMinStepCmd;
+    G4UIcmdWithADouble*        fCacheCmd;
 };
 
 #endif

@@ -2,6 +2,9 @@
 #define __GLOBALFUNCTIONS_H__ 1
 
 #include "G4RunManager.hh"
+#include "jupitermag.h" // Jupiter magnetic field model. Source: https://github.com/mattkjames7/libjupitermag
+  // Note: To compile on Mac M1, I needed to inline FluxCan and FluxDip, and comment out definition of M_PI in the header for this library
+
 
 #define __DEBUG_PING__ G4cout << __FILE__ << ": " << __LINE__ << G4endl
 
@@ -32,10 +35,10 @@ inline G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector ro
   return rotatedVector;
 }
 
-
 // Passing around variables between .cc files is hard, so I use the hacky solution of globals
 inline G4double HACKY_LATITUDE = -999.0;
 inline G4String HACKY_FIELDMODEL = "throw an error";
+inline G4double HACKY_CACHE_RADIUS = -999.0;
 inline G4bool CACHED_MAGNETIC_FIELD;
 
 #endif

@@ -52,6 +52,7 @@ class CustomMagneticFieldMessenger: public G4UImessenger
     G4UIdirectory*       fFieldDir;
     G4UIcmdWithADouble*  fLatCmd;
     G4UIcmdWithAString*  fModelCmd;
+    G4UIcmdWithADouble*  fCacheCmd;
 };
 
 #endif
