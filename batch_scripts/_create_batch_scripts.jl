@@ -97,8 +97,9 @@ for r in logrange(0.01, 10, 10)
     N = 1e3
     E = 1e3
     pa = 120
+    r_string = "$(round(r, digits = 2))"
     write_job_script("preemptable", N, "e-", E, pa, 
-        prefix = "cacheradius",
+        prefix = "cacheradius_$(r_string)",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_gram.csv
@@ -106,7 +107,7 @@ for r in logrange(0.01, 10, 10)
             -backscatter_altitude 991.0
             -brem_splitting 1
             -min_energy_eV 10
-            -cache_radius_km $(round(r, digits = 2))
+            -cache_radius_km $(r_string)
             -lat 85
         "
     )
