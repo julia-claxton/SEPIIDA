@@ -66,23 +66,51 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
     println("Wrote batch_scripts/$(job_name).sh")
 end
 
+function status()
+    jobs = glob("*.sh", @__DIR__)
+    println("\nThere are $(length(jobs)) jobs.")
+end
+
 
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
 # Write desired jobs
-
-for E in logrange(10, 1e5, 40)
-    write_job_script("preemptable", 1e5, "e-", E, 180, 
-        prefix = "brem10x_nomirroring_isotropicdown",
+for pa in 90:1:110
+    N = 1e3
+    E = 1e3
+    write_job_script("preemptable", N, "e-", E, pa, 
+        prefix = "finding_losscone",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename jupiter_gram.csv
             -injection_altitude 990.0
             -backscatter_altitude 991.0
-            -brem_splitting 10
+            -brem_splitting 1
             -min_energy_eV 10
             -lat 85
         "
     )
 end
+
+for r in logrange(0.01, 10, 10)
+    N = 1e3
+    E = 1e3
+    pa = 120
+    write_job_script("preemptable", N, "e-", E, pa, 
+        prefix = "cacheradius",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename jupiter_gram.csv
+            -injection_altitude 990.0
+            -backscatter_altitude 991.0
+            -brem_splitting 1
+            -min_energy_eV 10
+            -cache_radius_km $(round(r, digits = 2))
+            -lat 85
+        "
+    )
+end
+
+
+status()
