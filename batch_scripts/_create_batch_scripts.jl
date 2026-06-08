@@ -74,40 +74,26 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-# Write desired jobs
-#=
-for E in logrange(1e1, 1e5, 30)
-    for pa in 100:5:180
-        N = 1e3
-        write_job_script("preemptable", N, "e-", E, pa, 
-            prefix = "finding_losscone",
-            flags = "
-                -magnetic_model jrm33
-                -atmosphere_filename jupiter_gram.csv
-                -injection_altitude 990.0
-                -backscatter_altitude 991.0
-                -brem_splitting 1
-                -min_energy_eV 10
-                -lat 85
-                -cache_radius_km 1.0
-            "
-        )
-    end
-end
-=#
+# Write new jobs
 
-write_job_script("preemptable", 1e5, "e-", 1e4, 120, 
-    prefix = "runtime_test",
-    flags = "
-        -magnetic_model jrm33
-        -atmosphere_filename jupiter_gram.csv
-        -injection_altitude 990.0
-        -backscatter_altitude 991.0
-        -brem_splitting 100
-        -min_energy_eV 10
-        -lat 85
-        -cache_radius_km 1.0
-    "
-)
+for split_factor in [1, 5, 10, 50, 100, 500, 1000]
+    N = 1e4
+    E = 5e3
+    pa = 180
+    write_job_script("preemptable", N, "e-", E, pa, 
+        prefix = "brem$(split_factor)",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename jupiter_gram.csv
+            -injection_altitude 990.0
+            -backscatter_altitude 991.0
+            -brem_splitting $(split_factor)
+            -min_energy_eV 10
+            -lat 85
+            -cache_radius_km 1.0
+        "
+    )
+end
+
 
 status()
