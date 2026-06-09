@@ -77,7 +77,7 @@ rm.(glob("*.sh", @__DIR__))
 # Write new jobs
 
 for split_factor in [1, 5, 10, 50, 100, 500, 1000]
-    N = 1e4
+    N = 1e3
     E = 5e3
     pa = 180
     write_job_script("preemptable", N, "e-", E, pa, 
