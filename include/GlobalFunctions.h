@@ -35,6 +35,10 @@ inline G4ThreeVector rotateVector(G4ThreeVector startingVector, G4ThreeVector ro
   return rotatedVector;
 }
 
+inline bool contains(std::vector<G4String> v, G4String element){
+  return std::find(v.begin(), v.end(), element) != v.end();
+}
+
 // Passing around variables between .cc files is hard, so I use the hacky solution of globals
 inline G4double HACKY_LATITUDE = -999.0;
 inline G4String HACKY_FIELDMODEL = "throw an error";

@@ -111,8 +111,8 @@ class SteppingAction : public G4UserSteppingAction
     
     inline static CustomMagneticField* uncachedField;
 
-    std::map<G4String, G4bool> loggedIonizationTracks;
-    std::map<G4String, G4bool> loggedBackscatterTracks;
+    std::unordered_map<std::string, G4bool> loggedIonizationTracks;
+    std::unordered_map<std::string, G4bool> loggedBackscatterTracks;
 
     private:
     EventAction*             fEventAction;

@@ -29,7 +29,7 @@ CustomMagneticField::CustomMagneticField()
 
 CustomMagneticField::~CustomMagneticField(){}
 
-void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *result) const{
+void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *result) const {
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   Guard();
 
@@ -118,6 +118,7 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *resul
   result[3] = 0; // Ex
   result[4] = 0; // Ey
   result[5] = 0; // Ez
+  return;
 }
 
 std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const {

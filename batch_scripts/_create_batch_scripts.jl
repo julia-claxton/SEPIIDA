@@ -76,23 +76,24 @@ rm.(glob("*.sh", @__DIR__))
 
 # Write new jobs
 
-for split_factor in [1, 5, 10, 50, 100, 500, 1000]
-    N = 1e3
-    E = 5e3
-    pa = 180
-    write_job_script("preemptable", N, "e-", E, pa, 
-        prefix = "brem$(split_factor)",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename jupiter_gram.csv
-            -injection_altitude 990.0
-            -backscatter_altitude 991.0
-            -brem_splitting $(split_factor)
-            -min_energy_eV 10
-            -lat 85
-            -cache_radius_km 1.0
-        "
-    )
+for E in logrange(30, 1e5, 20)
+    for pa in 100:10:180
+        N = 1e5
+        split_factor = E > 1e3 ? 500 : 10
+        write_job_script("preemptable", N, "e-", E, pa, 
+            prefix = "jupiterglobal_forconferences",
+            flags = "
+                -magnetic_model jrm33
+                -atmosphere_filename jupiter_gram.csv
+                -injection_altitude 990.0
+                -backscatter_altitude 991.0
+                -brem_splitting $(split_factor)
+                -min_energy_eV 10
+                -lat 85
+                -cache_radius_km 1.0
+            "
+        )
+    end
 end
 
 

@@ -92,6 +92,7 @@ F03FieldSetup::F03FieldSetup()
   nonCachedMagneticField = new CustomMagneticField(); 
   G4MagneticField* fieldToUse = nonCachedMagneticField;
   CACHED_MAGNETIC_FIELD = false;
+  
   if(cacheRadius > 0.0){
     cachedMagneticField = new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius * km);
     fieldToUse = cachedMagneticField;

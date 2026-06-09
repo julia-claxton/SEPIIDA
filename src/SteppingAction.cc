@@ -132,8 +132,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     track->SetTrackStatus(fStopAndKill);
   }
 
-
-
   // ===========================
   // Account for cached field
   // ===========================
@@ -151,30 +149,15 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
       )
     ;
 
-    if(applyNudge){
+    if(applyNudge)
       applyAdiabaticPitchAngleChange(track, step, prePosition, postPosition, preMomentumDirection, postMomentumDirection);
-    }
-    
-    /*
-    G4String prename = step->GetPreStepPoint()->GetProcessDefinedStep() ? step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() : "None";
-    if((trackID == 1)){
-      G4cout
-        << std::setprecision(6)
-        << postStepAlt_km 
-        << "\t"
-        << getPitchAngle(prePosition, step->GetPreStepPoint()->GetMomentumDirection())
-        << " " << prename
-        << "\t"
-        << getPitchAngle(postPosition, step->GetPostStepPoint()->GetMomentumDirection())
-        << " " << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
-        << "\t"
-        << postStepKineticEnergy/keV
-        << G4endl
-      ;
-    }
-    */
-
   }
+
+
+
+
+
+
 
   // ===========================
   // Data recording
@@ -284,8 +267,7 @@ void SteppingAction::logIonProduction(RunAction* fRunAction,
   const G4double preStepAltitudeIndex, 
   const G4double trackWeight
 ){
-  if(loggedIonizationTracks[particleIdentifier] == true){return;}
-  if(std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()){return;}
+  if((std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()) || (loggedIonizationTracks.count(particleIdentifier) > 0)){return;}
   
   loggedIonizationTracks[particleIdentifier] = true;
   fRunAction->ionCounts.at(std::floor(preStepAltitudeIndex)) += 1 * trackWeight;
@@ -335,8 +317,11 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
   const G4double postStepKineticEnergy
 ){
   // Kick out non-backscattering particles and particles that have already been recorded
-  if(loggedBackscatterTracks[particleIdentifier] == true){return;}
-  bool backscattering = (preStepAlt_km < fRunAction->fCollectionAltitude) && (postStepAlt_km > fRunAction->fCollectionAltitude);
+  bool backscattering = 
+    (preStepAlt_km < fRunAction->fCollectionAltitude) 
+    && (postStepAlt_km > fRunAction->fCollectionAltitude) 
+    && (loggedBackscatterTracks.count(particleIdentifier) == 0)
+  ;
   if(backscattering == false){return;}
 
   // If we've reached here, the particle is backscattering and should be logged
