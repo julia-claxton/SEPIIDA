@@ -287,7 +287,7 @@ end
 # Visualization (frontend)
 # =====================================
 function quicklook(beam::Beam)
-    primary_species = replace(beam.info.particle, "electron" => "e-")
+    primary_species = replace(beam.info.particle, "electron" => "e-", "photon" => "gamma")
     primary_species == "gamma" ? secondary_species = "e-" : secondary_species = "gamma"
 
     plot_energy_spectrum(beam, 
@@ -419,6 +419,7 @@ function plot_energy_deposition(beam::Beam; show_title = true, show_plot = true)
     show_title ? title = "$(beam.info.prefix) $(beam.info.energy) keV $(beam.info.pitch_angle)º" : title = ""
     
     plot_mask = (beam.energy_deposition .≠ 0) .&& isfinite.(beam.energy_deposition)
+    if sum(plot_mask) == 0; plot(); box_aspect!(2); return plot!(); end
     xmin = minimum(beam.energy_deposition[plot_mask])
     xmax = maximum(beam.energy_deposition[plot_mask])
 

@@ -143,9 +143,12 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // problems).
   if(CACHED_MAGNETIC_FIELD){
     G4bool applyNudge = 
-      !step->GetPreStepPoint()->GetProcessDefinedStep() // If this doesn't exist, we are on the first step of particle's life, so we apply the nudge
-      || ((step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")  // ┬> If the step did not have any non-adiabatic processes occur
-      && (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")) // ┘
+      ((track->GetDynamicParticle()->GetCharge()) != 0) // Only nudge charged particles
+      && (
+        !step->GetPreStepPoint()->GetProcessDefinedStep() // If this pointer doesn't exist, we are on the first step of particle's life, so we apply the nudge
+        || ((step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")  // ┬> If the step did not have any non-adiabatic processes occur
+        && (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")) // ┘
+      )
     ;
 
     if(applyNudge){
@@ -172,8 +175,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     */
 
   }
-
-
 
   // ===========================
   // Data recording
