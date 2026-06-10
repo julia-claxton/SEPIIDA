@@ -2,6 +2,8 @@ using Statistics, LinearAlgebra
 using Glob
 using Printf
 
+include("$(dirname(@__DIR__))/postprocessing_scripts/SEPIIDA_Reader.jl")
+
 function write_job_script(qos, n_particles, input_particle, energy, pa; prefix = "", flags = "")
     # Prepare input
     input_particle_longname = input_particle == "e-" ? "electron" : input_particle
@@ -75,11 +77,10 @@ end
 rm.(glob("*.sh", @__DIR__))
 
 # Write new jobs
-
 for E in logrange(30, 1e5, 20)
     for pa in 100:10:180
         N = 1e5
-        split_factor = E > 1e3 ? 500 : 10
+        split_factor = E > 1e3 ? 1000 : 10
         write_job_script("preemptable", N, "e-", E, pa, 
             prefix = "jupiterglobal_forconferences",
             flags = "
