@@ -47,6 +47,7 @@
 #include <chrono>
 #include "ANSIColors.h"
 #include "GlobalFunctions.h"
+#include "TrackInformation.hh"
 
 SteppingAction::SteppingAction(EventAction* eventAction, RunAction* RuAct)
 : G4UserSteppingAction(),
@@ -61,11 +62,11 @@ SteppingAction::SteppingAction(EventAction* eventAction, RunAction* RuAct)
 
 SteppingAction::~SteppingAction(){delete fSteppingMessenger;}
 
-void SteppingAction::UserSteppingAction(const G4Step* step)
-{  
+void SteppingAction::UserSteppingAction(const G4Step* step){
   // Dividing by a unit outputs data in that unit, so divisions by keV result in outputs in keV
   // https://geant4-internal.web.cern.ch/sites/default/files/geant4/collaboration/working_groups/electromagnetic/gallery/units/SystemOfUnits.html
   G4Track* track = step->GetTrack();
+  TrackInformation* trackInfo = (TrackInformation*) track->GetUserInformation();
   const G4String particleName = track->GetDynamicParticle()->GetDefinition()->GetParticleName();
   const G4int trackID = track->GetTrackID();
   const G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -92,6 +93,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // Get altitude indices (float) of start and stop point
   const G4double preStepAltitudeIndex = (preStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
   const G4double postStepAltitudeIndex = (postStepAlt_km -  fRunAction->fMinSampleAltitude_km) / fRunAction->altitudeSpacing_km;
+
+  // Attach my user information to the track if it doesn't have it yet, then retrieve it
+  if(!trackInfo){
+    G4VUserTrackInformation* newTrackInfo = new TrackInformation;
+    track->SetUserInformation(newTrackInfo);
+    trackInfo = (TrackInformation*) track->GetUserInformation();
+  }
 
   // ===========================
   // Guard Block
@@ -133,31 +141,24 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   }
 
   // ===========================
-  // Account for cached field
+  // Account for cached B-fields
   // ===========================
   // If the magnetic field is cached, we need to manually adjust the pitch angle to produce mirroring
   // We use adiabatic pitch angle change (sin2(alpha1)/sin2(alpha2) = B1/B2) for this, which is nearly
   // exact (with minor inaccuracy from CSDA/continuous processes, but I don't think that will cause any
   // problems).
   if(CACHED_MAGNETIC_FIELD){
-    G4bool applyNudge = 
-      ((track->GetDynamicParticle()->GetCharge()) != 0) // Only nudge charged particles
-      && (
-        !step->GetPreStepPoint()->GetProcessDefinedStep() // If this pointer doesn't exist, we are on the first step of particle's life, so we apply the nudge
-        || ((step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")  // ┬> If the step did not have any non-adiabatic processes occur
-        && (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == "Transportation")) // ┘
-      )
-    ;
-
-    if(applyNudge)
+    G4bool firstStep = step->GetPreStepPoint()->GetProcessDefinedStep() ? false : true;
+    G4String preProcessName = firstStep ? "None" : step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    G4String postProcessName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    G4bool pureTransportationStep = (preProcessName == "Transportation") && (postProcessName == "Transportation");
+    
+    G4bool applyNudge = (track->GetDynamicParticle()->GetCharge() != 0) && (firstStep || pureTransportationStep); // Particle is charged and we are either on the first step of track's life or there were no processes during this step
+    if(!applyNudge){needToUpdateBPre = true;}
+    if(applyNudge){
       applyAdiabaticPitchAngleChange(track, step, prePosition, postPosition, preMomentumDirection, postMomentumDirection);
+    }
   }
-
-
-
-
-
-
 
   // ===========================
   // Data recording
@@ -178,7 +179,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     postStepAltitudeIndex
   );
   logBackscatter(step, fRunAction,
-    particleIdentifier,
+    trackInfo,
     particleName,
     trackWeight,
     preStepAlt_km,
@@ -188,7 +189,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     postStepKineticEnergy
   );
   if((parentProcess != nullptr) && (particleName == "e-")){
-    logIonProduction(fRunAction, particleIdentifier, preStepAltitudeIndex, trackWeight);
+    logIonProduction(fRunAction, trackInfo, preStepAltitudeIndex, trackWeight);
   }
 }
 
@@ -263,13 +264,12 @@ void SteppingAction::logSpectra(const G4Step* step, RunAction* fRunAction,
 }
 
 void SteppingAction::logIonProduction(RunAction* fRunAction,
-  const G4String particleIdentifier,
+  TrackInformation* trackInfo,
   const G4double preStepAltitudeIndex, 
   const G4double trackWeight
 ){
-  if((std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()) || (loggedIonizationTracks.count(particleIdentifier) > 0)){return;}
-  
-  loggedIonizationTracks[particleIdentifier] = true;
+  if((std::floor(preStepAltitudeIndex) >= fRunAction->ionCounts.size()) || trackInfo->GetIonProductionLogFlag()){return;}
+  trackInfo->SetIonProductionLogFlag(true);
   fRunAction->ionCounts.at(std::floor(preStepAltitudeIndex)) += 1 * trackWeight;
 }
 
@@ -307,7 +307,7 @@ void SteppingAction::logEnergyDeposition(const G4Step* step, RunAction* fRunActi
 }
 
 void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
-  const G4String particleIdentifier,
+  TrackInformation* trackInfo,
   const G4String particleName,
   const G4double trackWeight,
   const G4double preStepAlt_km,
@@ -320,15 +320,15 @@ void SteppingAction::logBackscatter(const G4Step* step, RunAction* fRunAction,
   bool backscattering = 
     (preStepAlt_km < fRunAction->fCollectionAltitude) 
     && (postStepAlt_km > fRunAction->fCollectionAltitude) 
-    && (loggedBackscatterTracks.count(particleIdentifier) == 0)
+    && (trackInfo->GetBackscatterLogFlag() == false)
   ;
   if(backscattering == false){return;}
 
   // If we've reached here, the particle is backscattering and should be logged
-  loggedBackscatterTracks[particleIdentifier] = true;
-  G4double pitchAngleDeg = getPitchAngle(position, momentumDirection, uncachedField);
-
+  trackInfo->SetBackscatterLogFlag(true);
+  
   // Write particle parameters to memory
+  G4double pitchAngleDeg = getPitchAngle(position, momentumDirection, uncachedField);
   fRunAction->fBackscatteredParticleNames.push_back(particleName);
   fRunAction->fBackscatteredTrackWeights.push_back(trackWeight);
   fRunAction->fBackscatteredEnergieskeV.push_back(postStepKineticEnergy/keV);
@@ -345,11 +345,16 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   G4ThreeVector preMomentumDirection,
   G4ThreeVector postMomentumDirection
 ){
+  // Get pre/post B vectors
+  if(needToUpdateBPre){Bpre = getB(uncachedField, prePosition);}
+  G4ThreeVector BvecPre = Bpre;
+  G4ThreeVector BvecPost = getB(uncachedField, postPosition);
+  
   // Calculate pitch angle at the end of this step under adiabatic theory
-  G4double Bpre = getBMagnitude(uncachedField, prePosition);
-  G4double Bpost = getBMagnitude(uncachedField, postPosition);
-  G4double paPre_rad = getPitchAngle(prePosition, preMomentumDirection, uncachedField) * (M_PI/180); // Units: Radian
-  G4double paPost_rad = getPitchAngle(postPosition, postMomentumDirection, uncachedField) * (M_PI/180); // Units: Radian
+  G4double Bpre = BvecPre.mag();
+  G4double Bpost = BvecPost.mag();
+  G4double paPre_rad = getPitchAngle(preMomentumDirection, BvecPre) * (M_PI/180);    // Units: Radian
+  G4double paPost_rad = getPitchAngle(postMomentumDirection, BvecPost) * (M_PI/180); // Units: Radian
   
   // Calculate desired pitch angle
   G4double for_asin = std::sqrt(Bpost/Bpre) * std::sin(paPre_rad);    
@@ -361,8 +366,7 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   G4double dPa_deg = (desiredPaPost_rad - paPost_rad) * (180/M_PI);
 
   // Get new momentum vector
-  G4ThreeVector BVectorPost = getB(uncachedField, postPosition);
-  G4ThreeVector rotateAbout = BVectorPost.cross(postMomentumDirection);
+  G4ThreeVector rotateAbout = BvecPost.cross(postMomentumDirection);
 
   // Apply the nudge and return
   G4ThreeVector newMomentumDirection = rotateVector(postMomentumDirection, rotateAbout, dPa_deg);
@@ -372,8 +376,6 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
 }
 
 G4ThreeVector SteppingAction::getB(G4MagneticField* field, G4ThreeVector position){
-  //G4AutoLock l(&mutex);
-
   G4double _position[4] = {position[0], position[1], position[2], 0};
   G4double EMField[6];
   field->GetFieldValue(_position, EMField);
@@ -406,7 +408,10 @@ G4double SteppingAction::getBMagnitude(G4ThreeVector position){
 
 G4double SteppingAction::getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field){  
   G4ThreeVector B = getB(field, position);
+  return getPitchAngle(momentumDirection, B);
+}
 
+G4double SteppingAction::getPitchAngle(G4ThreeVector momentumDirection, G4ThreeVector B){ 
   G4double pitchAngleDeg;
   G4double for_acos = momentumDirection.dot(B) / (momentumDirection.mag() * B.mag());
   

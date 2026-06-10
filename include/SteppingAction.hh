@@ -36,7 +36,7 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
-#include <unordered_map>
+#include "TrackInformation.hh"
 
 class EventAction;
 class RunAction;
@@ -54,17 +54,6 @@ class SteppingAction : public G4UserSteppingAction
     virtual ~SteppingAction();
     virtual void UserSteppingAction(const G4Step*);
 
-    G4bool test = false;
-
-    void applyAdiabaticPitchAngleChange(
-      G4Track*      track,
-      const G4Step* step,
-      G4ThreeVector prePosition,
-      G4ThreeVector postPosition,
-      G4ThreeVector preMomentumDirection,
-      G4ThreeVector postMomentumDirection
-    );
-
     // Data recording methods
     void logSpectra(const G4Step* step, RunAction* fRunAction,
       const G4String particleName,
@@ -77,7 +66,7 @@ class SteppingAction : public G4UserSteppingAction
       const G4double postStepAlt_km
     );
     void logIonProduction(RunAction* fRunAction,
-      const G4String particleIdentifier,
+      TrackInformation* trackInfo,
       const G4double preStepAltitudeIndex, 
       const G4double trackWeight
     );
@@ -87,7 +76,7 @@ class SteppingAction : public G4UserSteppingAction
       const G4double postStepAltitudeIndex
     );
     void logBackscatter(const G4Step* step, RunAction* fRunAction,
-      const G4String particleIdentifier,
+      TrackInformation* trackInfo,
       const G4String particleName,
       const G4double trackWeight,
       const G4double preStepAlt_km,
@@ -97,6 +86,19 @@ class SteppingAction : public G4UserSteppingAction
       const G4double postStepKineticEnergy
     );
 
+    // Adiabatic nudge utilities
+    void applyAdiabaticPitchAngleChange(
+      G4Track*      track,
+      const G4Step* step,
+      G4ThreeVector prePosition,
+      G4ThreeVector postPosition,
+      G4ThreeVector preMomentumDirection,
+      G4ThreeVector postMomentumDirection
+    );
+
+    mutable G4bool needToUpdateBPre = true;
+    G4ThreeVector Bpre;
+
     // Useful misc
     G4ThreeVector getB(G4MagneticField* field, G4ThreeVector location);
     G4ThreeVector getB(G4ThreeVector location);
@@ -105,14 +107,12 @@ class SteppingAction : public G4UserSteppingAction
     G4double getBMagnitude(G4ThreeVector location);
 
     G4double getPitchAngle(G4ThreeVector position, G4ThreeVector momentumDirection, G4MagneticField* field);
+    G4double getPitchAngle(G4ThreeVector momentumDirection, G4ThreeVector B);
     
     G4double logbase(G4double base, G4double x);    
     G4double overlap(G4double a1, G4double a2, G4double b1, G4double b2);
     
     inline static CustomMagneticField* uncachedField;
-
-    std::unordered_map<std::string, G4bool> loggedIonizationTracks;
-    std::unordered_map<std::string, G4bool> loggedBackscatterTracks;
 
     private:
     EventAction*             fEventAction;
