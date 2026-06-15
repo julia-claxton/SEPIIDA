@@ -76,9 +76,16 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-06-15--09.27_jupiter_tmp")
+existing_e = round.(energy_list(beamlist), digits = 1)
+existing_pa = pitch_angle_list(beamlist)
+existing_beams = collect(zip(existing_e, existing_pa))
+
 # Write new jobs
 for E in logrange(30, 1e5, 20)
     for pa in 100:10:180
+        if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
+
         N = 1e5
         split_factor = E > 1e3 ? 1000 : 10
         write_job_script("preemptable", N, "e-", E, pa, 
