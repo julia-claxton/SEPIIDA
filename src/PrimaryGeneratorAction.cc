@@ -257,7 +257,7 @@ void PrimaryGeneratorAction::setv0PrePhaseRandomization(G4ThreeVector x0){
   // We first need to find a vector that is orthogonal to B that we can rotate about.
   // We will do this by crossing B with a coordinate axis. (Y-axis chosen arbitrarily)
   G4ThreeVector referenceVector(1.0, 0.0, 0.0);
-  if(std::abs(1 - unitB.dot(referenceVector)) < 1e-10){
+  if(1 - std::abs(unitB.dot(referenceVector)) < 1e-10){
     referenceVector = {0.0, 1.0, 0.0};
   }
   G4ThreeVector rotationAxis = unitB.cross(referenceVector);

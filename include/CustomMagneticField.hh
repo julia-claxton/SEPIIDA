@@ -19,6 +19,13 @@ public:
 
   virtual void GetFieldValue(const G4double Point[4], G4double *result) const override;
 
+  // Field calculation methods
+  void libjupitermagAssignField(const G4double Point[4], G4double *result) const;
+  void marsTestAssignField(const G4double Point[4], G4double *result) const;
+
+
+  G4ThreeVector dipole(G4ThreeVector sourcePosition, G4ThreeVector testPosition, G4ThreeVector dipoleMoment) const;
+
   std::vector<G4double> planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const;
   std::vector<G4double> G4world_to_planetCentric(G4double x_g4world, G4double y_g4world, G4double z_g4world) const;
 

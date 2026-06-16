@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "GlobalFunctions.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 /* The following class calculates the magnetic field strength 
  * and direction according to a model of user's choice. This class inherits
@@ -33,6 +34,19 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *resul
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   Guard();
 
+  if((fieldModel == "igrf2025") || (fieldModel == "jrm33")){
+    libjupitermagAssignField(Point, result);
+    return;
+  }
+  if(fieldModel == "marsTest"){
+    G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
+    marsTestAssignField(Point, result);
+    return;
+  }
+  __DEBUG_PING__; throw;
+}
+
+void CustomMagneticField::libjupitermagAssignField(const G4double Point[4], G4double *result) const {
   // Set planetary radius based on B-field model
   G4double Rplanet;
   G4double Re = 6371200.0; // Earth radius, m
@@ -121,6 +135,35 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *resul
   return;
 }
 
+void CustomMagneticField::marsTestAssignField(const G4double Point[4], G4double *result) const {
+  // Dipole is 20 km below ground level
+  // World origin is 500 km above ground level
+  G4ThreeVector dipoleSource(0.0, 0.0, (-500.0 - 20.0)*km);
+  G4ThreeVector testPoint(Point[0], Point[1], Point[2]);
+  G4ThreeVector dipoleMoment(2.38e16 * ampere * meter2, 0.0, 0.0);
+
+  G4ThreeVector B = dipole(dipoleSource, testPoint, dipoleMoment);
+  
+  result[0] = B.x(); // Bx
+  result[1] = B.y(); // By
+  result[2] = B.z(); // Bz
+  result[3] = 0; // Ex
+  result[4] = 0; // Ey
+  result[5] = 0; // Ez
+  return;
+}
+
+G4ThreeVector CustomMagneticField::dipole(G4ThreeVector sourcePosition, G4ThreeVector testPosition, G4ThreeVector dipoleMoment) const {
+  G4ThreeVector r = testPosition - sourcePosition;
+  G4double rMag = r.mag();
+
+  G4double coeff = CLHEP::mu0 / (4*M_PI);
+  G4ThreeVector term1 = 3*r * (dipoleMoment.dot(r)) / pow(rMag, 5);
+  G4ThreeVector term2 = dipoleMoment / pow(rMag, 3);
+
+  return coeff * (term1 - term2);
+}
+
 std::vector<G4double> CustomMagneticField::planetCentric_to_G4world(G4double x_siii, G4double y_siii, G4double z_siii) const {
   // This works for any planet-centric frame with Z on the spin axis and X-Y in the equatorial plane
 
@@ -186,7 +229,8 @@ void CustomMagneticField::Guard() const{
   // Guard against unset model
   std::vector<G4String> availableModels = {
     "igrf2025",
-    "jrm33"
+    "jrm33",
+    "marsTest"
   };
   if(std::find(availableModels.begin(), availableModels.end(), fieldModel) == availableModels.end()){
     G4cout << "\n" <<

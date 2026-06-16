@@ -353,6 +353,11 @@ void SteppingAction::applyAdiabaticPitchAngleChange(
   // Calculate pitch angle at the end of this step under adiabatic theory
   G4double Bpre = BvecPre.mag();
   G4double Bpost = BvecPost.mag();
+
+  // Kick out if B-field has changed too much (greater than 0.001% in a step)
+  if((100 * std::abs(Bpost - Bpre) / Bpre) > 0.001){return;}
+
+  // Get pitch angles
   G4double paPre_rad = getPitchAngle(preMomentumDirection, BvecPre) * (M_PI/180);    // Units: Radian
   G4double paPost_rad = getPitchAngle(postMomentumDirection, BvecPost) * (M_PI/180); // Units: Radian
   
