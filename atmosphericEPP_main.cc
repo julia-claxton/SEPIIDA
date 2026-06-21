@@ -234,11 +234,11 @@ int main(int argc, char** argv){
 
     // Error if an unrecognized flag is provided
     if(optionalFlags.find(flagName) == optionalFlags.end()){
-      G4cout <<
-        ANSI_RED <<
-        "ERROR: Flag \"" << flagName << "\" not found. Check spelling or run `path/to/SEPIIDA -help` for a list of available flags." <<
-        ANSI_NOCOLOR <<
-      G4endl;
+      G4cout << ANSI_RED << "ERROR: Flag \"" << flagName << "\" not found. Available flags:" << G4endl;
+      for (auto const& el : optionalFlags){
+        G4cout << "    " << el.first << G4endl;
+      }
+      G4cout << ANSI_NOCOLOR << G4endl;
       throw;
     }
 
