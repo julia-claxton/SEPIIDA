@@ -89,10 +89,10 @@ F03FieldSetup::F03FieldSetup()
   fMinStep = 0.01 * km;
 
   // Field options
-  nonCachedMagneticField = new CustomMagneticField(); 
+  nonCachedMagneticField = new CustomMagneticField();
   G4MagneticField* fieldToUse = nonCachedMagneticField;
   CACHED_MAGNETIC_FIELD = false;
-  
+
   if(cacheRadius > 0.0){
     cachedMagneticField = new G4CachedMagneticField(nonCachedMagneticField,  cacheRadius * km);
     fieldToUse = cachedMagneticField;
@@ -199,7 +199,7 @@ void F03FieldSetup::SetCacheRadius(G4double newCacheRadius){
 
 void F03FieldSetup::Guard(){
   if(cacheRadius == -999.0){
-    G4cout 
+    G4cout
       << ANSI_RED << "\n"
       << __FILE__ << ": " << __FUNCTION__ << "\n"
       << "Cache radius unset. You should never see this."

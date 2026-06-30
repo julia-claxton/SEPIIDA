@@ -152,7 +152,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     G4String preProcessName = firstStep ? "None" : step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName();
     G4String postProcessName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
     G4bool pureTransportationStep = (preProcessName == "Transportation") && (postProcessName == "Transportation");
-    
+
     G4bool applyNudge = (track->GetDynamicParticle()->GetCharge() != 0) && (firstStep || pureTransportationStep); // Particle is charged and we are either on the first step of track's life or there were no processes during this step
     if(!applyNudge){needToUpdateBPre = true;}
     if(applyNudge){
