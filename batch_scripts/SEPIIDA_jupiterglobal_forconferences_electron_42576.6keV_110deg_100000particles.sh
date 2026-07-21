@@ -6,7 +6,7 @@
 #SBATCH --time 5-00:00:00
 #SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_jupiterglobal_forconferences_electron_42576.6keV_110deg_100000particles.log
 #SBATCH --qos=blanca-lair
-#SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22,bmem-rico1
+#SBATCH --exclude=bhpc-c5-u7-20,bhpc-c5-u7-21,bhpc-c5-u7-22,bmem-rico1
 #SBATCH --requeue
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=julia.claxton@colorado.edu
