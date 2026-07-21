@@ -3,9 +3,9 @@
 #SBATCH --job-name SEPIIDA_jupiterglobal_forconferences_electron_65250.7keV_110deg_100000particles
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node 40
-#SBATCH --time 1-00:00:00
+#SBATCH --time 5-00:00:00
 #SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_jupiterglobal_forconferences_electron_65250.7keV_110deg_100000particles.log
-#SBATCH --qos=preemptable
+#SBATCH --qos=blanca-lair
 #SBATCH --exclude=bhpc-c5-u7-19,bhpc-c5-u7-22,bmem-rico1
 #SBATCH --requeue
 #SBATCH --mail-type=BEGIN,END,FAIL

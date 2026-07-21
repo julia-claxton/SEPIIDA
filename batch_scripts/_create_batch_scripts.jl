@@ -13,7 +13,7 @@ function write_job_script(qos, n_particles, input_particle, energy, pa; prefix =
         flags = "$(flags) -prefix $(prefix)"
     end
     flags = replace(flags, "\n" => " ")
-    qos == "blanca-lair" ? time_limit = "4-00:00:00" : time_limit = "1-00:00:00"
+    qos == "blanca-lair" ? time_limit = "5-00:00:00" : time_limit = "1-00:00:00"
 
     # Remove double+ and leading whitespaces from flags
     while contains(flags, "  ")
@@ -76,19 +76,19 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-06-15--09.27_jupiter_tmp")
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-07-20--15.14_jupiterfinal")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
 for E in logrange(30, 1e5, 20)
-    for pa in 100:10:180
+    for pa in [105, 110:10:140..., 180]
         if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
 
         N = 1e5
         split_factor = E > 1e3 ? 1000 : 10
-        write_job_script("preemptable", N, "e-", E, pa, 
+        write_job_script("blanca-lair", N, "e-", E, pa, 
             prefix = "jupiterglobal_forconferences",
             flags = "
                 -magnetic_model jrm33
