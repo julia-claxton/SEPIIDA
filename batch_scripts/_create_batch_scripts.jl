@@ -82,13 +82,13 @@ existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
-for E in 1e5 #logrange(30, 1e5, 25)
+for E in 5000 #logrange(30, 1e5, 25)
     for pa in 180 #[105, 110:10:140..., 180]
         #if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
 
         N = 1e5
         split_factor = E > 1e3 ? 100 : 1000
-        write_job_script("blanca-lair", N, "e-", E, pa, 
+        write_job_script("preemptable", N, "e-", E, pa, 
             prefix = "test",
             flags = "
                 -magnetic_model jrm33
