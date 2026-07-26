@@ -88,14 +88,18 @@ for E in logrange(30, 1e5, 25)
 
         if E < 5000
             N = 1e6
+            split_factor = 1000
+            qos = "preemptable"
         else
             N = 1e5
+            split_factor = 100
+            qos = "blanca-lair"
         end
 
-        split_factor = E > 5000 ? 100 : 1000
 
-        write_job_script("preemptable", N, "e-", E, pa, 
-            prefix = "test",
+
+        write_job_script(qos, N, "e-", E, pa, 
+            prefix = "final",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename jupiter_gram.csv
