@@ -100,8 +100,6 @@ for E in logrange(30, 1e5, 25)
             qos = "blanca-lair"
         end
 
-
-
         write_job_script(qos, N, "e-", E, pa, 
             prefix = "final",
             flags = "
