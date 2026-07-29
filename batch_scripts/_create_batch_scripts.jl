@@ -76,7 +76,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-07-20--15.14_final")
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-07-29--00.02_test")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
@@ -85,6 +85,8 @@ existing_beams = collect(zip(existing_e, existing_pa))
 for E in logrange(30, 1e5, 25)
     for pa in [105, 110:10:140..., 180]
         if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
+
+        if (E == 100000.0) && (pa == 110.0); continue; end
 
         if E < 1000
             N = 1e5
