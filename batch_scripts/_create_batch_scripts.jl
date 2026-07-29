@@ -84,14 +84,14 @@ existing_beams = collect(zip(existing_e, existing_pa))
 # Write new jobs
 for E in logrange(30, 1e5, 25)
     for pa in [105, 110:10:140..., 180]
-        #if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
+        if (round(E, digits = 1), pa) ∈ existing_beams; continue; end
 
         if E < 1000
             N = 1e5
             split_factor = 1000
             qos = "preemptable"
         elseif 1000 ≤ E < 5000
-            N = 5e5
+            N = 1e5
             split_factor = 5000
             qos = "preemptable"
         else
