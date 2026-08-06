@@ -76,7 +76,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-07-29--00.02_test")
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-08-06--08.45_meow")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
@@ -92,9 +92,9 @@ for E in logrange(30, 1e5, 25)
             N = 1e5
             split_factor = 1000
             qos = "preemptable"
-        elseif 1000 ≤ E < 5000
+        elseif 1000 ≤ E < 10_000
             N = 1e5
-            split_factor = 5000
+            split_factor = 1000
             qos = "preemptable"
         else
             N = 1e5
@@ -117,6 +117,7 @@ for E in logrange(30, 1e5, 25)
         )
     end
 end
+
 
 
 status()

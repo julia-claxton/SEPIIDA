@@ -26,7 +26,7 @@ module load gcc/14.2.0
 # Run simulation
 set -x
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 100000 e- 3405.1 130 -magnetic_model jrm33 -atmosphere_filename jupiter_gram.csv -injection_altitude 990.0 -backscatter_altitude 991.0 -brem_splitting 5000 -min_energy_eV 20000 -lat 85 -cache_radius_km 1.0 -prefix final
+./SEPIIDA 100000 e- 3405.1 130 -magnetic_model jrm33 -atmosphere_filename jupiter_gram.csv -injection_altitude 990.0 -backscatter_altitude 991.0 -brem_splitting 1000 -min_energy_eV 20000 -lat 85 -cache_radius_km 1.0 -prefix final
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/final*electron_input*3405.1keV_130deg_100000particles* /projects/jucl6426/SEPIIDA/results
