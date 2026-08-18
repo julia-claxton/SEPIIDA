@@ -82,10 +82,8 @@ rm.(glob("*.sh", @__DIR__))
 #existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
-
 for E in logrange(30, 1e5, 25)
     for pa in [100, 140, 180]
-
         if E < 1000
             N = 1e5
             split_factor = 1000
@@ -101,7 +99,7 @@ for E in logrange(30, 1e5, 25)
         end
 
         write_job_script(qos, N, "e-", E, pa, 
-            prefix = "finalfixed",
+            prefix = "fixedfull",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename jupiter_gram.csv

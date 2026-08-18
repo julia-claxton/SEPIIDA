@@ -61,9 +61,9 @@ RunAction::RunAction():
   fCollectionAltitude(-999.0)
 {
   // Set killing energies
-  fWarningEnergy = 10 * keV; // Looping particles above this energy generate a warning when killed.
+  fWarningEnergy = 100 * keV; // Looping particles above this energy generate a warning when killed.
   fImportantEnergy = 10 * keV; // Looping particles above this energy are given fNumberOfTrials to become unlooping before being killed. Below this, no trials are given. 
-  fNumberOfTrials = 20; // Number of trials before a looping particles above fImportantEnergy is killed.
+  fNumberOfTrials = 500; // Number of trials before a looping particles above fImportantEnergy is killed.
 
   fRunActionMessenger = new RunActionMessenger(this); 
 
