@@ -62,8 +62,8 @@ RunAction::RunAction():
 {
   // Set killing energies
   fWarningEnergy = 10 * keV; // Looping particles above this energy generate a warning when killed.
-  fImportantEnergy = 1 * keV; // Looping particles above this energy are given fNumberOfTrials to become unlooping before being killed. Below this, no trials are given. 
-  fNumberOfTrials = 1000; // Number of trials before a looping particles above fImportantEnergy is killed.
+  fImportantEnergy = 10 * keV; // Looping particles above this energy are given fNumberOfTrials to become unlooping before being killed. Below this, no trials are given. 
+  fNumberOfTrials = 20; // Number of trials before a looping particles above fImportantEnergy is killed.
 
   fRunActionMessenger = new RunActionMessenger(this); 
 
