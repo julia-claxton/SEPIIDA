@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name SEPIIDA_lctest_electron_1000.0keV_93deg_1000particles
+#SBATCH --job-name SEPIIDA_final_electron_30.0keV_100deg_100000particles
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node 40
 #SBATCH --time 1-00:00:00
-#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_lctest_electron_1000.0keV_93deg_1000particles.log
+#SBATCH --output /projects/jucl6426/SEPIIDA/results/SEPIIDA_final_electron_30.0keV_100deg_100000particles.log
 #SBATCH --qos=preemptable
 #SBATCH --exclude=bhpc-c5-u7-20,bhpc-c5-u7-21,bhpc-c5-u7-22,bmem-rico1
 #SBATCH --requeue
@@ -26,8 +26,8 @@ module load gcc/14.2.0
 # Run simulation
 set -x
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 1000 e- 1000.0 93 -magnetic_model jrm33 -atmosphere_filename jupiter_gram.csv -injection_altitude 500.0 -backscatter_altitude 501.0 -brem_splitting 1 -min_energy_eV 1000 -lat 85 -cache_radius_km 1.0 -prefix lctest
+./SEPIIDA 100000 e- 30.0 100 -magnetic_model jrm33 -atmosphere_filename jupiter_gram.csv -injection_altitude 500.0 -backscatter_altitude 501.0 -brem_splitting 1000 -min_energy_eV 1000 -lat 85 -cache_radius_km 1.0 -prefix final
 
 # Copy results to safe folder
-cp /projects/jucl6426/SEPIIDA/build/results/lctest*electron_input*1000.0keV_93deg_1000particles* /projects/jucl6426/SEPIIDA/results
+cp /projects/jucl6426/SEPIIDA/build/results/final*electron_input*30.0keV_100deg_100000particles* /projects/jucl6426/SEPIIDA/results
 set +x

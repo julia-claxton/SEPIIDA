@@ -83,30 +83,8 @@ rm.(glob("*.sh", @__DIR__))
 
 # Write new jobs
 
-for E in 1000
-    for pa in 90:1:100
-        N = 1e3
-        split_factor = 1
-        qos = "preemptable"
-
-        write_job_script(qos, N, "e-", E, pa, 
-            prefix = "lctest",
-            flags = "
-                -magnetic_model jrm33
-                -atmosphere_filename jupiter_gram.csv
-                -injection_altitude 500.0
-                -backscatter_altitude 501.0
-                -brem_splitting $(split_factor)
-                -min_energy_eV 1000
-                -lat 85
-                -cache_radius_km 1.0
-            "
-        )
-    end
-end
-#=
 for E in logrange(30, 1e5, 25)
-    for pa in [105, 110, 130, 180]
+    for pa in [100, 140, 180]
 
         if E < 1000
             N = 1e5
@@ -114,16 +92,16 @@ for E in logrange(30, 1e5, 25)
             qos = "preemptable"
         elseif 1000 ≤ E < 10_000
             N = 1e5
-            split_factor = 1000
+            split_factor = 100
             qos = "preemptable"
         else
             N = 1e5
-            split_factor = 100
+            split_factor = 10
             qos = "blanca-lair"
         end
 
         write_job_script(qos, N, "e-", E, pa, 
-            prefix = "final",
+            prefix = "finalfixed",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename jupiter_gram.csv
@@ -137,7 +115,7 @@ for E in logrange(30, 1e5, 25)
         )
     end
 end
-=#
+
 
 
 status()
