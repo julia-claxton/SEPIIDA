@@ -76,26 +76,25 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-#beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-08-06--08.45_meow")
-#existing_e = round.(energy_list(beamlist), digits = 1)
-#existing_pa = pitch_angle_list(beamlist)
-#existing_beams = collect(zip(existing_e, existing_pa))
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-08-19--08.57_meowmeow")
+existing_e = round.(energy_list(beamlist), digits = 1)
+existing_pa = pitch_angle_list(beamlist)
+existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
 for E in logrange(30, 1e5, 25)
     for pa in [100, 140, 180]
+        if (round.(E, digits = 1), pa) ∈ existing_beams; continue; end
+
+        N = 1e5
+        qos = "preemptable"
+
         if E < 1000
-            N = 1e5
             split_factor = 1000
-            qos = "preemptable"
         elseif 1000 ≤ E < 10_000
-            N = 1e5
             split_factor = 100
-            qos = "preemptable"
         else
-            N = 1e5
             split_factor = 10
-            qos = "blanca-lair"
         end
 
         write_job_script(qos, N, "e-", E, pa, 
