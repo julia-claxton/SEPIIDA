@@ -174,12 +174,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
       totalLayerMassDensity += constituentDensity;
       nComponents++;
     }
-
-    // Ideal gas law for layer pressure
-    // P [Pa] = R [J/kg-K air] * rho [kg/m^3] * T [K]
-    G4double temperature = atmosphereData[i][temperatureIdxAsInt];
-    G4double pressure = R_gas_constant_air * totalLayerMassDensity * temperature; // TODO specific gas constant https://en.wikipedia.org/wiki/Gas_constant#Specific_gas_constant
     
+    // Get temperature
+    G4double temperature = atmosphereData[i][temperatureIdxAsInt];
+
+    // Get layer pressure if provided, otherwise calculate it ourselves
+    G4double pressure;
+    auto pressureColIdx = std::find(tableColNames.begin(), tableColNames.end(), "Pressure (Pa)");
+    if(pressureColIdx != tableColNames.end()){
+      // Pressure was provided
+      G4int pressureIdxAsInt = std::distance(tableColNames.begin(), pressureColIdx);
+      pressure = atmosphereData[i][pressureIdxAsInt];
+    } 
+    else {
+      // Pressure was not provided, calculate with ideal gas law for layer pressure
+      // P [Pa] = R [J/kg-K air] * rho [kg/m^3] * T [K]
+      pressure = R_gas_constant_air * totalLayerMassDensity * temperature; // TODO use specific gas constant https://en.wikipedia.org/wiki/Gas_constant#Specific_gas_constant
+    }
+
     // Create material for layer
     layerMaterial = new G4Material(
       "LayerMaterial_"+std::to_string(i), // name
