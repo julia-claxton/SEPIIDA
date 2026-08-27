@@ -82,10 +82,9 @@ rm.(glob("*.sh", @__DIR__))
 #existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
-for E in [50, 2000, 10_000] # logrange(30, 1e5, 25)
-    for pa in [100, 180] # [100, 120, 140, 180]
+for E in logrange(30, 1e5, 25)
+    for pa in [100, 120, 140, 180]
         #if (round.(E, digits = 1), pa) ∈ existing_beams; continue; end
-
         N = 1e5
         qos = "preemptable"
 
@@ -94,11 +93,11 @@ for E in [50, 2000, 10_000] # logrange(30, 1e5, 25)
         elseif 1000 ≤ E < 10_000
             split_factor = 1000
         else
-            split_factor = 100
+            split_factor = 200
         end
 
         write_job_script(qos, N, "e-", E, pa, 
-            prefix = "statisticstest",
+            prefix = "argo_final",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename ARGO_Jupiter.csv
