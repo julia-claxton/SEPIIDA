@@ -76,7 +76,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-08-31--09.56_argo_wip")
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-09-01--09.49_argo")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
