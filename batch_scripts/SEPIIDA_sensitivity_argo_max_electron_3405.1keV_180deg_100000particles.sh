@@ -26,7 +26,7 @@ module load gcc/14.2.0
 # Run simulation
 set -x
 cd /projects/jucl6426/SEPIIDA/build/
-./SEPIIDA 100000 e- 3405.1 180 -magnetic_model jrm33 -atmosphere_filename ARGO_Jupiter_upperbound.csv -injection_altitude 500.0 -backscatter_altitude 501.0 -brem_splitting 500 -min_energy_eV 1000 -lat -85 -cache_radius_km 1.0 -prefix sensitivity_argo_max
+./SEPIIDA 100000 e- 3405.1 180 -magnetic_model jrm33 -atmosphere_filename ARGO_Jupiter_upperbound.csv -injection_altitude 500.0 -backscatter_altitude 501.0 -brem_splitting 500 -min_energy_eV 1000 -lat 85 -cache_radius_km 1.0 -prefix sensitivity_argo_max
 
 # Copy results to safe folder
 cp /projects/jucl6426/SEPIIDA/build/results/sensitivity_argo_max*electron_input*3405.1keV_180deg_100000particles* /projects/jucl6426/SEPIIDA/results

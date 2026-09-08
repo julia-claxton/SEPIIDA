@@ -82,6 +82,7 @@ existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
+#=
 for E in logrange(30, 1e5, 25)
     for pa in [100, 120, 140, 180]
         if (round.(E, digits = 1), pa) ∈ existing_beams; continue; end
@@ -111,33 +112,13 @@ for E in logrange(30, 1e5, 25)
         )
     end
 end
+=#
 
 let
     N = 1e5
     qos = "preemptable"
     E = 3405.1
-    pa = 180
-
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "sensitivity_lat-85",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 500
-            -min_energy_eV 1000
-            -lat -85
-            -cache_radius_km 1.0
-        "
-    )
-end
-
-let
-    N = 1e5
-    qos = "preemptable"
-    E = 3405.1
-    pa = 100
+    pa = 0
 
     write_job_script(qos, N, "e-", E, pa, 
         prefix = "sensitivity_lat-85",
@@ -169,7 +150,7 @@ let
             -backscatter_altitude 501.0
             -brem_splitting 500
             -min_energy_eV 1000
-            -lat -85
+            -lat 85
             -cache_radius_km 1.0
         "
     )
@@ -182,7 +163,7 @@ let
             -backscatter_altitude 501.0
             -brem_splitting 500
             -min_energy_eV 1000
-            -lat -85
+            -lat 85
             -cache_radius_km 1.0
         "
     )
