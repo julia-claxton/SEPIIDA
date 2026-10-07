@@ -306,7 +306,7 @@ int main(int argc, char** argv){
   UImanager->ApplyCommand("/process/em/lowestMuHadEnergy " + optionalFlags["-min_energy_eV"] + " eV");
 
   G4double lowLimit = std::stod(optionalFlags["-min_energy_eV"]) * eV;
-  G4double highLimit = 100.0 * GeV;
+  G4double highLimit = 1000.0 * GeV;
   G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowLimit, highLimit);
 
   // Beam parameters
@@ -319,7 +319,7 @@ int main(int argc, char** argv){
   UImanager->ApplyCommand("/process/em/fluo true");
   UImanager->ApplyCommand("/process/em/auger true");
   UImanager->ApplyCommand("/process/em/augerCascade true");
-  UImanager->ApplyCommand("/process/em/pixe true");
+  //UImanager->ApplyCommand("/process/em/pixe true");
   UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
 
   // ==========================================
