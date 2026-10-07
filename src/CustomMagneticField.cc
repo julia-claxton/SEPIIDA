@@ -34,29 +34,29 @@ void CustomMagneticField::GetFieldValue(const G4double Point[4], G4double *resul
   // Point is a spacetime 4-vector: Point[0..3] = (x, y, z, t)
   Guard();
 
-  if((fieldModel == "igrf2025") || (fieldModel == "jrm33")){
+  if((fieldModel == "igrf2025") || (fieldModel == "jrm33") || ((fieldModel == "g110"))){
     libjupitermagAssignField(Point, result);
     return;
   }
-  if(fieldModel == "marsTest"){
-    G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
-    marsTestAssignField(Point, result);
-    return;
-  }
+  // Error if field model isn't supported
   __DEBUG_PING__; throw;
 }
 
 void CustomMagneticField::libjupitermagAssignField(const G4double Point[4], G4double *result) const {
   // Set planetary radius based on B-field model
   G4double Rplanet;
-  G4double Re = 6371200.0; // Earth radius, m
-  G4double Rj = 71492000.0;	// Jupiter equatorial radius. Units: m
+  const G4double Re = 6371200.0; // Earth radius, m
+  const G4double Rj = 71492000.0;	// Jupiter equatorial radius. Units: m
+  const G4double Rm = 3389500.0; // Mars mean radius, m
 
   if(fieldModel == "igrf2025"){
     Rplanet = Re;
   }
   else if(fieldModel == "jrm33"){
     Rplanet = Rj;
+  }
+  else if(fieldModel == "g110"){
+    Rplanet = Rm;
   }
 
   // Get position vectors for B field calculation
@@ -100,7 +100,7 @@ void CustomMagneticField::libjupitermagAssignField(const G4double Point[4], G4do
     G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
 
     igrf2025Field(
-      r[0]/Re, r[1]/Re, r[2]/Re, 
+      r[0]/Rplanet, r[1]/Rplanet, r[2]/Rplanet, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
     );
   }
@@ -109,10 +109,20 @@ void CustomMagneticField::libjupitermagAssignField(const G4double Point[4], G4do
     G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
 
     jrm33Field(
-      r[0]/Rj, r[1]/Rj, r[2]/Rj, 
+      r[0]/Rplanet, r[1]/Rplanet, r[2]/Rplanet, 
       &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
     );
   }
+  else if(fieldModel == "g110"){
+    // Only allow one thread to access here at a time as libjupitermag appears to be thread-unsafe
+    G4AutoLock l(&mutex); // Lock auto-unlocks after it is out of scope.
+
+    gao2021Field(
+      r[0]/Rplanet, r[1]/Rplanet, r[2]/Rplanet, 
+      &Bx_nT_planetCentered, &By_nT_planetCentered, &Bz_nT_planetCentered
+    );
+  }
+
   // Don't need a guard here for unrecognized models since we already guarded earlier in the function
 
   // Rotate back into world coordinates
@@ -125,28 +135,16 @@ void CustomMagneticField::libjupitermagAssignField(const G4double Point[4], G4do
       Bz_nT_planetCentered
   );
 
+  //G4cout <<
+  //  B_worldFrame[0] << ", " <<
+  //  B_worldFrame[1] << ", " <<
+  //  B_worldFrame[2] <<
+  //G4endl;
+
   // Assign values
   result[0] = B_worldFrame[0] * 1e-9 * tesla; // Bx
   result[1] = B_worldFrame[1] * 1e-9 * tesla; // By
   result[2] = B_worldFrame[2] * 1e-9 * tesla; // Bz
-  result[3] = 0; // Ex
-  result[4] = 0; // Ey
-  result[5] = 0; // Ez
-  return;
-}
-
-void CustomMagneticField::marsTestAssignField(const G4double Point[4], G4double *result) const {
-  // Dipole is 20 km below ground level
-  // World origin is 500 km above ground level
-  G4ThreeVector dipoleSource(0.0, 0.0, (-500.0 - 20.0)*km);
-  G4ThreeVector testPoint(Point[0], Point[1], Point[2]);
-  G4ThreeVector dipoleMoment(2.38e16 * ampere * meter2, 0.0, 0.0);
-
-  G4ThreeVector B = dipole(dipoleSource, testPoint, dipoleMoment);
-  
-  result[0] = B.x(); // Bx
-  result[1] = B.y(); // By
-  result[2] = B.z(); // Bz
   result[3] = 0; // Ex
   result[4] = 0; // Ey
   result[5] = 0; // Ez
@@ -230,7 +228,7 @@ void CustomMagneticField::Guard() const{
   std::vector<G4String> availableModels = {
     "igrf2025",
     "jrm33",
-    "marsTest"
+    "g110"
   };
   if(std::find(availableModels.begin(), availableModels.end(), fieldModel) == availableModels.end()){
     G4cout << "\n" <<

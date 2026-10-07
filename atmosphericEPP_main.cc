@@ -315,11 +315,12 @@ int main(int argc, char** argv){
   UImanager->ApplyCommand("/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}");
 
   // Turn on deexcitation physics
+  //UImanager->ApplyCommand("/process/em/deexcitation world false false false");
   UImanager->ApplyCommand("/process/em/deexcitation world true true true");
   UImanager->ApplyCommand("/process/em/fluo true");
   UImanager->ApplyCommand("/process/em/auger true");
   UImanager->ApplyCommand("/process/em/augerCascade true");
-  //UImanager->ApplyCommand("/process/em/pixe true");
+  UImanager->ApplyCommand("/process/em/pixe true");
   UImanager->ApplyCommand("/process/em/deexcitationIgnoreCut true");
 
   // ==========================================

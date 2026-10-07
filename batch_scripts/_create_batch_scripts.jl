@@ -117,51 +117,17 @@ end
 let
     N = 1e5
     qos = "preemptable"
-    E = 3405.1
-    pa = 0
+    E = 448.1
+    pa = 180
 
     write_job_script(qos, N, "e-", E, pa, 
-        prefix = "sensitivity_lat-85",
+        prefix = "no_pixe",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename ARGO_Jupiter.csv
             -injection_altitude 500.0
             -backscatter_altitude 501.0
-            -brem_splitting 500
-            -min_energy_eV 1000
-            -lat -85
-            -cache_radius_km 1.0
-        "
-    )
-end
-
-let
-    N = 1e5
-    qos = "preemptable"
-    E = 3405.1
-    pa = 180
-
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "sensitivity_argo_min",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter_lowerbound.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 500
-            -min_energy_eV 1000
-            -lat 85
-            -cache_radius_km 1.0
-        "
-    )
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "sensitivity_argo_max",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter_upperbound.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 500
+            -brem_splitting 5000
             -min_energy_eV 1000
             -lat 85
             -cache_radius_km 1.0
