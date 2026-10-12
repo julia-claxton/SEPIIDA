@@ -118,18 +118,17 @@ let
     N = 1e5
     qos = "preemptable"
     E = 448.1
-    pa = 180
+    pa = 0
 
     write_job_script(qos, N, "e-", E, pa, 
-        prefix = "no_pixe",
+        prefix = "earth_w_deex",
         flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
+            -magnetic_model igrf2025
+            -atmosphere_filename msis_earth.csv
+            -injection_altitude 350.0
+            -backscatter_altitude 351.0
             -brem_splitting 5000
             -min_energy_eV 1000
-            -lat 85
             -cache_radius_km 1.0
         "
     )
