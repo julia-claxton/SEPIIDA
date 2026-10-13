@@ -82,7 +82,6 @@ existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
-#=
 for E in logrange(30, 1e5, 25)
     for pa in [100, 120, 140, 180]
         if (round.(E, digits = 1), pa) ∈ existing_beams; continue; end
@@ -98,7 +97,7 @@ for E in logrange(30, 1e5, 25)
         end
 
         write_job_script(qos, N, "e-", E, pa, 
-            prefix = "argo_final",
+            prefix = "penelope_final",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename ARGO_Jupiter.csv
@@ -112,27 +111,5 @@ for E in logrange(30, 1e5, 25)
         )
     end
 end
-=#
-
-let
-    N = 1e5
-    qos = "preemptable"
-    E = 448.1
-    pa = 0
-
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "earth_w_deex",
-        flags = "
-            -magnetic_model igrf2025
-            -atmosphere_filename msis_earth.csv
-            -injection_altitude 350.0
-            -backscatter_altitude 351.0
-            -brem_splitting 5000
-            -min_energy_eV 1000
-            -cache_radius_km 1.0
-        "
-    )
-end
-
 
 status()

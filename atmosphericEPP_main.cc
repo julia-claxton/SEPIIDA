@@ -51,6 +51,7 @@ chmod +x ./RUN_ALL.sh # Make the runall script executable by anyone
 #include "G4UImanager.hh"
 #include "FTFP_BERT.hh"
 #include "G4EmLivermorePhysics.hh"
+#include "G4EmPenelopePhysics.hh"
 #include "G4PhysListFactory.hh"
 #include "G4StepLimiterPhysics.hh"
 
@@ -118,7 +119,7 @@ int main(int argc, char** argv){
 
   // Physics list
   G4PhysListFactory factory;
-  G4VModularPhysicsList* physicsList = factory.GetReferencePhysList("QBBC"); // QBBC uses EM v1. Do we need more updated EM model? TODO
+  G4VModularPhysicsList* physicsList = factory.GetReferencePhysList("QBBC_PEN"); // QBBC uses EM v1. Do we need more updated EM model? TODO
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   physicsList->SetVerboseLevel(0);
   runManager->SetUserInitialization(new DetectorConstruction());
@@ -315,7 +316,6 @@ int main(int argc, char** argv){
   UImanager->ApplyCommand("/beamParameters/setBeamPitchAngle {BEAM_PITCH_ANGLE_DEG}");
 
   // Turn on deexcitation physics
-  //UImanager->ApplyCommand("/process/em/deexcitation world false false false");
   UImanager->ApplyCommand("/process/em/deexcitation world true true true");
   UImanager->ApplyCommand("/process/em/fluo true");
   UImanager->ApplyCommand("/process/em/auger true");
