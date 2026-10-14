@@ -120,6 +120,21 @@ int main(int argc, char** argv){
   // Physics list
   G4PhysListFactory factory;
   G4VModularPhysicsList* physicsList = factory.GetReferencePhysList("QBBC_PEN"); // QBBC uses EM v1. Do we need more updated EM model? TODO
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
+  println("USING PENELOPE");
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   physicsList->SetVerboseLevel(0);
   runManager->SetUserInitialization(new DetectorConstruction());
