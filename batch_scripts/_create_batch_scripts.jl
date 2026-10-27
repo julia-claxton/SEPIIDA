@@ -76,6 +76,7 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
+#=
 beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-09-07--10.45_almostdone")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
@@ -110,6 +111,41 @@ for E in logrange(30, 1e5, 25)
             "
         )
     end
+end
+=#
+
+
+for E in [300, 3000]
+    N = 10000
+    pa = 100
+    qos = "preemptable"
+    write_job_script(qos, N, "e-", E, pa, 
+        prefix = "simple",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename ARGO_Jupiter_simple.csv
+            -injection_altitude 500.0
+            -backscatter_altitude 501.0
+            -brem_splitting 1000
+            -min_energy_eV 1000
+            -lat 85
+            -cache_radius_km 1.0
+        "
+    )
+
+    write_job_script(qos, N, "e-", E, pa, 
+        prefix = "fullatmo",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename ARGO_Jupiter.csv
+            -injection_altitude 500.0
+            -backscatter_altitude 501.0
+            -brem_splitting 1000
+            -min_energy_eV 1000
+            -lat 85
+            -cache_radius_km 1.0
+        "
+    )
 end
 
 status()

@@ -194,7 +194,8 @@ function get_beamlist(dir_to_search;
 end
 
 function load_beam(beaminfo::BeamInfo;
-    load_backscatter = true
+    load_backscatter = true,
+    load_spectra = true
     )
     # ==============================
     # Get backscatter
@@ -209,19 +210,25 @@ function load_beam(beaminfo::BeamInfo;
     # ==============================
     # Get spectra
     # ==============================
-    prebaked_path = "$(beaminfo.dir)/preprocessed_spectra/$(beaminfo.base_filename).npz"
-    if isfile(prebaked_path)
-        spectra = npzread(prebaked_path)
-    else
-        prebake_beam(beaminfo)
-        return load_beam(beaminfo)
+    spectra = Dict()
+    if load_spectra
+        prebaked_path = "$(beaminfo.dir)/preprocessed_spectra/$(beaminfo.base_filename).npz"
+        if isfile(prebaked_path)
+            spectra = npzread(prebaked_path)
+        else
+            prebake_beam(beaminfo)
+            return load_beam(beaminfo)
+        end
     end
 
+    # Safety check
+    if load_spectra
+        energy_deposition_data["altitude_bin_edges"] == spectra["altitude_bin_edges"] || error("Altitude bin edge mismatch between spectra and energy deposition!")
+    end
     # Assign bin edge variables
-    energy_deposition_data["altitude_bin_edges"] == spectra["altitude_bin_edges"] || error("Altitude bin edge mismatch between spectra and energy deposition!")
-    altitude_bin_edges = spectra["altitude_bin_edges"]
-    energy_bin_edges = spectra["energy_bin_edges"]
-    pitch_angle_bin_edges = spectra["pitch_angle_bin_edges"]
+    altitude_bin_edges = energy_deposition_data["altitude_bin_edges"]
+    energy_bin_edges = load_spectra ? spectra["energy_bin_edges"] : []
+    pitch_angle_bin_edges = load_spectra ? spectra["pitch_angle_bin_edges"] : []
 
     # ==============================
     # Construct and return
@@ -246,9 +253,9 @@ function load_beam(beaminfo::BeamInfo;
 end
 
 function load_beam(beaminfo::Vector{BeamInfo};
-    load_backscatter = true
+    kwargs...
 )
-    return [load_beam(el, load_backscatter = load_backscatter) for el in beaminfo]
+    return [load_beam(el, kwargs...) for el in beaminfo]
 end
 
 function energy_list(beamlist::Vector{BeamInfo})
