@@ -117,10 +117,10 @@ end
 
 for E in [300, 3000]
     N = 10000
-    pa = 100
+    pa = 180
     qos = "preemptable"
     write_job_script(qos, N, "e-", E, pa, 
-        prefix = "simple",
+        prefix = "octtestingsimple",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename ARGO_Jupiter_simple.csv
@@ -134,10 +134,25 @@ for E in [300, 3000]
     )
 
     write_job_script(qos, N, "e-", E, pa, 
-        prefix = "fullatmo",
+        prefix = "octtestingnormal",
         flags = "
             -magnetic_model jrm33
             -atmosphere_filename ARGO_Jupiter.csv
+            -injection_altitude 500.0
+            -backscatter_altitude 501.0
+            -brem_splitting 1000
+            -min_energy_eV 1000
+            -lat 85
+            -cache_radius_km 1.0
+        "
+    )
+
+
+    write_job_script(qos, N, "e-", E, pa, 
+        prefix = "octtestingcomplicated",
+        flags = "
+            -magnetic_model jrm33
+            -atmosphere_filename ARGO_Jupiter_complicated.csv
             -injection_altitude 500.0
             -backscatter_altitude 501.0
             -brem_splitting 1000
