@@ -76,15 +76,15 @@ end
 # Remove existing jobscripts
 rm.(glob("*.sh", @__DIR__))
 
-#=
-beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-09-07--10.45_almostdone")
+beamlist = get_beamlist("/Users/luna/Research/geant4/SEPIIDA/results/2026-10-18--16.01_penelope")
 existing_e = round.(energy_list(beamlist), digits = 1)
 existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
 for E in logrange(30, 1e5, 25)
-    for pa in [100, 120, 140, 180]
+    #for pa in [100, 120, 140, 180]
+    for pa in [100, 110, 120, 130, 140, 180]
         if (round.(E, digits = 1), pa) ∈ existing_beams; continue; end
         N = 1e5
         qos = "preemptable"
@@ -111,56 +111,6 @@ for E in logrange(30, 1e5, 25)
             "
         )
     end
-end
-=#
-
-
-for E in [300, 3000]
-    N = 10000
-    pa = 180
-    qos = "preemptable"
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "octtestingsimple",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter_simple.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 1000
-            -min_energy_eV 1000
-            -lat 85
-            -cache_radius_km 1.0
-        "
-    )
-
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "octtestingnormal",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 1000
-            -min_energy_eV 1000
-            -lat 85
-            -cache_radius_km 1.0
-        "
-    )
-
-
-    write_job_script(qos, N, "e-", E, pa, 
-        prefix = "octtestingcomplicated",
-        flags = "
-            -magnetic_model jrm33
-            -atmosphere_filename ARGO_Jupiter_complicated.csv
-            -injection_altitude 500.0
-            -backscatter_altitude 501.0
-            -brem_splitting 1000
-            -min_energy_eV 1000
-            -lat 85
-            -cache_radius_km 1.0
-        "
-    )
 end
 
 status()
