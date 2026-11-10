@@ -119,22 +119,11 @@ int main(int argc, char** argv){
 
   // Physics list
   G4PhysListFactory factory;
-  G4VModularPhysicsList* physicsList = factory.GetReferencePhysList("QBBC_PEN"); // QBBC uses EM v1. Do we need more updated EM model? TODO
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
-  println("USING PENELOPE");
+  G4String physList = "QBBC_PEN";
+  if(physList == "QBBC_PEN"){
+    println("Using Penelope EM physics");
+  }
+  G4VModularPhysicsList* physicsList = factory.GetReferencePhysList(physList); // QBBC uses EM v1. Do we need more updated EM model? TODO
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   physicsList->SetVerboseLevel(0);
   runManager->SetUserInitialization(new DetectorConstruction());
