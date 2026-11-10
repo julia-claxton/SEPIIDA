@@ -82,11 +82,13 @@ existing_pa = pitch_angle_list(beamlist)
 existing_beams = collect(zip(existing_e, existing_pa))
 
 # Write new jobs
-#for E in logrange(30, 1e5, 25)
-    #for pa in [100, 105, 110, 120, 130, 140, 160, 180]
-for E in logrange(30, 1e5, 25)[[8, 12, 16]]
-    for pa in [120, 140, 180]
+for E in logrange(30, 1e5, 25)
+    for pa in [100, 105, 110, 120, 130, 140, 160, 180]
         #if (round.(E, digits = 1), float(pa)) ∈ existing_beams; continue; end
+
+        if (E ∈ logrange(30, 1e5, 25)[[8, 12, 16]]) && (pa ∈ [120, 140, 180])
+            continue
+        end
 
         N = 1e5
         qos = "preemptable"
