@@ -351,7 +351,7 @@ function plot_energy_spectrum(beam::Beam; species = "e-", show_title = true, sho
     ymax = beam.altitude_bin_edges[end]
 
     cmin = minimum(replace([log10(minimum(to_plot)), 0-log10(beam.info.n_particles)], -Inf => Inf))
-    cmax = max(log10(maximum(to_plot)), 0)
+    cmax = maximum(log10(maximum(to_plot)))
     
     heatmap(beam.energy_bin_means, beam.altitude_bin_edges, log10.(to_plot),
         title = title,
@@ -387,7 +387,7 @@ function plot_pitch_angle_spectrum(beam::Beam; species = "e-", show_title = true
     ymax = beam.altitude_bin_edges[end]
 
     cmin = minimum(replace([log10(minimum(to_plot)), 0-log10(beam.info.n_particles)], -Inf => Inf))
-    cmax = max(log10(maximum(to_plot)), 0)
+    cmax = maximum(log10(maximum(to_plot)))
     
     heatmap(beam.pitch_angle_bin_means, beam.altitude_bin_edges, log10.(to_plot),
         title = title,
