@@ -132,12 +132,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   }
 
   // Check for stuck photons. Occassionally they seem to get 'wedged' between atmospheric layers and stop propagating without being automatically killed, hanging the program forever
+  
   if((step->GetStepLength()/m < 1e-12) && particleName == "gamma"){
     G4cout << ANSI_YELLOW <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" <<
     ANSI_NOCOLOR << G4endl;
-    track->SetTrackStatus(fStopAndKill);
+    //track->SetTrackStatus(fStopAndKill);
   }
 
   // ===========================
