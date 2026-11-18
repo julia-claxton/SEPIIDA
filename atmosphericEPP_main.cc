@@ -94,6 +94,46 @@ int main(int argc, char** argv){
     G4endl;
     throw;
   }
+
+
+
+
+
+
+
+
+
+  println("");
+  println("");
+  println("");
+  println("======================================================");
+  println("   WARNING: PHOTON WRAPPING ACTIVE! DISABLE LATER!    ");
+  println("======================================================");
+  println("");
+  println("");
+  println("");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
   // Start simulation timer
   auto t_start = std::chrono::high_resolution_clock::now();
@@ -120,9 +160,8 @@ int main(int argc, char** argv){
   // Physics list
   G4PhysListFactory factory;
   G4String physList = "QBBC_PEN";
-  if(physList == "QBBC_PEN"){
-    println("Using Penelope EM physics");
-  }
+  G4cout << "Using " << physList << " physics list";
+
   G4VModularPhysicsList* physicsList = factory.GetReferencePhysList(physList); // QBBC uses EM v1. Do we need more updated EM model? TODO
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   physicsList->SetVerboseLevel(0);

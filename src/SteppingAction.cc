@@ -131,15 +131,72 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     track->SetTrackStatus(fStopAndKill);
   }
 
+  // Shorter time threshold for photons
+  if((particleName == "gamma") && (track->GetProperTime()/second > 0.5)){
+    G4cout << ANSI_YELLOW <<
+      __FILE__ << ": " << __FUNCTION__ << "\n" <<
+      "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV exceeding 0.5s simulation time." <<
+    ANSI_NOCOLOR << G4endl;
+    track->SetTrackStatus(fStopAndKill);
+  }
+
+
   // Check for stuck photons. Occassionally they seem to get 'wedged' between atmospheric layers and stop propagating without being automatically killed, hanging the program forever
-  
   if((step->GetStepLength()/m < 1e-12) && particleName == "gamma"){
     G4cout << ANSI_YELLOW <<
       __FILE__ << ": " << __FUNCTION__ << "\n" <<
       "WARNING: Killed " << particleName << " at " << postStepKineticEnergy/keV << " keV. Reason: Stuck gamma. Current step length: " << step->GetStepLength()/m << " m" <<
     ANSI_NOCOLOR << G4endl;
-    //track->SetTrackStatus(fStopAndKill);
+    track->SetTrackStatus(fStopAndKill);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // ===========================
+  // Photon Wrapping (JUPITER PAPER ONLY)
+  // ===========================
+  G4cout.clear(); // Un-suppress output
+  if((particleName == "gamma")){
+    G4double x = postPosition.x();
+    G4double y = postPosition.y();
+    G4double postRadius = sqrt((x*x) + (y*y));
+
+    if((postRadius/km) >= 990){
+      G4ThreeVector newPosition(0, 0, postPosition.z()); // Snap back to origin
+      track->SetPosition(newPosition);
+      G4cout.setstate(std::ios::failbit); // Suppress output to prevent the navigator from complaining about the move. This should be done in a process to avoid that, but I have very little time to get this done and adding processes to a physics list is beyond me at the moment
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ===========================
   // Account for cached B-fields

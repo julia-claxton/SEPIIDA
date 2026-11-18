@@ -86,10 +86,6 @@ for E in logrange(30, 1e5, 25)
     for pa in [100, 105, 110, 120, 130, 140, 160, 180]
         #if (round.(E, digits = 1), float(pa)) ∈ existing_beams; continue; end
 
-        if (E ∈ logrange(30, 1e5, 25)[[8, 12, 16]]) && (pa ∈ [120, 140, 180])
-            continue
-        end
-
         N = 1e5
         qos = "preemptable"
 
@@ -102,7 +98,7 @@ for E in logrange(30, 1e5, 25)
         end
 
         write_job_script(qos, N, "e-", E, pa, 
-            prefix = "penelope_hightop",
+            prefix = "photonwrapping",
             flags = "
                 -magnetic_model jrm33
                 -atmosphere_filename ARGO_Jupiter.csv
